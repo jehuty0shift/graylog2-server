@@ -29,13 +29,20 @@ import org.productivity.java.syslog4j.server.SyslogServerIF;
 
 public class SyslogServerThread extends Thread {
 
+    private int port = 0;
+
+    public SyslogServerThread(int port) {
+        this.port = port;
+    }
+
     @Override public void run() {
         SyslogServerIF syslogServer = SyslogServer.getInstance("udp");
-        // TODO: Make configurable
-        syslogServer.getConfig().setPort(12000);
-        syslogServer.getConfig().addEventHandler(new SyslogEventHandler());
         
+        syslogServer.getConfig().setPort(port);
+        syslogServer.getConfig().addEventHandler(new SyslogEventHandler());
+
         syslogServer = SyslogServer.getThreadedInstance("udp");
+        Main.syslogCoreThread = syslogServer.getThread();
     }
 
 }
