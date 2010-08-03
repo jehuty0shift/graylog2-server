@@ -1,0 +1,29 @@
+<div id="users-edit" class="users-form">
+
+<div id="users-delete">
+  <% form_tag '/users/delete/' + @user.id.to_s do -%>
+    <%= submit_tag 'Delete user', :confirm => 'Really delete this user?' %>
+  <% end -%>
+</div>
+
+<h1>Edit user &raquo;<%=h @user.login %>&laquo;</h1>
+<% @user.password = @user.password_confirmation = nil %>
+
+<%= error_messages_for :user %>
+<% form_for :user, :url => { :action => 'update', :id => @user.id } do |f| -%>
+
+<dl>
+  <dt><%= label_tag 'email' %></dt>
+  <dd><%= f.text_field :email %></dd>
+
+  <dt><%= label_tag 'password' %></dt>
+  <dd><%= f.password_field :password %></dd>
+
+  <dt><%= label_tag 'password_confirmation', 'Confirm Password' %></dt>
+  <dd><%= f.password_field :password_confirmation %></dd>
+
+  <dt>&nbsp;</dt>
+  <dd><%= submit_tag 'Edit' %></dd>
+</dl>
+<% end -%>
+</div>

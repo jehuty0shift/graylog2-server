@@ -1,8 +1,10 @@
+<div id="users-new" class="users-form">
+
 <h1>Create new user</h1>
 <% @user.password = @user.password_confirmation = nil %>
 
 <%= error_messages_for :user %>
-<% form_for :user, :url => users_path do |f| -%>
+<% form_for :user, :url => { :action => 'create' } do |f| -%>
 
 <dl>
   <dt><%= label_tag 'login', "Username" %></dt>
@@ -21,3 +23,5 @@
   <dd><%= submit_tag 'Create' %></dd>
 </dl>
 <% end -%>
+
+</div>
