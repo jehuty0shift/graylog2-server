@@ -47,7 +47,7 @@ public class HostDistinctThread extends Thread {
                 Log.warn("Error in HostDistinctThread: " + e.toString());
             }
             
-           // Run every minute.
+           // Run every 10 seconds.
            try { Thread.sleep(10000); } catch(InterruptedException e) {}
         }
     }
