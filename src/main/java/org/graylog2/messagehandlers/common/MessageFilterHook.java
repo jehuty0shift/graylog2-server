@@ -48,10 +48,10 @@ public class MessageFilterHook implements MessagePostReceiveHookIF {
     	Pattern pattern = null;
     	Matcher matcher = null;
 		 
-    	int regex_count = Integer.parseInt(Main.regexConfig.getProperty("filter.out.count"));
+    	int regex_count = Integer.parseInt(Main.regexConfig.getProperty("filter.out.syslog.count"));
     	
     	for( int i = 0; i < regex_count; i++) {
-    		regex = Main.regexConfig.getProperty("filter.out.regex." + i);
+    		regex = Main.regexConfig.getProperty("filter.out.syslog.regex." + i);
     		pattern = Pattern.compile(regex);
     		matcher = pattern.matcher(msg);
 
