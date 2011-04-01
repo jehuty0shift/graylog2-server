@@ -21,7 +21,7 @@
 package org.graylog2.streams;
 
 import java.util.ArrayList;
-import org.graylog2.Tools;
+import org.graylog2.SimpleObjectCache;
 
 /**
  * StreamCache.java: Mar 26, 2011 11:25:41 PM
@@ -30,14 +30,9 @@ import org.graylog2.Tools;
  *
  * @author: Lennart Koopmann <lennart@socketfeed.com>
  */
-public class StreamCache {
-
-    public static final int TIMEOUT_SECONDS = 5;
+public class StreamCache extends SimpleObjectCache {
 
     private static StreamCache instance;
-
-    private ArrayList<Stream> streams = new ArrayList<Stream>();
-    private int lastSet = 0;
 
     private StreamCache() { }
 
@@ -45,25 +40,17 @@ public class StreamCache {
         if (instance == null) {
             instance = new StreamCache();
         }
+        
         return instance;
     }
 
-    public void set(ArrayList<Stream> streams) {
-        this.streams = streams;
-        this.lastSet = Tools.getUTCTimestamp();
-    }
-
+    @Override
     public ArrayList<Stream> get() {
-        return streams;
+        return (ArrayList<Stream>) super.get();
     }
 
-    public boolean valid() {
-        // For the first request.
-        if (this.lastSet == 0) {
-            return false;
-        }
-
-        return this.lastSet >= (Tools.getUTCTimestamp()-TIMEOUT_SECONDS);
+    public void set(ArrayList<Stream> streams) {
+        super.set(streams);
     }
 
 }
