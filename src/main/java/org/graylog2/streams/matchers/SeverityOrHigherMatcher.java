@@ -30,7 +30,7 @@ import org.graylog2.streams.StreamRule;
  *
  * @author Lennart Koopmann <lennart@socketfeed.com>
  */
-public class SeverityOrHigherMatcher implements StreamRuleMatcherIF {
+public class SeverityOrHigherMatcher implements StreamRuleMatcher {
 
     public boolean match(LogMessage msg, StreamRule rule) {
         // <= because 0 (EMERG) is lower than DEBUG (7)
