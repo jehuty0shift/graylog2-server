@@ -22,6 +22,7 @@ package org.graylog2.filters;
 
 import java.util.List;
 import org.apache.log4j.Logger;
+import org.graylog2.GraylogServer;
 import org.graylog2.logmessage.LogMessage;
 import org.graylog2.streams.Stream;
 import org.graylog2.streams.StreamRouter;
@@ -53,6 +54,8 @@ public class StreamMatcherFilter implements MessageFilter {
         return false;
     }
 
-
+    @Override
+    public void setServer(GraylogServer server) {
+    }
 
 }
