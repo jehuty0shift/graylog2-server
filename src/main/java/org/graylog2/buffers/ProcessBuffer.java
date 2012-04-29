@@ -37,18 +37,18 @@ import org.graylog2.logmessage.LogMessage;
  */
 public class ProcessBuffer {
 
-    protected static final int RING_SIZE = 1024;
+    protected static final int RING_SIZE = 8192;
+    protected static RingBuffer<LogMessageEvent> ringBuffer;
+
+    protected ExecutorService executor = Executors.newCachedThreadPool();
 
     GraylogServer server;
-    protected static RingBuffer<LogMessageEvent> ringBuffer;
 
     public ProcessBuffer(GraylogServer server) {
         this.server = server;
     }
 
     public void initialize() {
-        ExecutorService executor = Executors.newCachedThreadPool();
-
         Disruptor disruptor = new Disruptor<LogMessageEvent>(
                 LogMessageEvent.EVENT_FACTORY,
                 executor,
@@ -61,7 +61,7 @@ public class ProcessBuffer {
         disruptor.handleEventsWith(processor);
         ringBuffer = disruptor.start();
     }
-
+    
     public void insert(LogMessage message) {
         long sequence = ringBuffer.next();
         LogMessageEvent event = ringBuffer.get(sequence);
