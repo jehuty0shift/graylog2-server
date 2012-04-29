@@ -65,7 +65,7 @@ public class GELFUDPInput implements MessageInput {
             bootstrap.bind(socketAddress);
             LOG.info("Started UDP GELF server on " + socketAddress);
         } catch (ChannelException e) {
-            LOG.fatal("Could not bind GELF server to address " + socketAddress, e);
+            LOG.fatal("Could not bind UDP GELF server to address " + socketAddress, e);
         }
     }
 
