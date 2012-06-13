@@ -62,7 +62,7 @@ public class GELFUDPInput implements MessageInput {
 
         bootstrap.setOption("receiveBufferSize", 1048576);
         bootstrap.setOption("receiveBufferSizePredictorFactory", new FixedReceiveBufferSizePredictorFactory(8192));
-        bootstrap.setPipelineFactory(new GELFPipelineFactory(graylogServer));
+        bootstrap.setPipelineFactory(new GELFUDPPipelineFactory(graylogServer));
 
         try {
             bootstrap.bind(socketAddress);
