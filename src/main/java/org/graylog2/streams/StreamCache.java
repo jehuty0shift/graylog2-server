@@ -20,11 +20,10 @@
 
 package org.graylog2.streams;
 
-import java.util.List;
+import java.util.Set;
 import org.graylog2.Core;
 
 import org.graylog2.SimpleObjectCache;
-import org.graylog2.plugin.GraylogServer;
 import org.graylog2.plugin.streams.Stream;
 
 /**
@@ -32,7 +31,7 @@ import org.graylog2.plugin.streams.Stream;
  *
  * @author Lennart Koopmann <lennart@socketfeed.com>
  */
-public class StreamCache extends SimpleObjectCache<List<Stream>> {
+public class StreamCache extends SimpleObjectCache<Set<Stream>> {
 
     private static StreamCache instance;
 
