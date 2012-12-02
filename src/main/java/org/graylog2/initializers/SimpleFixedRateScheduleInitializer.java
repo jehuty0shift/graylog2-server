@@ -30,10 +30,8 @@ public class SimpleFixedRateScheduleInitializer {
 
     protected SimpleFixedRateScheduleInitializer() { /* Nope. No instances desired. Only to be inherited by Initializers if wanted. */ }
 
-    protected Core graylogServer = null;
-
-    public void configureScheduler(Runnable what, int initialDelay, int period) {
-        this.graylogServer.getScheduler()
+    public void configureScheduler(Core server, Runnable what, int initialDelay, int period) {
+        server.getScheduler()
                 .scheduleAtFixedRate(
                     what,
                     initialDelay,
