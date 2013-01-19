@@ -3,7 +3,7 @@
 <% end %>
 
 <h1>
-	Search result for <span class="highlighted"><%= params[:query] %></span>
+	Search result for <span class="highlighted"><%= params[:query].blank? ? "[all]" : params[:query] %></span>
 	<% if @stream %>in stream <span class="highlighted"><%= @stream.title %></span><% end %>
 	<% if @host %>for host <span class="highlighted"><%= @host.host %></span><% end %>
 </h1>
@@ -13,6 +13,16 @@
 <% end %>
 
 <%= render :partial => "result_graph" %>
+<br />
+
+<%= form_tag "/messages/universalsearch", :method => :get do %>
+	<%= hidden_field_tag "timespan", params[:timespan] %>
+	<%= hidden_field_tag "query", params[:query] %>
+
+	<%= text_field_tag :distribution_field, "host" %>
+
+	<%= awesome_submit_link "Show distribution of field" %>
+<% end %>
 <br />
 
 <%= render :partial => "messages/table", :locals => { :messages => @messages,
