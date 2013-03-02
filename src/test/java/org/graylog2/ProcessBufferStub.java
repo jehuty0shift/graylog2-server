@@ -20,6 +20,7 @@
 
 package org.graylog2;
 
+import org.graylog2.buffers.BasicCache;
 import org.graylog2.buffers.ProcessBuffer;
 import org.graylog2.plugin.logmessage.LogMessage;
 
@@ -31,12 +32,12 @@ public class ProcessBufferStub extends ProcessBuffer {
     GraylogServerStub serverStub;
 
     public ProcessBufferStub(GraylogServerStub server) {
-        super(null);
+        super(null, new BasicCache());
         serverStub = server;
     }
 
     @Override
-    public void insert(LogMessage msg) {
+    public void insertCached(LogMessage msg) {
         serverStub.callsToProcessBufferInserter++;
         serverStub.lastInsertedToProcessBuffer = msg;
     }
