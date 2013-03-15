@@ -1,15 +1,74 @@
-@(searchResult: SearchResult)
+@(currentUser: User, searchResult: SearchResult, histogram: DateHistogramResult, query: String)
 
-@main(title = "Search results") {
+@main("Search results", query, currentUser) {
 
-Total results: @searchResult.getTotalResultCount()<br />
-Took ms: @searchResult.getTookMs()<br />
-Original query: @searchResult.getOriginalQuery()
+<h1>
+	<i class="icon-search icon-large"></i>
+	Search results
+</h1>
 
-<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+<p>
+	Found @searchResult.getTotalResultCount() messages in @searchResult.getTookMs()ms.
+</p>
 
-WAT
+<style>
+.rickshaw_graph .detail .x_label { display: none }
+.y_ticks { color: #000; }
+</style>
+
+<div id="y_axis"></div>
+<div id="result-graph"></div>
+
+<script>
+	var resultGraph = new Rickshaw.Graph( {
+	        element: document.querySelector("#result-graph"),
+	        width: $("#main-content").width()-12,
+	        height: 100,
+	        renderer: "bar",
+	        series: [ {
+	        		name: "Messages",
+	        		data: @Html(histogram.asJSONString()),
+	        	    color: '#26ADE4'
+	        } ]
+	});
+	
+	new Rickshaw.Graph.Axis.Y( {
+		graph: resultGraph,
+		tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+	});
+	
+	new Rickshaw.Graph.Axis.Time({
+		graph: resultGraph
+	});
+	
+	new Rickshaw.Graph.HoverDetail( {
+		graph: resultGraph,
+		formatter: function(series, x, y) {
+			var date = new Date(x * 1000).toUTCString();
+			var content = "<strong>"  + parseInt(y) + " " + series.name + "</strong>" + '<br />' + date;
+			return content;
+		}
+	});
+	resultGraph.render();
+</script>
+
+<table class="table table-condensed table-hover table-striped messages">
+	<thead>
+		<tr>
+			<th>Timestamp</th>
+			<th>Source</th>
+			<th>Message</th>
+		</tr>
+	</thead>
+	<tbody>
+		@for(r <- searchResult.getMessages()) {
+		<tr>
+			<td style="width: 135px;">@r.message.timestamp</td>
+			<td style="white-space: nowrap;">@r.message.source</td>
+			<td>@r.message.message</td>
+		</tr>
+		}
+	</tbody>
+</table>
 
 }
