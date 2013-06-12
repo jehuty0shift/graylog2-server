@@ -71,7 +71,7 @@ public class SystemJobResource extends RestResource {
         return json(result, prettyPrint);
     }
 
-    // POST create new job
+    // GET single job
     // DELETE try to stop/cancel job
 
 }
