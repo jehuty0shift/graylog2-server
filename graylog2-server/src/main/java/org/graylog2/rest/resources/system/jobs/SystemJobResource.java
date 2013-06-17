@@ -47,8 +47,6 @@ public class SystemJobResource extends RestResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(SystemJobResource.class);
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Context
     ResourceConfig rc;
 
