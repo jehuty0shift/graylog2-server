@@ -40,7 +40,7 @@ import java.util.Map;
 @Path("/system/throughput")
 public class ThroughputResource extends RestResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SystemResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ThroughputResource.class);
 
     @Context
     ResourceConfig rc;
