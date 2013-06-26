@@ -30,5 +30,6 @@ public interface Cache {
     public void add(Message m);
     public Message pop();
     public int size();
+    public void clear();
     
 }
