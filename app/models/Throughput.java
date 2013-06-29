@@ -34,8 +34,7 @@ public class Throughput {
 
     // TODO make multi-node compatible
     public static int get() throws IOException, APIException {
-        URL url = Api.buildTarget("system/throughput");
-        ServerThroughputResponse r = Api.get(url, ServerThroughputResponse.class);
+        ServerThroughputResponse r = Api.get("system/throughput", ServerThroughputResponse.class);
 
         return r.throughput;
     }
