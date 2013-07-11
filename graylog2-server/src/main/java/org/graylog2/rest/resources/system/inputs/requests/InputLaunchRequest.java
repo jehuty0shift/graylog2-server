@@ -27,8 +27,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class InputLaunchRequest {
 
     public String title;
-
-    @JsonProperty("input_type")
-    public String inputType;
+    public String type;
 
 }
