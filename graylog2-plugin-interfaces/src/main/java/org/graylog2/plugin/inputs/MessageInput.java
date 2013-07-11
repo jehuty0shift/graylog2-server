@@ -21,7 +21,6 @@
 */
 package org.graylog2.plugin.inputs;
 
-import java.util.Map;
 import org.graylog2.plugin.GraylogServer;
 
 /**
@@ -29,8 +28,15 @@ import org.graylog2.plugin.GraylogServer;
  */
 public interface MessageInput {
     
-    void initialize(Map<String, String> config, GraylogServer graylogServer) throws MessageInputConfigurationException;
-    public Map<String, String> getRequestedConfiguration();
-    String getName();
+    public void configure(MessageInputConfiguration config, GraylogServer graylogServer) throws MessageInputConfigurationException;
+
+    public void launch() throws MisfireException;
+    public void stop();
+
+    public MessageInputConfigurationRequest getRequestedConfiguration();
+    public void setId(String id);
+    public String getId();
+    public boolean isExclusive();
+    public String getName();
     
 }
