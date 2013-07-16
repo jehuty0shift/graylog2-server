@@ -21,6 +21,8 @@ package org.graylog2.rest.resources.system.inputs.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
+
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
@@ -28,5 +30,10 @@ public class InputLaunchRequest {
 
     public String title;
     public String type;
+
+    @JsonProperty("creator_user_id")
+    public String creatorUserId;
+
+    public Map<String, Object> configuration;
 
 }
