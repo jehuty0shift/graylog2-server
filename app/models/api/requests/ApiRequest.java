@@ -19,11 +19,15 @@
  */
 package models.api.requests;
 
+import com.google.gson.Gson;
+
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
-public interface ApiRequest {
+public abstract class ApiRequest {
 
-    public String toJson();
+    public String toJson() {
+        return new Gson().toJson(this);
+    }
 
 }
