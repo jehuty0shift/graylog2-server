@@ -65,17 +65,12 @@ public class SyslogUDPInput extends SyslogInputBase {
 
         try {
             channel = bootstrap.bind(socketAddress);
-            LOG.info("Started UDP syslog server on {}", socketAddress);
+            LOG.info("Started syslog UDP input server on {}", socketAddress);
         } catch (ChannelException e) {
-            String msg = "Could not bind UDP syslog server to address " + socketAddress;
+            String msg = "Could not bind UDP syslog input to address " + socketAddress;
             LOG.error(msg, e);
             throw new MisfireException(msg, e);
         }
-    }
-
-    @Override
-    public boolean isExclusive() {
-        return false;
     }
 
     @Override
