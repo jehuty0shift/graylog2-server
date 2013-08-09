@@ -29,6 +29,9 @@ public class NodeSummaryResponse {
     @SerializedName("node_id")
     public String nodeId;
 
+    @SerializedName("short_node_id")
+    public String shortNodeId;
+
     public String hostname;
 
     @SerializedName("last_seen")
@@ -36,5 +39,8 @@ public class NodeSummaryResponse {
 
     @SerializedName("transport_address")
     public String transportAddress;
+
+    @SerializedName("is_master")
+    public boolean isMaster;
 
 }
