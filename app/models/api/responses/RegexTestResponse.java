@@ -25,7 +25,7 @@ package models.api.responses;
 public class RegexTestResponse {
 
     public String regex;
-    public boolean finds;
+    public boolean matched;
     public String string;
     public Match match;
 
