@@ -28,6 +28,8 @@ import java.util.Map;
  */
 public class CreateExtractorRequest extends ApiRequest {
 
+    public String title;
+
     @SerializedName("cut_or_copy")
     public String cutOrCopy;
 
