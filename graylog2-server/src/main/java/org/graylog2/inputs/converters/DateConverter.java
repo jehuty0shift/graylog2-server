@@ -19,12 +19,10 @@
  */
 package org.graylog2.inputs.converters;
 
-import com.google.common.primitives.Ints;
 import org.graylog2.ConfigurationException;
 import org.graylog2.plugin.inputs.Converter;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Map;
 
