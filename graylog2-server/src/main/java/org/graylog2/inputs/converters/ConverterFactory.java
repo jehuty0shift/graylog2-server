@@ -19,6 +19,7 @@
  */
 package org.graylog2.inputs.converters;
 
+import org.graylog2.ConfigurationException;
 import org.graylog2.plugin.inputs.Converter;
 
 import java.util.Map;
@@ -28,12 +29,12 @@ import java.util.Map;
  */
 public class ConverterFactory {
 
-    public static Converter factory(Converter.Type type, Map<String, Object> config) throws NoSuchConverterException {
+    public static Converter factory(Converter.Type type, Map<String, Object> config) throws NoSuchConverterException, ConfigurationException {
         switch (type) {
             case NUMERIC:
                 return new NumericConverter(config);
             case DATE:
-                throw new NoSuchConverterException();
+                return new DateConverter(config);
             case HASH:
                 return new HashConverter(config);
             default:
