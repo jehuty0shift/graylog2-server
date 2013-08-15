@@ -48,4 +48,6 @@ public class CreateExtractorRequest {
     @JsonProperty("extractor_config")
     public Map<String, Object> extractorConfig;
 
+    public Map<String, Map<String, Object>> converters;
+
 }
