@@ -73,7 +73,7 @@ public class RegexExtractorTest {
         x.run(msg);
 
         assertNotNull(msg.getField("our_result"));
-        assertEquals("TestUnit", msg.getField("source")); // Not cut!
+        assertEquals("TestUnit", msg.getField("sourcre"));
         assertEquals("Unit", msg.getField("our_result"));
     }
 
