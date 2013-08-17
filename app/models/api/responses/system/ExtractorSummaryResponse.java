@@ -20,6 +20,7 @@
 package models.api.responses.system;
 
 import com.google.gson.annotations.SerializedName;
+import models.api.responses.metrics.TimerRateMetricsResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -49,5 +50,7 @@ public class ExtractorSummaryResponse {
     public String creatorUserId;
 
     public List<Map<String, Object>> converters;
+
+    public Map<String, TimerRateMetricsResponse> metrics;
 
 }
