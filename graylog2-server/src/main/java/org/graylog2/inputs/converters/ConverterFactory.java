@@ -37,6 +37,8 @@ public class ConverterFactory {
                 return new DateConverter(config);
             case HASH:
                 return new HashConverter(config);
+            case SPLIT_AND_COUNT:
+                return new SplitAndCountConverter(config);
             case SYSLOG_PRI_LEVEL:
                 return new SyslogPriLevelConverter(config);
             case SYSLOG_PRI_FACILITY:
