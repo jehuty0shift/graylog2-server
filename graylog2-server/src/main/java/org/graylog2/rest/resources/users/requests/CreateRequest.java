@@ -21,6 +21,8 @@ package org.graylog2.rest.resources.users.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
@@ -32,4 +34,5 @@ public class CreateRequest {
     @JsonProperty("full_name")
     public String fullName;
 
+    public List<String> permissions;
 }
