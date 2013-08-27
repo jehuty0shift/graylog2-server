@@ -25,11 +25,9 @@ import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.configuration.ConfigurationException;
 import org.graylog2.plugin.configuration.ConfigurationRequest;
 import org.graylog2.plugin.configuration.fields.BooleanField;
-import org.graylog2.plugin.configuration.fields.NumberField;
-import org.graylog2.plugin.configuration.fields.TextField;
 import org.graylog2.plugin.inputs.MessageInput;
 import org.graylog2.plugin.inputs.MisfireException;
-import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
+import org.jboss.netty.bootstrap.Bootstrap;
 import org.jboss.netty.channel.Channel;
 
 import java.net.InetSocketAddress;
@@ -46,7 +44,7 @@ public class SyslogInputBase extends MessageInput {
     public static final String CK_ALLOW_OVERRIDE_DATE = "allow_override_date";
     public static final String CK_STORE_FULL_MESSAGE = "store_full_message";
 
-    protected ConnectionlessBootstrap bootstrap;
+    protected Bootstrap bootstrap;
     protected Channel channel;
 
     protected Core core;
