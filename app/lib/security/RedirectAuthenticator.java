@@ -19,11 +19,24 @@
  */
 package lib.security;
 
+import models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.mvc.Http.Context;
 import play.mvc.Result;
 import play.mvc.Security.Authenticator;
 
 public class RedirectAuthenticator extends Authenticator {
+    private static final Logger log = LoggerFactory.getLogger(RedirectAuthenticator.class);
+
+    @Override
+    public String getUsername(Context ctx) {
+        final User currentUser = User.current();
+        if (currentUser == null) {
+            return null;
+        }
+        return currentUser.getName();
+    }
 
     @Override
 	public Result onUnauthorized(Context ctx) {
