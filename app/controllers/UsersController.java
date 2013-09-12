@@ -19,6 +19,7 @@
  */
 package controllers;
 
+import models.Permissions;
 import models.User;
 import models.Users;
 import play.mvc.Result;
@@ -29,6 +30,12 @@ public class UsersController extends AuthenticatedController {
 
     public static Result index() {
         final List<User> allUsers = Users.all();
-        return ok(views.html.users.index.render(currentUser(), allUsers));
+        final List<String> permissions = Permissions.all();
+        return ok(views.html.users.index.render(currentUser(), allUsers, permissions));
+    }
+
+    public static Result edit(String username) {
+        User user = Users.loadUser(username);
+        return ok(views.html.users.edit.render(currentUser(), user));
     }
 }

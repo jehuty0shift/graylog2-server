@@ -49,4 +49,9 @@ public class Users {
         }
         return Lists.newArrayList();
     }
+
+    public static User loadUser(String username) {
+        return User.load(username);
+    }
+
 }
