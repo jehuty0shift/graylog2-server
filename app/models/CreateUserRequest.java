@@ -19,22 +19,21 @@
  */
 package models;
 
-import models.api.requests.ApiRequest;
-
-import java.util.List;
-
 import static play.data.validation.Constraints.Required;
 
-public class CreateUserRequest extends ApiRequest {
+public class CreateUserRequest extends ChangeUserRequest {
     @Required
     public String username;
     @Required
-    public String fullname;
-    @Required
-    public String email;
-    @Required
     public String password;
-    @Required
-    public List<String> permissions;
 
+    public CreateUserRequest() { /* required for data binding */ }
+
+    public CreateUserRequest(User user) {
+        this.username = user.getName();
+        this.fullname = user.getFullName();
+        this.email = user.getEmail();
+        this.password = "";
+        this.permissions = user.getPermissions();
+    }
 }
