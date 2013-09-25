@@ -22,7 +22,7 @@ package org.graylog2.indexer.searches.timeranges;
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
-public class AbsoluteRange implements TimeRange{
+public class AbsoluteRange implements TimeRange, FromToRange {
 
     private final String from;
     private final String to;

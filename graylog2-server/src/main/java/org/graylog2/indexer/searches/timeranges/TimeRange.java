@@ -28,7 +28,8 @@ public interface TimeRange {
 
     public enum Type {
         RELATIVE,
-        ABSOLUTE
+        ABSOLUTE,
+        KEYWORD
     }
 
     public Type getType();
