@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
-public class KeywordRange implements TimeRange {
+public class KeywordRange extends TimeRange {
 
     private final String keyword;
 
