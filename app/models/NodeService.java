@@ -24,10 +24,13 @@ import lib.APIException;
 import lib.ApiClient;
 import lib.ServerNodes;
 import models.api.responses.NodeSummaryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class NodeService {
+    private static final Logger log = LoggerFactory.getLogger(NodeService.class);
 
     private final ApiClient api;
     private final Node.Factory nodeFactory;
@@ -52,4 +55,5 @@ public class NodeService {
             throw new RuntimeException(e);
         }
     }
+
 }
