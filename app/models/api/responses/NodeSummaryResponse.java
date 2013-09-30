@@ -31,8 +31,6 @@ public class NodeSummaryResponse {
     @SerializedName("short_node_id")
     public String shortNodeId;
 
-    public String hostname;
-
     @SerializedName("last_seen")
     public String lastSeen;
 
@@ -41,8 +39,5 @@ public class NodeSummaryResponse {
 
     @SerializedName("is_master")
     public boolean isMaster;
-
-    @SerializedName("is_processing")
-    public boolean isProcessing;
 
 }
