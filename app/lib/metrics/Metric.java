@@ -22,13 +22,23 @@ package lib.metrics;
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
-public interface Metric {
+public class Metric {
 
-    public enum TYPE {
+    public enum MetricType {
         TIMER,
         METER,
         GAUGE,
         HISTOGRAM
+    }
+
+    private MetricType type;
+
+    public Metric(MetricType type) {
+        this.type = type;
+    }
+
+    public MetricType getType() {
+        return type;
     }
 
 }

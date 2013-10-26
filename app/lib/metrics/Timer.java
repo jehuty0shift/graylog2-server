@@ -18,7 +18,6 @@
  */
 package lib.metrics;
 
-import com.google.common.collect.Maps;
 import models.api.responses.metrics.TimerMetricsResponse;
 
 import java.util.HashMap;
@@ -27,7 +26,7 @@ import java.util.Map;
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
-public class Timer implements Metric {
+public class Timer extends Metric {
 
     public enum Unit {
         MICROSECONDS
@@ -42,6 +41,8 @@ public class Timer implements Metric {
     private final double percentile99th;
 
     public Timer(Map<String, Object> timing, Unit durationUnit) {
+        super(MetricType.TIMER);
+
         if (!durationUnit.equals(Unit.MICROSECONDS)) {
             throw new RuntimeException("Timings must be in microseconds.");
         }
