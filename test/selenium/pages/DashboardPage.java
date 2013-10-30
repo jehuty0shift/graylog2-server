@@ -21,10 +21,14 @@ package selenium.pages;
 
 import controllers.routes;
 import org.fluentlenium.core.FluentPage;
+import org.fluentlenium.core.annotation.Page;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 public class DashboardPage extends FluentPage {
+
+    @Page
+    SearchPage searchPage;
 
     @Override
     public String getUrl() {
@@ -34,5 +38,11 @@ public class DashboardPage extends FluentPage {
     @Override
     public void isAt() {
         assertThat(title()).contains("Dashboard");
+    }
+
+    public SearchPage searchFor(String searchQuery) {
+        fill("#universalsearch-query").with(searchQuery);
+        submit(".universalsearch-form");
+        return searchPage;
     }
 }
