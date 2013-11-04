@@ -18,9 +18,12 @@
  */
 package controllers;
 
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import lib.ApiClient;
 import play.mvc.Controller;
+
+import java.util.Map;
 
 public class BaseController extends Controller {
     private ApiClient api;
@@ -33,4 +36,17 @@ public class BaseController extends Controller {
     public void setApi(ApiClient api) {
         this.api = api;
     }
+
+    public Map<String, String> flattenFormUrlEncoded(Map<String, String[]> form) {
+        Map<String, String> result = Maps.newHashMap();
+
+        for (Map.Entry<String, String[]> e : form.entrySet()) {
+            if (e.getValue()[0] != null) {
+                result.put(e.getKey(), e.getValue()[0]);
+            }
+        }
+
+        return result;
+    }
+
 }
