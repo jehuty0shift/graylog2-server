@@ -36,4 +36,9 @@ public class UserResponse {
 	public List<String> permissions;
 
     public String timezone;
+
+    @SerializedName("read_only")
+    public boolean readonly;
+
+    public boolean external;
 }
