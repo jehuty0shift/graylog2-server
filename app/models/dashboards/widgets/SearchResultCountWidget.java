@@ -30,6 +30,9 @@ import java.util.Map;
  */
 public class SearchResultCountWidget extends DashboardWidget {
 
+    private static final int WIDTH = 1;
+    private static final int HEIGHT = 1;
+
     private final String query;
     private final TimeRange timerange;
 
@@ -51,6 +54,16 @@ public class SearchResultCountWidget extends DashboardWidget {
         config.put("query", query);
 
         return config;
+    }
+
+    @Override
+    public int getWidth() {
+        return WIDTH;
+    }
+
+    @Override
+    public int getHeight() {
+        return HEIGHT;
     }
 
 }
