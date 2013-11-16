@@ -20,6 +20,7 @@
 package org.graylog2.inputs.misc.metrics.agent;
 
 import org.graylog2.plugin.GraylogServer;
+import org.graylog2.plugin.InputHost;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.inputs.MessageInput;
 import org.joda.time.DateTime;
@@ -31,10 +32,10 @@ import java.util.Map;
  */
 public class InProcessMessageWriter implements GELFTarget {
 
-    private final GraylogServer server;
+    private final InputHost server;
     private final MessageInput input;
 
-    public InProcessMessageWriter(GraylogServer server, MessageInput input) {
+    public InProcessMessageWriter(InputHost server, MessageInput input) {
         this.server = server;
         this.input = input;
     }
