@@ -18,29 +18,28 @@
  */
 package org.graylog2.rest.resources.system.requests;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 import java.net.URI;
 
+@JsonAutoDetect
 public class LdapSettingsRequest {
-    @JsonProperty("enabled")
-    public boolean isEnabled;
 
-    @JsonProperty("system_username")
+    public boolean enabled;
+
     public String systemUsername;
 
-    @JsonProperty("system_password")
     public String systemPassword;
 
-    @JsonProperty("ldap_uri")
     public URI ldapUri;
 
-    @JsonProperty("search_base")
+    public boolean useStartTls;
+
+    public boolean activeDirectory;
+
     public String searchBase;
 
-    @JsonProperty("principal_search_pattern")
-    public String principalSearchPattern;
+    public String searchPattern;
 
-    @JsonProperty("username_attribute")
-    public String usernameAttribute;
+    public String displayNameAttribute;
 }
