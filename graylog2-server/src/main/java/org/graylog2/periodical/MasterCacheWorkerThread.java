@@ -89,7 +89,7 @@ public class MasterCacheWorkerThread implements Runnable {
             } catch(Exception e) {
                 LOG.error("Error while trying to work on MasterCache <{}>.", cacheName, e);
                 try {
-                    Thread.sleep(1*1000);
+                    Thread.sleep(1000);
                 } catch(InterruptedException ex) { /* */ }
             }
             
