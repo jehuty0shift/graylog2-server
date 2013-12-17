@@ -19,8 +19,23 @@
  */
 package models.api.responses.searches;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.util.Map;
+
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
 public class SavedSearchSummaryResponse {
+
+    public String id;
+    public String title;
+    public Map<String, Object> query;
+
+    @SerializedName("created_at")
+    public String createdAt;
+
+    @SerializedName("creator_user_id")
+    public String creatorUserId;
+
 }
