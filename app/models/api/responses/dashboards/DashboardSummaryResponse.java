@@ -22,6 +22,7 @@ package models.api.responses.dashboards;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
@@ -33,6 +34,7 @@ public class DashboardSummaryResponse {
     public String description;
 
     public List<DashboardWidgetResponse> widgets;
+    public Map<String, WidgetPositionResponse> positions;
 
     @SerializedName("created_at")
     public String createdAt;
