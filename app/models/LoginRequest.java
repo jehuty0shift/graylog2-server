@@ -24,5 +24,6 @@ public class LoginRequest {
 
 	@Required public String username;
 	@Required public String password;
-	
+	@Required public boolean noStartpage;
+
 }
