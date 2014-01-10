@@ -19,8 +19,24 @@
  */
 package models.api.responses.alerts;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.util.Map;
+
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
 public class AlertConditionSummaryResponse {
+
+    public String id;
+    public String type;
+    public Map<String, Object> parameters;
+
+    @SerializedName("created_at")
+    public String createdAt;
+
+    @SerializedName("creator_user_id")
+    public String creatorUserId;
+
+
 }
