@@ -35,4 +35,5 @@ public class SearchResponse {
     public long totalResults;
 
     public QueryParseError error;
+    public GenericError genericError;
 }
