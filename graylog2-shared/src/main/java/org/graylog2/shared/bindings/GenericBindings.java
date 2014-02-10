@@ -22,6 +22,7 @@ package org.graylog2.shared.bindings;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.AbstractModule;
+import org.graylog2.shared.filters.FilterRegistry;
 
 /**
  * @author Dennis Oelkers <dennis@torch.sh>
@@ -31,5 +32,6 @@ public class GenericBindings extends AbstractModule {
     protected void configure() {
         // This is holding all our metrics.
         bind(MetricRegistry.class).toInstance(new MetricRegistry());
+        bind(FilterRegistry.class).toInstance(new FilterRegistry());
     }
 }
