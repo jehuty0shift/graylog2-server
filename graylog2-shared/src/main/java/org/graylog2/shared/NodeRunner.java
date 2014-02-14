@@ -20,20 +20,20 @@
 
 package org.graylog2.shared;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.beust.jcommander.internal.Lists;
 import com.google.inject.Module;
-import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.shared.bindings.GenericBindings;
+
+import java.util.List;
 
 /**
  * @author Dennis Oelkers <dennis@torch.sh>
  */
 public class NodeRunner {
-    protected static Injector getInjector(Module specificModule) {
-        return Guice.createInjector(
-                new GenericBindings(),
-                specificModule
-        );
+    protected static List<Module> getBindingsModules(Module specificModule) {
+        List<Module> result = Lists.newArrayList();
+        result.add(new GenericBindings());
+        result.add(specificModule);
+        return result;
     }
 }
