@@ -73,6 +73,8 @@ public class IndexFailure extends Persisted {
     public Map<String, Object> asMap() {
         return new HashMap<String, Object>() {{
             put("timestamp", Tools.getISO8601String((DateTime) fields.get("timestamp")));
+            put("letter_id", fields.get("letter_id"));
+            put("written", fields.get("written"));
             put("message", fields.get("message"));
             put("index", fields.get("index"));
             put("type", fields.get("type"));
