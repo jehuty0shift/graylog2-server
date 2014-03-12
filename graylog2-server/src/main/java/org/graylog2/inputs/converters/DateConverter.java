@@ -46,7 +46,7 @@ public class DateConverter extends Converter {
     @Override
     public Object convert(String value) {
         if (value == null || value.isEmpty()) {
-            return value;
+            return null;
         }
 
         DateTime localNow = new DateTime();
