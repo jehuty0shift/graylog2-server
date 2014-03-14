@@ -18,9 +18,11 @@
  */
 package models.api.responses;
 
+import com.google.gson.annotations.SerializedName;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import java.util.List;
 import java.util.Map;
 
 public class MessageSummaryResponse {
@@ -28,8 +30,11 @@ public class MessageSummaryResponse {
 	public Map<String, Object> message;
 	public String index;
 	public String nodeId;
+    @SerializedName("highlight_ranges")
+    public Map<String, List<HighlightRange>> highlightRanges;
 
     public DateTime getTimestamp() {
         return new DateTime(message.get("timestamp"), DateTimeZone.UTC);
     }
+
 }
