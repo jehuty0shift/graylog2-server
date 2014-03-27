@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 TORCH GmbH
+ * Copyright 2012-2014 TORCH GmbH
  *
  * This file is part of Graylog2.
  *
@@ -20,7 +20,6 @@ package org.graylog2.plugin;
 
 import com.codahale.metrics.MetricRegistry;
 import org.graylog2.plugin.buffers.Buffer;
-import org.graylog2.plugin.indexer.MessageGateway;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,9 +34,7 @@ public interface GraylogServer extends Runnable, GenericHost {
     public boolean isMaster();
     
     public String getNodeId();
-    
-    public MessageGateway getMessageGateway();
-    
+
     public MetricRegistry metrics();
 
     void deleteIndexShortcut(String indexName);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 TORCH GmbH
+ * Copyright 2012-2014 TORCH GmbH
  *
  * This file is part of Graylog2.
  *
@@ -12,7 +12,6 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  *
  * You should have received a copy of the GNU General Public License
  * along with Graylog2.  If not, see <http://www.gnu.org/licenses/>.
@@ -33,7 +32,7 @@ public class ProcessBufferStub extends ProcessBuffer {
     GraylogServerStub serverStub;
 
     public ProcessBufferStub(GraylogServerStub server) {
-        super(null, server, new BasicCache());
+        super(null, null, new BasicCache(), null);
         serverStub = server;
     }
 
