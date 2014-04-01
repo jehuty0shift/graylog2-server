@@ -29,21 +29,7 @@ public class GraylogServerStub extends Core {
 
     public int callsToProcessBufferInserter = 0;
     public Message lastInsertedToProcessBuffer = null;
-    private Configuration configurationStub;
     private MetricRegistry fakeMetricRegistry = new MetricRegistry();
-
-    public void setConfigurationStub(Configuration stub) {
-        this.configurationStub = stub;
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        if (this.configurationStub == null) {
-            return new Configuration();
-        } else {
-            return this.configurationStub;
-        }
-    }
 
     @Override
     public MetricRegistry metrics() {
