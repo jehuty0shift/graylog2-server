@@ -20,7 +20,6 @@
 package org.graylog2.filters;
 
 import com.google.inject.internal.util.$Nullable;
-import org.graylog2.plugin.GraylogServer;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.RulesEngine;
 import org.graylog2.plugin.filters.MessageFilter;
@@ -40,7 +39,7 @@ public class RewriteFilter implements MessageFilter {
     }
 
     @Override
-    public boolean filter(Message msg, GraylogServer server) {
+    public boolean filter(Message msg) {
         if (rulesEngine != null) {
             rulesEngine.evaluate(msg);
         }

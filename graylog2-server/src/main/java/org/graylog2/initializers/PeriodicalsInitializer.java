@@ -56,7 +56,8 @@ public class PeriodicalsInitializer implements Initializer {
 
     @Override
     public void initialize(Map<String, String> config) throws InitializerConfigurationException {
-        Reflections reflections = new Reflections("org.graylog2.periodical");
+        String packageName = Periodical.class.getPackage().toString();
+        Reflections reflections = new Reflections("org.graylog2.shared.periodical");
 
         for (Class<? extends Periodical> type : reflections.getSubTypesOf(Periodical.class)) {
             try {
