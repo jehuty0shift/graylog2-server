@@ -24,6 +24,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import org.graylog2.plugin.filters.MessageFilter;
 import org.graylog2.plugin.inputs.MessageInput;
+import org.graylog2.plugin.periodical.Periodical;
 
 /**
  * @author Dennis Oelkers <dennis@torch.sh>
@@ -38,5 +39,9 @@ public abstract class PluginModule extends AbstractModule {
     protected void addMessageFilter(Class<? extends MessageFilter> messageFilterClass) {
         Multibinder<MessageFilter> messageInputs = Multibinder.newSetBinder(binder(), MessageFilter.class);
         messageInputs.addBinding().to(messageFilterClass);
+    }
+
+    protected void addPeriodical(Class<? extends Periodical> periodicalClass) {
+        Multibinder<Periodical> periodicalBinder = Multibinder.newSetBinder(binder(), Periodical.class);
     }
 }
