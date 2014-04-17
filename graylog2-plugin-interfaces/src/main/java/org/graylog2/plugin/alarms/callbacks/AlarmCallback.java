@@ -1,28 +1,30 @@
-/**
- * Copyright (c) 2012 Lennart Koopmann <lennart@socketfeed.com>
+/*
+ * Copyright 2012-2014 TORCH GmbH
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
- * of the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ * This file is part of Graylog2.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
-*/
+ * Graylog2 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Graylog2 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Graylog2.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.graylog2.plugin.alarms.callbacks;
 
+import org.graylog2.plugin.alarms.AlertCondition;
+import org.graylog2.plugin.configuration.Configuration;
+import org.graylog2.plugin.configuration.ConfigurationException;
+import org.graylog2.plugin.configuration.ConfigurationRequest;
+import org.graylog2.plugin.streams.Stream;
+
 import java.util.Map;
-import org.graylog2.plugin.alarms.Alarm;
 
 /**
  *
@@ -30,10 +32,11 @@ import org.graylog2.plugin.alarms.Alarm;
  */
 public interface AlarmCallback {
     
-    public void initialize(Map<String, String> config) throws AlarmCallbackConfigurationException;
-    public void call(Alarm alarm) throws AlarmCallbackException;
+    public void initialize(Configuration config) throws AlarmCallbackConfigurationException;
+    public void call(Stream stream, AlertCondition alertCondition, AlertCondition.CheckResult result) throws AlarmCallbackException;
 
-    public Map<String, String> getRequestedConfiguration();
+    public ConfigurationRequest getRequestedConfiguration();
     public String getName();
-    
+    public Map<String, Object> getAttributes();
+    public void checkConfiguration() throws ConfigurationException;
 }

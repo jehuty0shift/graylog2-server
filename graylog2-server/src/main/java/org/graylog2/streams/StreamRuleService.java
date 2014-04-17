@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 TORCH GmbH
+ * Copyright 2012-2014 TORCH GmbH
  *
  * This file is part of Graylog2.
  *
@@ -26,6 +26,7 @@ import org.graylog2.plugin.streams.Stream;
 import org.graylog2.plugin.streams.StreamRule;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Dennis Oelkers <dennis@torch.sh>
@@ -34,4 +35,6 @@ public interface StreamRuleService extends PersistedService {
     StreamRule load(ObjectId id) throws NotFoundException;
 
     List<StreamRule> loadForStream(Stream stream) throws NotFoundException;
+
+    StreamRule create(Map<String, Object> data);
 }

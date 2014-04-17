@@ -19,9 +19,9 @@
 
 package org.graylog2.alerts.types;
 
-import org.graylog2.alerts.AlertCondition;
+import org.graylog2.alerts.AbstractAlertCondition;
 import org.graylog2.indexer.Indexer;
-import org.graylog2.indexer.results.ResultMessage;
+import org.graylog2.plugin.Message;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.streams.Stream;
 import org.joda.time.DateTime;
@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * @author Dennis Oelkers <dennis@torch.sh>
  */
-public class DummyAlertCondition extends AlertCondition {
+public class DummyAlertCondition extends AbstractAlertCondition {
     final String description = "Dummy alert to test notifications";
 
     public DummyAlertCondition(Stream stream, String id, Type type, DateTime createdAt, String creatorUserId, Map<String, Object> parameters) {
@@ -50,7 +50,7 @@ public class DummyAlertCondition extends AlertCondition {
     }
 
     @Override
-    public List<ResultMessage> getSearchHits() {
+    public List<Message> getSearchHits() {
         return null;
     }
 }
