@@ -55,4 +55,6 @@ public class CreateExtractorRequest extends ApiRequest {
     @SerializedName("condition_value")
     public String conditionValue;
 
+    public int order;
+
 }
