@@ -31,13 +31,10 @@ import javax.inject.Inject;
 @Singleton
 public class IndexerSetupService extends AbstractIdleService {
     private final Indexer indexer;
-    private final BufferSynchronizerService bufferSynchronizerService;
 
     @Inject
-    public IndexerSetupService(Indexer indexer,
-                               BufferSynchronizerService bufferSynchronizerService) {
+    public IndexerSetupService(Indexer indexer) {
         this.indexer = indexer;
-        this.bufferSynchronizerService = bufferSynchronizerService;
     }
 
     @Override
@@ -47,7 +44,6 @@ public class IndexerSetupService extends AbstractIdleService {
 
     @Override
     protected void shutDown() throws Exception {
-        bufferSynchronizerService.stopAndWait();
         // Properly close ElasticSearch node.
         indexer.getNode().close();
     }
