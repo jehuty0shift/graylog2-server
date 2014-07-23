@@ -1,5 +1,5 @@
-/**
- * Copyright 2013 Lennart Koopmann <lennart@torch.sh>
+/*
+ * Copyright 2012-2014 TORCH GmbH
  *
  * This file is part of Graylog2.
  *
@@ -15,13 +15,34 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Graylog2.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package org.graylog2.database;
+
+import org.graylog2.plugin.database.validators.ValidationResult;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
 public class ValidationException extends Exception {
+    private final Map<String, List<ValidationResult>> errors;
 
+    public ValidationException(Map<String, List<ValidationResult>> errors) {
+        this.errors = errors;
+    }
+
+    public ValidationException(final String s) {
+        this.errors = new HashMap<>();
+        this.errors.put("_", new ArrayList<ValidationResult>() {{
+            add(new ValidationResult.ValidationFailed(s));
+        }});
+    }
+
+    public Map<String, List<ValidationResult>> getErrors() {
+        return errors;
+    }
 }
