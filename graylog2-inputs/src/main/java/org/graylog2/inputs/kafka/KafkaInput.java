@@ -360,7 +360,7 @@ public class KafkaInput extends MessageInput {
 
     @Override
     public String linkToDocs() {
-        return "http://graylog2.org/resources/documentation/sending/heroku";
+        return "http://www.graylog2.org/resources/documentation/sending/kafka";
     }
 
     protected boolean checkConfig(Configuration config) {
