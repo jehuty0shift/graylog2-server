@@ -38,7 +38,7 @@ public class Main {
         CliBuilder<Runnable> builder = Cli.<Runnable>builder("graylog2")
                 .withDescription("Open source, centralized log management")
                 .withDefaultCommand(Help.class)
-                .withCommands(Server.class, Radio.class, ShowVersion.class);
+                .withCommands(Server.class, Radio.class, ShowVersion.class, Help.class);
 
         Cli<Runnable> gitParser = builder.build();
         gitParser.parse(argv).run();
