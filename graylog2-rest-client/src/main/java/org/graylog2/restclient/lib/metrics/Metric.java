@@ -25,7 +25,8 @@ public class Metric {
         TIMER,
         METER,
         GAUGE,
-        HISTOGRAM
+        HISTOGRAM,
+        COUNTER
     }
 
     private MetricType type;
