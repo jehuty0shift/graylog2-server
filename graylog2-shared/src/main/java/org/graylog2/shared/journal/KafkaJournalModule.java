@@ -16,35 +16,12 @@
  */
 package org.graylog2.shared.journal;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.util.concurrent.Service;
-import com.google.inject.Provides;
 import com.google.inject.Scopes;
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
 import org.graylog2.plugin.inject.Graylog2Module;
-import org.joda.time.Duration;
-
-import java.util.concurrent.ScheduledExecutorService;
 
 public class KafkaJournalModule extends Graylog2Module {
     @Override
     protected void configure() {
-        final Multibinder<Service> serviceBinder = Multibinder.newSetBinder(binder(), Service.class);
-        serviceBinder.addBinding().to(JournalReader.class).in(Scopes.SINGLETON);
-        serviceBinder.addBinding().to(KafkaJournal.class);
-        bind(Journal.class).to(KafkaJournal.class);
-    }
-
-    @Provides
-    @Singleton
-    public KafkaJournal providesJournal(@Named("journalDirectory") String journalDirName,
-                                        @Named("scheduler") ScheduledExecutorService scheduler,
-                                        @Named("journalSegmentSize") int segmentSize,
-                                        @Named("journalMaxRetentionSize") long retentionSize,
-                                        @Named("journalMaxRetentionAge") Duration retentionAge,
-                                        MetricRegistry metricRegistry) {
-        return new KafkaJournal(journalDirName, scheduler, segmentSize, retentionSize, retentionAge, metricRegistry);
+        bind(Journal.class).to(KafkaJournal.class).in(Scopes.SINGLETON);
     }
 }
