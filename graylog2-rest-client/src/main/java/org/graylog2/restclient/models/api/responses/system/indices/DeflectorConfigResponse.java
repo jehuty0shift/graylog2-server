@@ -17,14 +17,24 @@
 package org.graylog2.restclient.models.api.responses.system.indices;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.joda.time.Period;
 
 /**
  * @author Lennart Koopmann <lennart@torch.sh>
  */
 public class DeflectorConfigResponse {
 
+    @JsonProperty("type")
+    public String type;
+
     @JsonProperty("max_docs_per_index")
     public int maxDocsPerIndex;
+
+    @JsonProperty("max_time_per_index")
+    public Period maxTimePerIndex;
+
+    @JsonProperty("max_size_per_index")
+    public int maxSizePerIndex;
 
     @JsonProperty("max_number_of_indices")
     public int maxNumberOfIndices;
