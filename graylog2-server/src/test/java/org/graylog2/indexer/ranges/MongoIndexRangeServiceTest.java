@@ -69,10 +69,10 @@ public class MongoIndexRangeServiceTest {
     public void getReturnsExistingIndexRange() throws Exception {
         IndexRange indexRange = indexRangeService.get("graylog_1");
 
-        assertThat(indexRange.getIndexName()).isEqualTo("graylog_1");
-        assertThat(indexRange.getStart()).isEqualTo(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
-        assertThat(indexRange.getCalculatedAt()).isEqualTo(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
-        assertThat(indexRange.getCalculationTookMs()).isEqualTo(23);
+        assertThat(indexRange.indexName()).isEqualTo("graylog_1");
+        assertThat(indexRange.end()).isEqualTo(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(indexRange.calculatedAt()).isEqualTo(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(indexRange.calculationDuration()).isEqualTo(23);
     }
 
     @Test(expected = NotFoundException.class)
@@ -124,7 +124,7 @@ public class MongoIndexRangeServiceTest {
         Set<IndexRange> indexRanges = indexRangeService.getFrom(0);
 
         assertThat(indexRanges).hasSize(1);
-        assertThat(indexRanges.iterator().next().getIndexName()).isEqualTo("graylog_2");
+        assertThat(indexRanges.iterator().next().indexName()).isEqualTo("graylog_2");
     }
 
     @Test
@@ -150,10 +150,10 @@ public class MongoIndexRangeServiceTest {
                 )
         );
 
-        assertThat(indexRange.getIndexName()).isEqualTo("graylog_3");
-        assertThat(indexRange.getStart()).isEqualTo(dateTime);
-        assertThat(indexRange.getCalculatedAt()).isEqualTo(dateTime);
-        assertThat(indexRange.getCalculationTookMs()).isEqualTo(42);
+        assertThat(indexRange.indexName()).isEqualTo("graylog_3");
+        assertThat(indexRange.end()).isEqualTo(dateTime);
+        assertThat(indexRange.calculatedAt()).isEqualTo(dateTime);
+        assertThat(indexRange.calculationDuration()).isEqualTo(42);
     }
 
     @Test
@@ -164,9 +164,9 @@ public class MongoIndexRangeServiceTest {
 
         final IndexRange indexRange = indexRangeService.calculateRange(index);
 
-        assertThat(indexRange.getIndexName()).isEqualTo(index);
-        assertThat(indexRange.getStart()).isEqualTo(dateTime);
-        Assertions.assertThat(indexRange.getCalculatedAt()).isEqualToIgnoringHours(DateTime.now(DateTimeZone.UTC));
+        assertThat(indexRange.indexName()).isEqualTo(index);
+        assertThat(indexRange.end()).isEqualTo(dateTime);
+        Assertions.assertThat(indexRange.calculatedAt()).isEqualToIgnoringHours(DateTime.now(DateTimeZone.UTC));
     }
 
     @Test
@@ -176,8 +176,8 @@ public class MongoIndexRangeServiceTest {
         final IndexRange range = indexRangeService.calculateRange(index);
 
         assertThat(range).isNotNull();
-        assertThat(range.getIndexName()).isEqualTo(index);
-        Assertions.assertThat(range.getStart()).isEqualToIgnoringHours(DateTime.now(DateTimeZone.UTC));
+        assertThat(range.indexName()).isEqualTo(index);
+        Assertions.assertThat(range.end()).isEqualToIgnoringHours(DateTime.now(DateTimeZone.UTC));
     }
 
     @Test(expected = IndexMissingException.class)
