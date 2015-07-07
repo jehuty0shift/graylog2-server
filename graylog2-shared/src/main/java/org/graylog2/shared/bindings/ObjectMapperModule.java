@@ -16,37 +16,13 @@
  */
 package org.graylog2.shared.bindings;
 
-import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.inject.AbstractModule;
-import org.graylog2.shared.jackson.SizeSerializer;
-import org.graylog2.shared.rest.RangeJsonSerializer;
-
-import java.util.concurrent.TimeUnit;
+import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
 
 public class ObjectMapperModule extends AbstractModule {
-
     @Override
     protected void configure() {
-        final ObjectMapper objectMapper = makeObjectMapper();
-        bind(ObjectMapper.class).toInstance(objectMapper);
+        bind(ObjectMapper.class).toProvider(ObjectMapperProvider.class).asEagerSingleton();
     }
-
-    protected ObjectMapper makeObjectMapper() {
-        return new ObjectMapper()
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .setPropertyNamingStrategy(new PropertyNamingStrategy.LowerCaseWithUnderscoresStrategy())
-                .registerModule(new JodaModule())
-                .registerModule(new GuavaModule())
-                .registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.SECONDS, false))
-                .registerModule(new SimpleModule()
-                        .addSerializer(new RangeJsonSerializer())
-                        .addSerializer(new SizeSerializer()));
-    }
-
 }
