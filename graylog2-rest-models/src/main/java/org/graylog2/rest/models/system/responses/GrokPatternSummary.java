@@ -23,4 +23,6 @@ public class GrokPatternSummary {
     public String name;
 
     public String pattern;
+
+    public String contentPack;
 }
