@@ -28,35 +28,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.google.common.base.Strings.emptyToNull;
+
 public interface Stream extends Persisted {
+    enum MatchingType {
+        AND,
+        OR;
 
-    public String getId();
+        public static final MatchingType DEFAULT = AND;
 
-    public String getTitle();
+        public static MatchingType valueOfOrDefault(String name) {
+            return (emptyToNull(name) == null ? DEFAULT : valueOf(name));
+        }
+    }
 
-    public String getDescription();
+    String getId();
 
-    public Boolean getDisabled();
+    String getTitle();
 
-    public String getContentPack();
+    String getDescription();
 
-    public void setTitle(String title);
+    Boolean getDisabled();
 
-    public void setDescription(String description);
+    String getContentPack();
 
-    public void setDisabled(Boolean disabled);
+    void setTitle(String title);
 
-    public void setContentPack(String contentPack);
+    void setDescription(String description);
 
-    public Boolean isPaused();
+    void setDisabled(Boolean disabled);
+
+    void setContentPack(String contentPack);
+
+    Boolean isPaused();
 
     Map<String, List<String>> getAlertReceivers();
 
-    public Map<String, Object> asMap(List<StreamRule> streamRules);
+    Map<String, Object> asMap(List<StreamRule> streamRules);
 
-    public String toString();
+    String toString();
 
-    public List<StreamRule> getStreamRules();
+    List<StreamRule> getStreamRules();
 
-    public Set<Output> getOutputs();
+    Set<Output> getOutputs();
+
+    MatchingType getMatchingType();
 }
