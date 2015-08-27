@@ -16,15 +16,12 @@
  */
 package org.graylog2.indexer.esplugin;
 
+import org.elasticsearch.common.inject.AbstractModule;
 
-public class MonitorModule extends org.elasticsearch.common.inject.AbstractModule {
-
-    @org.elasticsearch.common.inject.Inject
-    public MonitorModule() {
-    }
-
+public class MonitorModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(ClusterStateMonitor.class).asEagerSingleton();
+        bind(IndexChangeMonitor.class).asEagerSingleton();
     }
 }
