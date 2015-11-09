@@ -39,7 +39,7 @@ const GrokExtractorConfiguration = React.createClass({
       const matches = [];
       result.matches.map(match => {
         matches.push(<dt key={`${match.name}-name`}>{match.name}</dt>);
-        matches.push(<dd key={`${match.name}-value`}>{match.match}</dd>);
+        matches.push(<dd key={`${match.name}-value`}><samp>{match.match}</samp></dd>);
       });
 
       const preview = (
@@ -80,7 +80,7 @@ const GrokExtractorConfiguration = React.createClass({
             </Col>
             <Col md={1} className="text-right">
               <Button bsStyle="info" onClick={this._onTryClick} disabled={this._isTryButtonDisabled()}>
-                {this.state.trying ? 'Trying...' : 'Try'}
+                {this.state.trying ? <i className="fa fa-spin fa-spinner"/> : 'Try'}
               </Button>
             </Col>
           </Row>
