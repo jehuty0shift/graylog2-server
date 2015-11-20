@@ -17,15 +17,15 @@
 package org.graylog2.indexer.esplugin;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import java.util.List;
+import java.util.Set;
 
 @AutoValue
 public abstract class IndicesDeletedEvent {
-    public abstract List<String> indices();
+    public abstract Set<String> indices();
 
-    public static IndicesDeletedEvent create(List<String> indices) {
-        return new AutoValue_IndicesDeletedEvent(ImmutableList.copyOf(indices));
+    public static IndicesDeletedEvent create(Set<String> indices) {
+        return new AutoValue_IndicesDeletedEvent(ImmutableSet.copyOf(indices));
     }
 }
