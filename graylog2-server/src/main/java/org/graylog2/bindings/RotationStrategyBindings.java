@@ -16,22 +16,17 @@
  */
 package org.graylog2.bindings;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.multibindings.MapBinder;
 import org.graylog2.indexer.rotation.MessageCountRotationStrategy;
 import org.graylog2.indexer.rotation.SizeBasedRotationStrategy;
 import org.graylog2.indexer.rotation.TimeBasedRotationStrategy;
-import org.graylog2.plugin.indexer.rotation.RotationStrategy;
+import org.graylog2.plugin.PluginModule;
 
-public class RotationStrategyBindings extends AbstractModule {
+public class RotationStrategyBindings extends PluginModule {
     @Override
     protected void configure() {
-        final MapBinder<String, RotationStrategy> mapBinder = MapBinder.newMapBinder(binder(),
-                                                                                     String.class,
-                                                                                     RotationStrategy.class);
-        mapBinder.addBinding("count").to(MessageCountRotationStrategy.class);
-        mapBinder.addBinding("size").to(SizeBasedRotationStrategy.class);
-        mapBinder.addBinding("time").to(TimeBasedRotationStrategy.class);
+        addRotationStrategy(MessageCountRotationStrategy.class);
+        addRotationStrategy(SizeBasedRotationStrategy.class);
+        addRotationStrategy(TimeBasedRotationStrategy.class);
     }
 
 }
