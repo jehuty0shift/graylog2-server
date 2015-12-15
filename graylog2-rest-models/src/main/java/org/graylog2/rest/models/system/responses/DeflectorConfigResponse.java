@@ -14,20 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.graylog2.rest.models.system.responses;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonAutoDetect
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = MessageCountRotationStrategyResponse.class, name = "count"),
-        @JsonSubTypes.Type(value = TimeBasedRotationStrategyResponse.class, name = "time"),
-        @JsonSubTypes.Type(value = SizeBasedRotationStrategyResponse.class, name = "size")
-})
-public abstract class DeflectorConfigResponse {
-        public int maxNumberOfIndices;
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = DeflectorConfigResponse.TYPE_FIELD, visible = true)
+public interface DeflectorConfigResponse {
+    String TYPE_FIELD = "type";
+
+    @JsonProperty(TYPE_FIELD)
+    String type();
+
+    @JsonProperty("max_number_of_indices")
+    int maxNumberOfIndices();
 }
