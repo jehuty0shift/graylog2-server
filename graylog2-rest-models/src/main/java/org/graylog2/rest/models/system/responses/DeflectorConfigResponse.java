@@ -14,39 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.graylog2.rest.models.system.responses;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.joda.time.Period;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonAutoDetect
-public class DeflectorConfigResponse {
-        @JsonProperty("type")
-        private final String type;
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = DeflectorConfigResponse.TYPE_FIELD, visible = true)
+public interface DeflectorConfigResponse {
+    String TYPE_FIELD = "type";
 
-        @JsonProperty("max_number_of_indices")
-        private final int maxNumberOfIndices;
+    @JsonProperty(TYPE_FIELD)
+    String type();
 
-        @JsonProperty("max_docs_per_index")
-        private final int maxDocsPerIndex;
-
-        @JsonProperty("max_time_per_index")
-        private final Period maxTimePerIndex;
-
-        @JsonProperty("max_size_per_index")
-        private final long maxSizePerIndex;
-
-        public DeflectorConfigResponse(String type,
-                                       int maxDocsPerIndex,
-                                       int maxNumberOfIndices,
-                                       long maxSizePerIndex,
-                                       Period maxTimePerIndex) {
-                this.type = type;
-                this.maxDocsPerIndex = maxDocsPerIndex;
-                this.maxNumberOfIndices = maxNumberOfIndices;
-                this.maxSizePerIndex = maxSizePerIndex;
-                this.maxTimePerIndex = maxTimePerIndex;
-        }
+    @JsonProperty("max_number_of_indices")
+    int maxNumberOfIndices();
 }
