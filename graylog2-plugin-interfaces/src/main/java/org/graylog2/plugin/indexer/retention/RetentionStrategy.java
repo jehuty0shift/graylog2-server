@@ -25,5 +25,7 @@ package org.graylog2.plugin.indexer.retention;
 public interface RetentionStrategy {
     void retain();
 
-    Class<?> configurationClass();
+    Class<? extends RetentionStrategyConfig> configurationClass();
+
+    RetentionStrategyConfig defaultConfiguration();
 }
