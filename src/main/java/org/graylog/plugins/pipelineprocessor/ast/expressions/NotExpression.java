@@ -16,15 +16,16 @@
  */
 package org.graylog.plugins.pipelineprocessor.ast.expressions;
 
+import org.antlr.v4.runtime.Token;
 import org.graylog.plugins.pipelineprocessor.EvaluationContext;
 
 public class NotExpression extends UnaryExpression implements LogicalExpression {
-    public NotExpression(LogicalExpression right) {
-        super(right);
+    public NotExpression(Token start, AbstractExpression right) {
+        super(start, right);
     }
 
     @Override
-    public Object evaluate(EvaluationContext context) {
+    public Object evaluateUnsafe(EvaluationContext context) {
         return !evaluateBool(context);
     }
 
