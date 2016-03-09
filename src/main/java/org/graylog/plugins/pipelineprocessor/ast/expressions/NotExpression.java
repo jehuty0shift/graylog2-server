@@ -20,7 +20,7 @@ import org.antlr.v4.runtime.Token;
 import org.graylog.plugins.pipelineprocessor.EvaluationContext;
 
 public class NotExpression extends UnaryExpression implements LogicalExpression {
-    public NotExpression(Token start, AbstractExpression right) {
+    public NotExpression(Token start, Expression right) {
         super(start, right);
     }
 
