@@ -16,8 +16,10 @@
  */
 package org.graylog2.plugin.indexer.retention;
 
+import org.graylog2.indexer.IndexSet;
+
 public interface RetentionStrategy {
-    void retain();
+    void retain(IndexSet indexSet);
 
     Class<? extends RetentionStrategyConfig> configurationClass();
 
