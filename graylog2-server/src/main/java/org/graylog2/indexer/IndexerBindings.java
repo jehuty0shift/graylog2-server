@@ -16,12 +16,17 @@
  */
 package org.graylog2.indexer;
 
+import com.google.inject.assistedinject.FactoryModuleBuilder;
+import org.graylog2.indexer.indexset.IndexSetService;
+import org.graylog2.indexer.indexset.MongoIndexSetService;
 import org.graylog2.plugin.inject.Graylog2Module;
 
 public class IndexerBindings extends Graylog2Module {
     @Override
     protected void configure() {
-        bind(IndexSetRegistry.class).to(LegacyDeflectorRegistry.class);
-        bind(IndexSet.class).to(LegacyDeflectorIndexSet.class);
+        bind(IndexSetService.class).to(MongoIndexSetService.class);
+
+        install(new FactoryModuleBuilder().build(MongoIndexSet.Factory.class));
+        bind(IndexSetRegistry.class).to(MongoIndexSetRegistry.class);
     }
 }
