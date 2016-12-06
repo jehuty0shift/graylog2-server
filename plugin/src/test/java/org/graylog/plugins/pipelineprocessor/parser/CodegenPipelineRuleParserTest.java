@@ -16,10 +16,12 @@
  */
 package org.graylog.plugins.pipelineprocessor.parser;
 
+import org.graylog.plugins.pipelineprocessor.codegen.PipelineClassloader;
+
 public class CodegenPipelineRuleParserTest extends PipelineRuleParserTest {
 
     // runs the same tests as in PipelineRuleParserTest but with dynamic code generation turned on.
     public CodegenPipelineRuleParserTest() {
-        classLoader = new ClassLoader(){};
+        classLoader = new PipelineClassloader();
     }
 }
