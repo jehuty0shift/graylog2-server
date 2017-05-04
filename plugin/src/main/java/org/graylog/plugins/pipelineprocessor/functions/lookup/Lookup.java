@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static org.graylog.plugins.pipelineprocessor.ast.functions.ParameterDescriptor.object;
 import static org.graylog.plugins.pipelineprocessor.ast.functions.ParameterDescriptor.string;
+import static org.graylog2.plugin.lookup.LookupResult.SINGLE_VALUE_KEY;
 
 public class Lookup extends AbstractFunction<Map<Object, Object>> {
 
@@ -37,17 +38,17 @@ public class Lookup extends AbstractFunction<Map<Object, Object>> {
     public Map<Object, Object> evaluate(FunctionArgs args, EvaluationContext context) {
         Object key = keyParam.required(args, context);
         if (key == null) {
-            return Collections.singletonMap(key, defaultParam.optional(args, context));
+            return Collections.singletonMap(SINGLE_VALUE_KEY, defaultParam.optional(args, context));
         }
         LookupTableService.Function table = lookupTableParam.required(args, context);
         if (table == null) {
-            return Collections.singletonMap(key, defaultParam.optional(args, context));
+            return Collections.singletonMap(SINGLE_VALUE_KEY, defaultParam.optional(args, context));
         }
         LookupResult result = table.lookup(key);
         if (result == null || result.isEmpty()) {
-            return Collections.singletonMap(key, defaultParam.optional(args, context));
+            return Collections.singletonMap(SINGLE_VALUE_KEY, defaultParam.optional(args, context));
         }
-        return result.asMap();
+        return result.getMultiValue();
     }
 
     @Override
