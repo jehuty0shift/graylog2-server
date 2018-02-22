@@ -73,7 +73,7 @@ public class ConsolePrinter {
 
     public static class BeatsCodecHandler extends SimpleChannelInboundHandler<ByteBuf> {
         private final ObjectMapper objectMapper = new ObjectMapperProvider().get();
-        private final BeatsCodec beatsCodec = new BeatsCodec(Configuration.EMPTY_CONFIGURATION, objectMapper);
+        private final Beats2Codec beatsCodec = new Beats2Codec(Configuration.EMPTY_CONFIGURATION, objectMapper);
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf message) throws Exception {
