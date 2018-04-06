@@ -44,7 +44,6 @@ class QueryTitle extends React.Component {
                type="text"
                value={value}
                onBlur={this._toggleEditing}
-               onKeyPress={this._onKeyPress}
                onChange={this._onChange} />
       </form>
     ) : <span onDoubleClick={this._toggleEditing}>{value}</span>;
