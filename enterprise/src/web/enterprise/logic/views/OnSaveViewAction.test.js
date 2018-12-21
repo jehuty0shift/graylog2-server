@@ -7,7 +7,9 @@ const loadSUT = () => require('./OnSaveViewAction').default;
 
 const mockActions = () => {
   const ViewActions = { load: jest.fn(() => Promise.resolve({ view: { id: 'deadbeef' } })).mockName('load') };
-  const ViewManagementActions = { save: jest.fn(() => Promise.resolve()).mockName('save') };
+  const ViewManagementActions = {
+    update: jest.fn(() => Promise.resolve()).mockName('update'),
+  };
   jest.doMock('enterprise/stores/ViewManagementStore', () => ({ ViewManagementActions }));
   jest.doMock('enterprise/stores/ViewStore', () => ({ ViewActions }));
 
@@ -25,32 +27,31 @@ describe('OnSaveViewAction', () => {
     const router = [];
 
     return onSaveView(view, router).then(() => {
-      expect(ViewManagementActions.save).toHaveBeenCalledTimes(1);
-      expect(ViewManagementActions.save.mock.calls[0][0]).toEqual(view);
+      expect(ViewManagementActions.update).toHaveBeenCalledTimes(1);
+      expect(ViewManagementActions.update.mock.calls[0][0]).toEqual(view);
     });
   });
 
-  it('loads saved view', () => {
+  it('does not load saved view', () => {
     const { ViewActions } = mockActions();
     const onSaveView = loadSUT();
     const view = View.create();
     const router = [];
 
     return onSaveView(view, router).then(() => {
-      expect(ViewActions.load).toHaveBeenCalledTimes(1);
-      expect(ViewActions.load.mock.calls[0][0]).toEqual(view);
+      expect(ViewActions.load).not.toHaveBeenCalled();
     });
   });
 
-  it('redirects to saved view', () => {
+  it('does not redirect to saved view', () => {
     mockActions();
     const onSaveView = loadSUT();
     const view = View.create();
     const router = [];
 
     return onSaveView(view, router).then(() => {
-      expect(router).toHaveLength(1);
-      expect(router).toEqual(['/views/deadbeef']);
+      expect(router).toHaveLength(0);
+      expect(router).toEqual([]);
     });
   });
 
@@ -70,8 +71,8 @@ describe('OnSaveViewAction', () => {
   });
 
   it('does not do anything if saving fails', () => {
-    const { ViewManagementActions, ViewActions } = mockActions();
-    ViewManagementActions.save = jest.fn(() => Promise.reject('Something bad happened!'));
+    const { ViewManagementActions } = mockActions();
+    ViewManagementActions.update = jest.fn(() => Promise.reject('Something bad happened!'));
     const UserNotification = {
       success: jest.fn().mockName('success'),
       error: jest.fn().mockName('error'),
@@ -83,7 +84,6 @@ describe('OnSaveViewAction', () => {
     const router = [];
 
     return onSaveView(view, router).then(() => {
-      expect(ViewActions.load).not.toHaveBeenCalled();
       expect(router).toEqual([]);
       expect(UserNotification.success).not.toHaveBeenCalled();
       expect(UserNotification.error).toHaveBeenCalledTimes(1);
