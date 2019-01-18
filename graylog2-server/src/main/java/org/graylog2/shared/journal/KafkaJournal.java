@@ -164,6 +164,8 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
         this.readTime = registerHdrTimer(metricRegistry, name(this.getClass(), "readTime"));
 
         final Map<String, Object> config = ImmutableMap.<String, Object>builder()
+            //Delete: allow deletes if true
+            .put(LogConfig.Delete(),true)
             // segmentSize: The soft maximum for the size of a segment file in the log
             .put(LogConfig.SegmentBytesProp(), Ints.saturatedCast(segmentSize.toBytes()))
             // segmentMs: The soft maximum on the amount of time before a new log segment is rolled
@@ -416,7 +418,8 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
                 final SimpleRecord newMessage = new SimpleRecord(idBytes, messageBytes);
 
                 // Calculate the size of the new message in the message set by including the overhead for the log entry.
-                final int newMessageSize = AbstractRecords.estimateSizeInBytes(magicByte, CompressionType.ZSTD, Arrays.asList(newMessage));
+                //if the compression is
+                final int newMessageSize = AbstractRecords.estimateSizeInBytes(magicByte, messageBytes.length+idBytes.length<1024?CompressionType.NONE:CompressionType.ZSTD, Arrays.asList(newMessage));
 
                 if (newMessageSize > maxMessageSize) {
                     writeDiscardedMessages.mark();
@@ -468,15 +471,15 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
             LOG.debug("Trying to write MemoryRecords with size of {} bytes to journal", AbstractRecords.estimateSizeInBytes((byte)2,CompressionType.ZSTD,messages));
         }
 
-        MemoryRecords mRecs = MemoryRecords.withRecords(CompressionType.ZSTD, (SimpleRecord[])messages.toArray());
-        short leaderEpoch = mRecs.batches().iterator().next().producerEpoch();
+        MemoryRecords mRecs = MemoryRecords.withRecords(CompressionType.ZSTD, messages.toArray(new SimpleRecord[messages.size()]));
+        int leaderEpoch = mRecs.batches().iterator().next().partitionLeaderEpoch();
 
-        final LogAppendInfo appendInfo = kafkaLog.appendAsLeader(mRecs,leaderEpoch,true);
+        final LogAppendInfo appendInfo = kafkaLog.appendAsLeader(mRecs,1,true);
         long lastWriteOffset = appendInfo.lastOffset();
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Wrote {} messages to journal: {} bytes (payload {} bytes), log position {} to {}",
-                messages.size(), AbstractRecords.estimateSizeInBytes((byte)2,CompressionType.ZSTD,messages), payloadSize, appendInfo.firstOffset(), lastWriteOffset);
+                messages.size(), appendInfo.validBytes(), payloadSize, appendInfo.firstOffset(), lastWriteOffset);
         }
         writtenMessages.mark(messages.size());
 
@@ -902,6 +905,9 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
                 JavaConversions.asJavaIterable(kafkaLog.logSegments(committedOffset, Long.MAX_VALUE))
             );
             loggerForCleaner.debug("[cleanup-committed] Keeping segments {}", logSegments);
+            //both call are needed to allow KafkaLog to delete segments.
+            kafkaLog.maybeIncrementLogStartOffset(committedOffset);
+            kafkaLog.onHighWatermarkIncremented(committedOffset);
             return kafkaLog.deleteOldSegments();
         }
     }
