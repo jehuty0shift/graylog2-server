@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Table } from 'react-bootstrap';
+
+import CommonFieldValueProviderSummary from './CommonFieldValueProviderSummary';
 
 class TemplateFieldValueProviderSummary extends React.Component {
   static propTypes = {
@@ -10,15 +11,11 @@ class TemplateFieldValueProviderSummary extends React.Component {
   };
 
   render() {
-    const { fieldName, config, keys } = this.props;
+    const { config } = this.props;
 
     return (
-      <Table condensed hover>
-        <tbody>
-          <tr>
-            <td>Is Key?</td>
-            <td>{keys.includes(fieldName) ? `Yes, in position ${keys.indexOf(fieldName) + 1}` : 'No'}</td>
-          </tr>
+      <CommonFieldValueProviderSummary {...this.props}>
+        <React.Fragment>
           <tr>
             <td>Value source</td>
             <td>Template</td>
@@ -28,11 +25,11 @@ class TemplateFieldValueProviderSummary extends React.Component {
             <td>{config.providers[0].template}</td>
           </tr>
           <tr>
-            <td>Data Type</td>
-            <td>{config.data_type}</td>
+            <td>Validate that all Template values are set</td>
+            <td>{config.providers[0].require_values ? 'Yes' : 'No'}</td>
           </tr>
-        </tbody>
-      </Table>
+        </React.Fragment>
+      </CommonFieldValueProviderSummary>
     );
   }
 }
