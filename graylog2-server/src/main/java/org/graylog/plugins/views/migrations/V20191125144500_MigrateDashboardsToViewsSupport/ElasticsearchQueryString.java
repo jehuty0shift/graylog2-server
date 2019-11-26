@@ -23,28 +23,13 @@ import com.google.auto.value.AutoValue;
 abstract class ElasticsearchQueryString {
     static final String NAME = "elasticsearch";
 
+    @JsonProperty
     abstract String type();
 
     @JsonProperty
     abstract String queryString();
 
-    static Builder builder() {
-        return new AutoValue_ElasticsearchQueryString.Builder().type(NAME);
-    }
-
-    @Override
-    public String toString() {
-        return type() + ": " + queryString();
-    }
-
-    @AutoValue.Builder
-    abstract static class Builder {
-        @JsonProperty
-        abstract Builder type(String type);
-
-        @JsonProperty
-        abstract Builder queryString(String queryString);
-
-        abstract ElasticsearchQueryString build();
+    static ElasticsearchQueryString create(String query) {
+        return new AutoValue_ElasticsearchQueryString(NAME, query);
     }
 }
