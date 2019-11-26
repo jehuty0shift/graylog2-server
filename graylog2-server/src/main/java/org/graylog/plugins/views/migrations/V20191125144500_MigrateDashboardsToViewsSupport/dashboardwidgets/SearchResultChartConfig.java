@@ -9,7 +9,6 @@ import org.graylog.plugins.views.migrations.V20191125144500_MigrateDashboardsToV
 @AutoValue
 @JsonAutoDetect
 public abstract class SearchResultChartConfig implements WidgetConfig {
-    @JsonProperty
     public abstract String interval();
 
     @JsonCreator
