@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-abstract class ElasticsearchQueryString {
+public abstract class ElasticsearchQueryString {
     static final String NAME = "elasticsearch";
 
     @JsonProperty
@@ -29,7 +29,7 @@ abstract class ElasticsearchQueryString {
     @JsonProperty
     abstract String queryString();
 
-    static ElasticsearchQueryString create(String query) {
+    public static ElasticsearchQueryString create(String query) {
         return new AutoValue_ElasticsearchQueryString(NAME, query);
     }
 }
