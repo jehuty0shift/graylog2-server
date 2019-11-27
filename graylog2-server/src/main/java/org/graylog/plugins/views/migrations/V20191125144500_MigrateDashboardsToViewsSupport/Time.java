@@ -32,7 +32,7 @@ public abstract class Time implements BucketSpec {
     @JsonProperty
     public abstract TimeUnitInterval interval();
 
-    static Time create(String field, TimeUnitInterval interval) {
+    public static Time create(String field, TimeUnitInterval interval) {
         return new AutoValue_Time(field, interval);
     }
 }
