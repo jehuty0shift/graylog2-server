@@ -20,20 +20,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.graylog.plugins.views.search.Query;
 
 import javax.annotation.Nonnull;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class SearchTypeError extends QueryError {
     @Nonnull
     private final String searchTypeId;
 
-    private final Integer resultWindowLimit;
-
     public SearchTypeError(@Nonnull Query query, @Nonnull String searchTypeId, Throwable throwable) {
         super(query, throwable);
-
-        this.resultWindowLimit = parseResultLimit(throwable);
 
         this.searchTypeId = searchTypeId;
     }
@@ -41,32 +34,12 @@ public class SearchTypeError extends QueryError {
     public SearchTypeError(@Nonnull Query query, @Nonnull String searchTypeId, String description) {
         super(query, description);
 
-        this.resultWindowLimit = parseResultLimit(description);
-
         this.searchTypeId = searchTypeId;
-    }
-
-    private Integer parseResultLimit(Throwable throwable) {
-        return parseResultLimit(throwable.getMessage());
-    }
-
-    private Integer parseResultLimit(String description) {
-        if (description.toLowerCase(Locale.US).contains("result window is too large")) {
-            final Matcher matcher = Pattern.compile("[0-9]+").matcher(description);
-            if (matcher.find())
-                return Integer.parseInt(matcher.group(0));
-        }
-        return null;
     }
 
     @Nonnull
     @JsonProperty("search_type_id")
     public String searchTypeId() {
         return searchTypeId;
-    }
-
-    @JsonProperty("result_window_limit")
-    public Integer getResultWindowLimit() {
-        return resultWindowLimit;
     }
 }
