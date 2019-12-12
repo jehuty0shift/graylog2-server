@@ -1,5 +1,3 @@
-import React from 'react';
-import { createGlobalStyle } from 'styled-components';
 import { darken, lighten } from 'polished';
 
 import InputGroup from 'components/graylog/InputGroup';
@@ -76,15 +74,6 @@ const generateStyles = () => {
   return styles;
 };
 
-const ValidationStyles = createGlobalStyle`
-  ${generateStyles()}
-`;
+const formControlValidationStyles = generateStyles();
 
-const FormControlValidationStyles = () => {
-  return (
-    <ValidationStyles />
-  );
-};
-
-
-export default FormControlValidationStyles;
+export default formControlValidationStyles;
