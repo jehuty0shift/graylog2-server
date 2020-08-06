@@ -35,7 +35,7 @@ const RoleEditPage = ({ params }: Props) => {
 
   useEffect(() => {
     AuthzRolesActions.load(roleId).then(setLoadedRole);
-  }, []);
+  }, [roleId]);
 
   return (
     <DocumentTitle title={`Edit Role ${loadedRole?.name ?? ''}`}>
