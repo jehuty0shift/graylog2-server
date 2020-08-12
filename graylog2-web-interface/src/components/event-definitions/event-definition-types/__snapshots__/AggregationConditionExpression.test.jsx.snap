@@ -186,6 +186,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -674,7 +675,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -2572,6 +2573,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -3060,7 +3062,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -4382,6 +4384,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -4870,7 +4873,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -6576,6 +6579,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -7064,7 +7068,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -9369,6 +9373,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -9857,7 +9862,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -11179,6 +11184,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -11667,7 +11673,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -13359,6 +13365,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -13847,7 +13854,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -16012,6 +16019,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -16500,7 +16508,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -18410,6 +18418,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -18898,7 +18907,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -20220,6 +20229,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -20708,7 +20718,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -22414,6 +22424,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -22902,7 +22913,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -25141,6 +25152,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -25629,7 +25641,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -27444,6 +27456,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "xs": "480px",
                                                               },
                                                             },
+                                                            "changeMode": [Function],
                                                             "colors": Object {
                                                               "brand": Object {
                                                                 "primary": "#ff3633",
@@ -27932,7 +27945,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "tiny": "0.79rem",
                                                               },
                                                             },
-                                                            "mode": "teinte",
+                                                            "mode": "teint",
                                                             "utils": Object {
                                                               "colorLevel": [Function],
                                                               "contrastingColor": [Function],
@@ -29254,6 +29267,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "xs": "480px",
                                                               },
                                                             },
+                                                            "changeMode": [Function],
                                                             "colors": Object {
                                                               "brand": Object {
                                                                 "primary": "#ff3633",
@@ -29742,7 +29756,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "tiny": "0.79rem",
                                                               },
                                                             },
-                                                            "mode": "teinte",
+                                                            "mode": "teint",
                                                             "utils": Object {
                                                               "colorLevel": [Function],
                                                               "contrastingColor": [Function],
@@ -31434,6 +31448,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                   "xs": "480px",
                                                 },
                                               },
+                                              "changeMode": [Function],
                                               "colors": Object {
                                                 "brand": Object {
                                                   "primary": "#ff3633",
@@ -31922,7 +31937,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                   "tiny": "0.79rem",
                                                 },
                                               },
-                                              "mode": "teinte",
+                                              "mode": "teint",
                                               "utils": Object {
                                                 "colorLevel": [Function],
                                                 "contrastingColor": [Function],
@@ -34091,6 +34106,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       "xs": "480px",
                                     },
                                   },
+                                  "changeMode": [Function],
                                   "colors": Object {
                                     "brand": Object {
                                       "primary": "#ff3633",
@@ -34579,7 +34595,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       "tiny": "0.79rem",
                                     },
                                   },
-                                  "mode": "teinte",
+                                  "mode": "teint",
                                   "utils": Object {
                                     "colorLevel": [Function],
                                     "contrastingColor": [Function],
@@ -36408,6 +36424,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "xs": "480px",
                                                           },
                                                         },
+                                                        "changeMode": [Function],
                                                         "colors": Object {
                                                           "brand": Object {
                                                             "primary": "#ff3633",
@@ -36896,7 +36913,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "tiny": "0.79rem",
                                                           },
                                                         },
-                                                        "mode": "teinte",
+                                                        "mode": "teint",
                                                         "utils": Object {
                                                           "colorLevel": [Function],
                                                           "contrastingColor": [Function],
@@ -38218,6 +38235,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "xs": "480px",
                                                           },
                                                         },
+                                                        "changeMode": [Function],
                                                         "colors": Object {
                                                           "brand": Object {
                                                             "primary": "#ff3633",
@@ -38706,7 +38724,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "tiny": "0.79rem",
                                                           },
                                                         },
-                                                        "mode": "teinte",
+                                                        "mode": "teint",
                                                         "utils": Object {
                                                           "colorLevel": [Function],
                                                           "contrastingColor": [Function],
@@ -40412,6 +40430,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                               "xs": "480px",
                                             },
                                           },
+                                          "changeMode": [Function],
                                           "colors": Object {
                                             "brand": Object {
                                               "primary": "#ff3633",
@@ -40900,7 +40919,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                               "tiny": "0.79rem",
                                             },
                                           },
-                                          "mode": "teinte",
+                                          "mode": "teint",
                                           "utils": Object {
                                             "colorLevel": [Function],
                                             "contrastingColor": [Function],
@@ -43059,6 +43078,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -43547,7 +43567,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -45288,6 +45308,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -45776,7 +45797,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -47096,6 +47117,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -47584,7 +47606,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -49094,6 +49116,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                       "xs": "480px",
                                     },
                                   },
+                                  "changeMode": [Function],
                                   "colors": Object {
                                     "brand": Object {
                                       "primary": "#ff3633",
@@ -49582,7 +49605,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                       "tiny": "0.79rem",
                                     },
                                   },
-                                  "mode": "teinte",
+                                  "mode": "teint",
                                   "utils": Object {
                                     "colorLevel": [Function],
                                     "contrastingColor": [Function],
@@ -51731,6 +51754,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -52219,7 +52243,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -53979,6 +54003,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -54467,7 +54492,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -55789,6 +55814,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -56277,7 +56303,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -57984,6 +58010,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                       "xs": "480px",
                                     },
                                   },
+                                  "changeMode": [Function],
                                   "colors": Object {
                                     "brand": Object {
                                       "primary": "#ff3633",
@@ -58472,7 +58499,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                       "tiny": "0.79rem",
                                     },
                                   },
-                                  "mode": "teinte",
+                                  "mode": "teint",
                                   "utils": Object {
                                     "colorLevel": [Function],
                                     "contrastingColor": [Function],
