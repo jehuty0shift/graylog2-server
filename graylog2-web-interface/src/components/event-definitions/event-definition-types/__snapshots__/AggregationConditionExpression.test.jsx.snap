@@ -186,6 +186,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -197,6 +198,8 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                     "contentBackground": "#fff",
                                     "link": "#702785",
                                     "linkHover": "#410057",
+                                    "navigationBackground": "#fff",
+                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                     "textAlt": "#fff",
                                     "textDefault": "#1f1f1f",
                                   },
@@ -672,7 +675,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -2383,11 +2386,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
             >
               <Row
                 bsClass="row"
-                className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                className="Row-sc-3iisrt-0 iSaIhq row-sm"
                 componentClass="div"
               >
                 <div
-                  className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                  className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                 >
                   <AggregationConditionExpression
                     aggregationFunctions={Array []}
@@ -2515,11 +2518,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                   >
                                     <Row
                                       bsClass="row"
-                                      className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                                      className="Row-sc-3iisrt-0 iSaIhq row-sm"
                                       componentClass="div"
                                     >
                                       <div
-                                        className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                                        className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                                       >
                                         <Col
                                           bsClass="col"
@@ -2570,6 +2573,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -2581,6 +2585,8 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "contentBackground": "#fff",
                                                         "link": "#702785",
                                                         "linkHover": "#410057",
+                                                        "navigationBackground": "#fff",
+                                                        "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                         "textAlt": "#fff",
                                                         "textDefault": "#1f1f1f",
                                                       },
@@ -3056,7 +3062,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -4378,6 +4384,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -4389,6 +4396,8 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "contentBackground": "#fff",
                                                         "link": "#702785",
                                                         "linkHover": "#410057",
+                                                        "navigationBackground": "#fff",
+                                                        "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                         "textAlt": "#fff",
                                                         "textDefault": "#1f1f1f",
                                                       },
@@ -4864,7 +4873,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -6570,6 +6579,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -6581,6 +6591,8 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "contentBackground": "#fff",
                                           "link": "#702785",
                                           "linkHover": "#410057",
+                                          "navigationBackground": "#fff",
+                                          "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                           "textAlt": "#fff",
                                           "textDefault": "#1f1f1f",
                                         },
@@ -7056,7 +7068,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -9188,11 +9200,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
             >
               <Row
                 bsClass="row"
-                className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                className="Row-sc-3iisrt-0 iSaIhq row-sm"
                 componentClass="div"
               >
                 <div
-                  className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                  className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                 >
                   <AggregationConditionExpression
                     aggregationFunctions={Array []}
@@ -9306,11 +9318,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                   >
                                     <Row
                                       bsClass="row"
-                                      className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                                      className="Row-sc-3iisrt-0 iSaIhq row-sm"
                                       componentClass="div"
                                     >
                                       <div
-                                        className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                                        className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                                       >
                                         <Col
                                           bsClass="col"
@@ -9361,6 +9373,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -9372,6 +9385,8 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "contentBackground": "#fff",
                                                         "link": "#702785",
                                                         "linkHover": "#410057",
+                                                        "navigationBackground": "#fff",
+                                                        "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                         "textAlt": "#fff",
                                                         "textDefault": "#1f1f1f",
                                                       },
@@ -9847,7 +9862,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -11169,6 +11184,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -11180,6 +11196,8 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "contentBackground": "#fff",
                                                         "link": "#702785",
                                                         "linkHover": "#410057",
+                                                        "navigationBackground": "#fff",
+                                                        "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                         "textAlt": "#fff",
                                                         "textDefault": "#1f1f1f",
                                                       },
@@ -11655,7 +11673,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -13347,6 +13365,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -13358,6 +13377,8 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "contentBackground": "#fff",
                                           "link": "#702785",
                                           "linkHover": "#410057",
+                                          "navigationBackground": "#fff",
+                                          "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                           "textAlt": "#fff",
                                           "textDefault": "#1f1f1f",
                                         },
@@ -13833,7 +13854,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -15998,6 +16019,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -16009,6 +16031,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     "contentBackground": "#fff",
                                     "link": "#702785",
                                     "linkHover": "#410057",
+                                    "navigationBackground": "#fff",
+                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                     "textAlt": "#fff",
                                     "textDefault": "#1f1f1f",
                                   },
@@ -16484,7 +16508,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -18207,11 +18231,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
             >
               <Row
                 bsClass="row"
-                className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                className="Row-sc-3iisrt-0 iSaIhq row-sm"
                 componentClass="div"
               >
                 <div
-                  className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                  className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                 >
                   <AggregationConditionExpression
                     aggregationFunctions={Array []}
@@ -18339,11 +18363,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                   >
                                     <Row
                                       bsClass="row"
-                                      className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                                      className="Row-sc-3iisrt-0 iSaIhq row-sm"
                                       componentClass="div"
                                     >
                                       <div
-                                        className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                                        className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                                       >
                                         <Col
                                           bsClass="col"
@@ -18394,6 +18418,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -18405,6 +18430,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "contentBackground": "#fff",
                                                         "link": "#702785",
                                                         "linkHover": "#410057",
+                                                        "navigationBackground": "#fff",
+                                                        "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                         "textAlt": "#fff",
                                                         "textDefault": "#1f1f1f",
                                                       },
@@ -18880,7 +18907,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -20202,6 +20229,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "xs": "480px",
                                                       },
                                                     },
+                                                    "changeMode": [Function],
                                                     "colors": Object {
                                                       "brand": Object {
                                                         "primary": "#ff3633",
@@ -20213,6 +20241,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "contentBackground": "#fff",
                                                         "link": "#702785",
                                                         "linkHover": "#410057",
+                                                        "navigationBackground": "#fff",
+                                                        "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                         "textAlt": "#fff",
                                                         "textDefault": "#1f1f1f",
                                                       },
@@ -20688,7 +20718,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                         "tiny": "0.79rem",
                                                       },
                                                     },
-                                                    "mode": "teinte",
+                                                    "mode": "teint",
                                                     "utils": Object {
                                                       "colorLevel": [Function],
                                                       "contrastingColor": [Function],
@@ -22394,6 +22424,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -22405,6 +22436,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "contentBackground": "#fff",
                                           "link": "#702785",
                                           "linkHover": "#410057",
+                                          "navigationBackground": "#fff",
+                                          "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                           "textAlt": "#fff",
                                           "textDefault": "#1f1f1f",
                                         },
@@ -22880,7 +22913,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -25119,6 +25152,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "xs": "480px",
                                         },
                                       },
+                                      "changeMode": [Function],
                                       "colors": Object {
                                         "brand": Object {
                                           "primary": "#ff3633",
@@ -25130,6 +25164,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "contentBackground": "#fff",
                                           "link": "#702785",
                                           "linkHover": "#410057",
+                                          "navigationBackground": "#fff",
+                                          "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                           "textAlt": "#fff",
                                           "textDefault": "#1f1f1f",
                                         },
@@ -25605,7 +25641,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           "tiny": "0.79rem",
                                         },
                                       },
-                                      "mode": "teinte",
+                                      "mode": "teint",
                                       "utils": Object {
                                         "colorLevel": [Function],
                                         "contrastingColor": [Function],
@@ -27247,11 +27283,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                     >
                       <Row
                         bsClass="row"
-                        className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                        className="Row-sc-3iisrt-0 iSaIhq row-sm"
                         componentClass="div"
                       >
                         <div
-                          className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                          className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                         >
                           <AggregationConditionExpression
                             aggregationFunctions={Array []}
@@ -27365,11 +27401,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                           >
                                             <Row
                                               bsClass="row"
-                                              className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                                              className="Row-sc-3iisrt-0 iSaIhq row-sm"
                                               componentClass="div"
                                             >
                                               <div
-                                                className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                                                className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                                               >
                                                 <Col
                                                   bsClass="col"
@@ -27420,6 +27456,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "xs": "480px",
                                                               },
                                                             },
+                                                            "changeMode": [Function],
                                                             "colors": Object {
                                                               "brand": Object {
                                                                 "primary": "#ff3633",
@@ -27431,6 +27468,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "contentBackground": "#fff",
                                                                 "link": "#702785",
                                                                 "linkHover": "#410057",
+                                                                "navigationBackground": "#fff",
+                                                                "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                                 "textAlt": "#fff",
                                                                 "textDefault": "#1f1f1f",
                                                               },
@@ -27906,7 +27945,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "tiny": "0.79rem",
                                                               },
                                                             },
-                                                            "mode": "teinte",
+                                                            "mode": "teint",
                                                             "utils": Object {
                                                               "colorLevel": [Function],
                                                               "contrastingColor": [Function],
@@ -29228,6 +29267,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "xs": "480px",
                                                               },
                                                             },
+                                                            "changeMode": [Function],
                                                             "colors": Object {
                                                               "brand": Object {
                                                                 "primary": "#ff3633",
@@ -29239,6 +29279,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "contentBackground": "#fff",
                                                                 "link": "#702785",
                                                                 "linkHover": "#410057",
+                                                                "navigationBackground": "#fff",
+                                                                "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                                 "textAlt": "#fff",
                                                                 "textDefault": "#1f1f1f",
                                                               },
@@ -29714,7 +29756,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                 "tiny": "0.79rem",
                                                               },
                                                             },
-                                                            "mode": "teinte",
+                                                            "mode": "teint",
                                                             "utils": Object {
                                                               "colorLevel": [Function],
                                                               "contrastingColor": [Function],
@@ -31406,6 +31448,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                   "xs": "480px",
                                                 },
                                               },
+                                              "changeMode": [Function],
                                               "colors": Object {
                                                 "brand": Object {
                                                   "primary": "#ff3633",
@@ -31417,6 +31460,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                   "contentBackground": "#fff",
                                                   "link": "#702785",
                                                   "linkHover": "#410057",
+                                                  "navigationBackground": "#fff",
+                                                  "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                   "textAlt": "#fff",
                                                   "textDefault": "#1f1f1f",
                                                 },
@@ -31892,7 +31937,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                   "tiny": "0.79rem",
                                                 },
                                               },
-                                              "mode": "teinte",
+                                              "mode": "teint",
                                               "utils": Object {
                                                 "colorLevel": [Function],
                                                 "contrastingColor": [Function],
@@ -34061,6 +34106,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       "xs": "480px",
                                     },
                                   },
+                                  "changeMode": [Function],
                                   "colors": Object {
                                     "brand": Object {
                                       "primary": "#ff3633",
@@ -34072,6 +34118,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       "contentBackground": "#fff",
                                       "link": "#702785",
                                       "linkHover": "#410057",
+                                      "navigationBackground": "#fff",
+                                      "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                       "textAlt": "#fff",
                                       "textDefault": "#1f1f1f",
                                     },
@@ -34547,7 +34595,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       "tiny": "0.79rem",
                                     },
                                   },
-                                  "mode": "teinte",
+                                  "mode": "teint",
                                   "utils": Object {
                                     "colorLevel": [Function],
                                     "contrastingColor": [Function],
@@ -36189,11 +36237,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                 >
                   <Row
                     bsClass="row"
-                    className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                    className="Row-sc-3iisrt-0 iSaIhq row-sm"
                     componentClass="div"
                   >
                     <div
-                      className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                      className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                     >
                       <AggregationConditionExpression
                         aggregationFunctions={Array []}
@@ -36321,11 +36369,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       >
                                         <Row
                                           bsClass="row"
-                                          className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                                          className="Row-sc-3iisrt-0 iSaIhq row-sm"
                                           componentClass="div"
                                         >
                                           <div
-                                            className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                                            className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                                           >
                                             <Col
                                               bsClass="col"
@@ -36376,6 +36424,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "xs": "480px",
                                                           },
                                                         },
+                                                        "changeMode": [Function],
                                                         "colors": Object {
                                                           "brand": Object {
                                                             "primary": "#ff3633",
@@ -36387,6 +36436,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "contentBackground": "#fff",
                                                             "link": "#702785",
                                                             "linkHover": "#410057",
+                                                            "navigationBackground": "#fff",
+                                                            "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                             "textAlt": "#fff",
                                                             "textDefault": "#1f1f1f",
                                                           },
@@ -36862,7 +36913,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "tiny": "0.79rem",
                                                           },
                                                         },
-                                                        "mode": "teinte",
+                                                        "mode": "teint",
                                                         "utils": Object {
                                                           "colorLevel": [Function],
                                                           "contrastingColor": [Function],
@@ -38184,6 +38235,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "xs": "480px",
                                                           },
                                                         },
+                                                        "changeMode": [Function],
                                                         "colors": Object {
                                                           "brand": Object {
                                                             "primary": "#ff3633",
@@ -38195,6 +38247,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "contentBackground": "#fff",
                                                             "link": "#702785",
                                                             "linkHover": "#410057",
+                                                            "navigationBackground": "#fff",
+                                                            "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                             "textAlt": "#fff",
                                                             "textDefault": "#1f1f1f",
                                                           },
@@ -38670,7 +38724,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                             "tiny": "0.79rem",
                                                           },
                                                         },
-                                                        "mode": "teinte",
+                                                        "mode": "teint",
                                                         "utils": Object {
                                                           "colorLevel": [Function],
                                                           "contrastingColor": [Function],
@@ -40376,6 +40430,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                               "xs": "480px",
                                             },
                                           },
+                                          "changeMode": [Function],
                                           "colors": Object {
                                             "brand": Object {
                                               "primary": "#ff3633",
@@ -40387,6 +40442,8 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                               "contentBackground": "#fff",
                                               "link": "#702785",
                                               "linkHover": "#410057",
+                                              "navigationBackground": "#fff",
+                                              "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                               "textAlt": "#fff",
                                               "textDefault": "#1f1f1f",
                                             },
@@ -40862,7 +40919,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                               "tiny": "0.79rem",
                                             },
                                           },
-                                          "mode": "teinte",
+                                          "mode": "teint",
                                           "utils": Object {
                                             "colorLevel": [Function],
                                             "contrastingColor": [Function],
@@ -43021,6 +43078,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -43032,6 +43090,8 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                     "contentBackground": "#fff",
                                     "link": "#702785",
                                     "linkHover": "#410057",
+                                    "navigationBackground": "#fff",
+                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                     "textAlt": "#fff",
                                     "textDefault": "#1f1f1f",
                                   },
@@ -43507,7 +43567,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -45074,11 +45134,11 @@ exports[`AggregationConditionExpression rendering conditions should render empty
         >
           <Row
             bsClass="row"
-            className="Row-sc-3iisrt-0 gPzTHl row-sm"
+            className="Row-sc-3iisrt-0 iSaIhq row-sm"
             componentClass="div"
           >
             <div
-              className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+              className="Row-sc-3iisrt-0 iSaIhq row-sm row"
             >
               <AggregationConditionExpression
                 aggregationFunctions={Array []}
@@ -45194,11 +45254,11 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                               >
                                 <Row
                                   bsClass="row"
-                                  className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                                  className="Row-sc-3iisrt-0 iSaIhq row-sm"
                                   componentClass="div"
                                 >
                                   <div
-                                    className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                                    className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                                   >
                                     <Col
                                       bsClass="col"
@@ -45248,6 +45308,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -45259,6 +45320,8 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "contentBackground": "#fff",
                                                     "link": "#702785",
                                                     "linkHover": "#410057",
+                                                    "navigationBackground": "#fff",
+                                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                     "textAlt": "#fff",
                                                     "textDefault": "#1f1f1f",
                                                   },
@@ -45734,7 +45797,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -47054,6 +47117,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -47065,6 +47129,8 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "contentBackground": "#fff",
                                                     "link": "#702785",
                                                     "linkHover": "#410057",
+                                                    "navigationBackground": "#fff",
+                                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                     "textAlt": "#fff",
                                                     "textDefault": "#1f1f1f",
                                                   },
@@ -47540,7 +47606,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -49050,6 +49116,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                       "xs": "480px",
                                     },
                                   },
+                                  "changeMode": [Function],
                                   "colors": Object {
                                     "brand": Object {
                                       "primary": "#ff3633",
@@ -49061,6 +49128,8 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                       "contentBackground": "#fff",
                                       "link": "#702785",
                                       "linkHover": "#410057",
+                                      "navigationBackground": "#fff",
+                                      "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                       "textAlt": "#fff",
                                       "textDefault": "#1f1f1f",
                                     },
@@ -49536,7 +49605,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                       "tiny": "0.79rem",
                                     },
                                   },
-                                  "mode": "teinte",
+                                  "mode": "teint",
                                   "utils": Object {
                                     "colorLevel": [Function],
                                     "contrastingColor": [Function],
@@ -51685,6 +51754,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                     "xs": "480px",
                                   },
                                 },
+                                "changeMode": [Function],
                                 "colors": Object {
                                   "brand": Object {
                                     "primary": "#ff3633",
@@ -51696,6 +51766,8 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                     "contentBackground": "#fff",
                                     "link": "#702785",
                                     "linkHover": "#410057",
+                                    "navigationBackground": "#fff",
+                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                     "textAlt": "#fff",
                                     "textDefault": "#1f1f1f",
                                   },
@@ -52171,7 +52243,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                     "tiny": "0.79rem",
                                   },
                                 },
-                                "mode": "teinte",
+                                "mode": "teint",
                                 "utils": Object {
                                   "colorLevel": [Function],
                                   "contrastingColor": [Function],
@@ -53744,11 +53816,11 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
         >
           <Row
             bsClass="row"
-            className="Row-sc-3iisrt-0 gPzTHl row-sm"
+            className="Row-sc-3iisrt-0 iSaIhq row-sm"
             componentClass="div"
           >
             <div
-              className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+              className="Row-sc-3iisrt-0 iSaIhq row-sm row"
             >
               <AggregationConditionExpression
                 aggregationFunctions={Array []}
@@ -53876,11 +53948,11 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                               >
                                 <Row
                                   bsClass="row"
-                                  className="Row-sc-3iisrt-0 gPzTHl row-sm"
+                                  className="Row-sc-3iisrt-0 iSaIhq row-sm"
                                   componentClass="div"
                                 >
                                   <div
-                                    className="Row-sc-3iisrt-0 gPzTHl row-sm row"
+                                    className="Row-sc-3iisrt-0 iSaIhq row-sm row"
                                   >
                                     <Col
                                       bsClass="col"
@@ -53931,6 +54003,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -53942,6 +54015,8 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "contentBackground": "#fff",
                                                     "link": "#702785",
                                                     "linkHover": "#410057",
+                                                    "navigationBackground": "#fff",
+                                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                     "textAlt": "#fff",
                                                     "textDefault": "#1f1f1f",
                                                   },
@@ -54417,7 +54492,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -55739,6 +55814,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "xs": "480px",
                                                   },
                                                 },
+                                                "changeMode": [Function],
                                                 "colors": Object {
                                                   "brand": Object {
                                                     "primary": "#ff3633",
@@ -55750,6 +55826,8 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "contentBackground": "#fff",
                                                     "link": "#702785",
                                                     "linkHover": "#410057",
+                                                    "navigationBackground": "#fff",
+                                                    "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                                     "textAlt": "#fff",
                                                     "textDefault": "#1f1f1f",
                                                   },
@@ -56225,7 +56303,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                     "tiny": "0.79rem",
                                                   },
                                                 },
-                                                "mode": "teinte",
+                                                "mode": "teint",
                                                 "utils": Object {
                                                   "colorLevel": [Function],
                                                   "contrastingColor": [Function],
@@ -57932,6 +58010,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                       "xs": "480px",
                                     },
                                   },
+                                  "changeMode": [Function],
                                   "colors": Object {
                                     "brand": Object {
                                       "primary": "#ff3633",
@@ -57943,6 +58022,8 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                       "contentBackground": "#fff",
                                       "link": "#702785",
                                       "linkHover": "#410057",
+                                      "navigationBackground": "#fff",
+                                      "navigationBoxShadow": "rgba(115,115,115,0.25)",
                                       "textAlt": "#fff",
                                       "textDefault": "#1f1f1f",
                                     },
@@ -58418,7 +58499,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                       "tiny": "0.79rem",
                                     },
                                   },
-                                  "mode": "teinte",
+                                  "mode": "teint",
                                   "utils": Object {
                                     "colorLevel": [Function],
                                     "contrastingColor": [Function],
