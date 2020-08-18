@@ -499,11 +499,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                       ";color:",
                                       "#702785",
                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#68267b",
+                                      "#410057",
                                       ";}&.active{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -513,9 +513,9 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                       ";:hover{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#3d0c51",
+                                      "#410057",
                                       ";}}&[disabled],&.disabled{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -2886,11 +2886,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";color:",
                                                           "#702785",
                                                           ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#68267b",
+                                                          "#410057",
                                                           ";}&.active{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -2900,9 +2900,9 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";:hover{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#3d0c51",
+                                                          "#410057",
                                                           ";}}&[disabled],&.disabled{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -4697,11 +4697,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";color:",
                                                           "#702785",
                                                           ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#68267b",
+                                                          "#410057",
                                                           ";}&.active{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -4711,9 +4711,9 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";:hover{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#3d0c51",
+                                                          "#410057",
                                                           ";}}&[disabled],&.disabled{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -6892,11 +6892,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                             ";color:",
                                             "#702785",
                                             ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#68267b",
+                                            "#410057",
                                             ";}&.active{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -6906,9 +6906,9 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                             ";:hover{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#3d0c51",
+                                            "#410057",
                                             ";}}&[disabled],&.disabled{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -8866,7 +8866,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                         >
                                           <FormControl
                                             bsClass="form-control"
-                                            className="FormControl-sc-1amoaox-0 fKSsjP"
+                                            className="FormControl-sc-1amoaox-0 cmyoyp"
                                             componentClass="input"
                                             inputRef={[Function]}
                                             label="Threshold"
@@ -8877,7 +8877,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                             value={0}
                                           >
                                             <input
-                                              className="FormControl-sc-1amoaox-0 fKSsjP form-control"
+                                              className="FormControl-sc-1amoaox-0 cmyoyp form-control"
                                               id="aggregation-threshold"
                                               label="Threshold"
                                               name="threshold"
@@ -8947,12 +8947,12 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -8989,12 +8989,12 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -9031,12 +9031,12 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -9686,11 +9686,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";color:",
                                                           "#702785",
                                                           ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#68267b",
+                                                          "#410057",
                                                           ";}&.active{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -9700,9 +9700,9 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";:hover{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#3d0c51",
+                                                          "#410057",
                                                           ";}}&[disabled],&.disabled{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -11497,11 +11497,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";color:",
                                                           "#702785",
                                                           ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#68267b",
+                                                          "#410057",
                                                           ";}&.active{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -11511,9 +11511,9 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                                           ";:hover{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#3d0c51",
+                                                          "#410057",
                                                           ";}}&[disabled],&.disabled{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -13678,11 +13678,11 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                             ";color:",
                                             "#702785",
                                             ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#68267b",
+                                            "#410057",
                                             ";}&.active{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -13692,9 +13692,9 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                             ";:hover{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#3d0c51",
+                                            "#410057",
                                             ";}}&[disabled],&.disabled{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -15638,7 +15638,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                         >
                                           <FormControl
                                             bsClass="form-control"
-                                            className="FormControl-sc-1amoaox-0 fKSsjP"
+                                            className="FormControl-sc-1amoaox-0 cmyoyp"
                                             componentClass="input"
                                             inputRef={[Function]}
                                             label=""
@@ -15649,7 +15649,7 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                                             value={0}
                                           >
                                             <input
-                                              className="FormControl-sc-1amoaox-0 fKSsjP form-control"
+                                              className="FormControl-sc-1amoaox-0 cmyoyp form-control"
                                               id="aggregation-threshold"
                                               label=""
                                               name="threshold"
@@ -15717,12 +15717,12 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -15759,12 +15759,12 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -15801,12 +15801,12 @@ exports[`AggregationConditionExpression rendering conditions should render a boo
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -16332,11 +16332,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       ";color:",
                                       "#702785",
                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#68267b",
+                                      "#410057",
                                       ";}&.active{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -16346,9 +16346,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                       ";:hover{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#3d0c51",
+                                      "#410057",
                                       ";}}&[disabled],&.disabled{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -18731,11 +18731,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                           ";color:",
                                                           "#702785",
                                                           ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#68267b",
+                                                          "#410057",
                                                           ";}&.active{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -18745,9 +18745,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                           ";:hover{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#3d0c51",
+                                                          "#410057",
                                                           ";}}&[disabled],&.disabled{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -20542,11 +20542,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                           ";color:",
                                                           "#702785",
                                                           ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#68267b",
+                                                          "#410057",
                                                           ";}&.active{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -20556,9 +20556,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                           ";:hover{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
-                                                          "#ebebeb26",
+                                                          "transparent",
                                                           ";color:",
-                                                          "#3d0c51",
+                                                          "#410057",
                                                           ";}}&[disabled],&.disabled{background-color:",
                                                           "rgba(255, 255, 255, 0)",
                                                           ";border-color:",
@@ -22737,11 +22737,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                             ";color:",
                                             "#702785",
                                             ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#68267b",
+                                            "#410057",
                                             ";}&.active{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -22751,9 +22751,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                             ";:hover{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#3d0c51",
+                                            "#410057",
                                             ";}}&[disabled],&.disabled{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -24711,7 +24711,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                         >
                                           <FormControl
                                             bsClass="form-control"
-                                            className="FormControl-sc-1amoaox-0 fKSsjP"
+                                            className="FormControl-sc-1amoaox-0 cmyoyp"
                                             componentClass="input"
                                             inputRef={[Function]}
                                             label="Threshold"
@@ -24722,7 +24722,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                             value={0}
                                           >
                                             <input
-                                              className="FormControl-sc-1amoaox-0 fKSsjP form-control"
+                                              className="FormControl-sc-1amoaox-0 cmyoyp form-control"
                                               id="aggregation-threshold"
                                               label="Threshold"
                                               name="threshold"
@@ -24792,12 +24792,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -24834,12 +24834,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -24876,12 +24876,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                             bsClass="btn"
                             bsSize="sm"
                             bsStyle="default"
-                            className="Button-c9cbmb-0 bNulii"
+                            className="Button-c9cbmb-0 kLwsUP"
                             disabled={false}
                             onClick={[Function]}
                           >
                             <button
-                              className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                              className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                               disabled={false}
                               onClick={[Function]}
                               type="button"
@@ -25465,11 +25465,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                             ";color:",
                                             "#702785",
                                             ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#68267b",
+                                            "#410057",
                                             ";}&.active{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -25479,9 +25479,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                             ";:hover{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
-                                            "#ebebeb26",
+                                            "transparent",
                                             ";color:",
-                                            "#3d0c51",
+                                            "#410057",
                                             ";}}&[disabled],&.disabled{background-color:",
                                             "rgba(255, 255, 255, 0)",
                                             ";border-color:",
@@ -27769,11 +27769,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                   ";color:",
                                                                   "#702785",
                                                                   ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                                  "#ebebeb26",
+                                                                  "transparent",
                                                                   ";border-color:",
-                                                                  "#ebebeb26",
+                                                                  "transparent",
                                                                   ";color:",
-                                                                  "#68267b",
+                                                                  "#410057",
                                                                   ";}&.active{background-color:",
                                                                   "rgba(255, 255, 255, 0)",
                                                                   ";border-color:",
@@ -27783,9 +27783,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                   ";:hover{background-color:",
                                                                   "rgba(255, 255, 255, 0)",
                                                                   ";border-color:",
-                                                                  "#ebebeb26",
+                                                                  "transparent",
                                                                   ";color:",
-                                                                  "#3d0c51",
+                                                                  "#410057",
                                                                   ";}}&[disabled],&.disabled{background-color:",
                                                                   "rgba(255, 255, 255, 0)",
                                                                   ";border-color:",
@@ -29580,11 +29580,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                   ";color:",
                                                                   "#702785",
                                                                   ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                                  "#ebebeb26",
+                                                                  "transparent",
                                                                   ";border-color:",
-                                                                  "#ebebeb26",
+                                                                  "transparent",
                                                                   ";color:",
-                                                                  "#68267b",
+                                                                  "#410057",
                                                                   ";}&.active{background-color:",
                                                                   "rgba(255, 255, 255, 0)",
                                                                   ";border-color:",
@@ -29594,9 +29594,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                                   ";:hover{background-color:",
                                                                   "rgba(255, 255, 255, 0)",
                                                                   ";border-color:",
-                                                                  "#ebebeb26",
+                                                                  "transparent",
                                                                   ";color:",
-                                                                  "#3d0c51",
+                                                                  "#410057",
                                                                   ";}}&[disabled],&.disabled{background-color:",
                                                                   "rgba(255, 255, 255, 0)",
                                                                   ";border-color:",
@@ -31761,11 +31761,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                     ";color:",
                                                     "#702785",
                                                     ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                    "#ebebeb26",
+                                                    "transparent",
                                                     ";border-color:",
-                                                    "#ebebeb26",
+                                                    "transparent",
                                                     ";color:",
-                                                    "#68267b",
+                                                    "#410057",
                                                     ";}&.active{background-color:",
                                                     "rgba(255, 255, 255, 0)",
                                                     ";border-color:",
@@ -31775,9 +31775,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                     ";:hover{background-color:",
                                                     "rgba(255, 255, 255, 0)",
                                                     ";border-color:",
-                                                    "#ebebeb26",
+                                                    "transparent",
                                                     ";color:",
-                                                    "#3d0c51",
+                                                    "#410057",
                                                     ";}}&[disabled],&.disabled{background-color:",
                                                     "rgba(255, 255, 255, 0)",
                                                     ";border-color:",
@@ -33721,7 +33721,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                 >
                                                   <FormControl
                                                     bsClass="form-control"
-                                                    className="FormControl-sc-1amoaox-0 fKSsjP"
+                                                    className="FormControl-sc-1amoaox-0 cmyoyp"
                                                     componentClass="input"
                                                     inputRef={[Function]}
                                                     label=""
@@ -33732,7 +33732,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                     value={0}
                                                   >
                                                     <input
-                                                      className="FormControl-sc-1amoaox-0 fKSsjP form-control"
+                                                      className="FormControl-sc-1amoaox-0 cmyoyp form-control"
                                                       id="aggregation-threshold"
                                                       label=""
                                                       name="threshold"
@@ -33800,12 +33800,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     bsClass="btn"
                                     bsSize="sm"
                                     bsStyle="default"
-                                    className="Button-c9cbmb-0 bNulii"
+                                    className="Button-c9cbmb-0 kLwsUP"
                                     disabled={false}
                                     onClick={[Function]}
                                   >
                                     <button
-                                      className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                                      className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                                       disabled={false}
                                       onClick={[Function]}
                                       type="button"
@@ -33842,12 +33842,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     bsClass="btn"
                                     bsSize="sm"
                                     bsStyle="default"
-                                    className="Button-c9cbmb-0 bNulii"
+                                    className="Button-c9cbmb-0 kLwsUP"
                                     disabled={false}
                                     onClick={[Function]}
                                   >
                                     <button
-                                      className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                                      className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                                       disabled={false}
                                       onClick={[Function]}
                                       type="button"
@@ -33884,12 +33884,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                     bsClass="btn"
                                     bsSize="sm"
                                     bsStyle="default"
-                                    className="Button-c9cbmb-0 bNulii"
+                                    className="Button-c9cbmb-0 kLwsUP"
                                     disabled={false}
                                     onClick={[Function]}
                                   >
                                     <button
-                                      className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                                      className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                                       disabled={false}
                                       onClick={[Function]}
                                       type="button"
@@ -34419,11 +34419,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                         ";color:",
                                         "#702785",
                                         ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";border-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";color:",
-                                        "#68267b",
+                                        "#410057",
                                         ";}&.active{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
@@ -34433,9 +34433,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                         ";:hover{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";color:",
-                                        "#3d0c51",
+                                        "#410057",
                                         ";}}&[disabled],&.disabled{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
@@ -36737,11 +36737,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                               ";color:",
                                                               "#702785",
                                                               ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                              "#ebebeb26",
+                                                              "transparent",
                                                               ";border-color:",
-                                                              "#ebebeb26",
+                                                              "transparent",
                                                               ";color:",
-                                                              "#68267b",
+                                                              "#410057",
                                                               ";}&.active{background-color:",
                                                               "rgba(255, 255, 255, 0)",
                                                               ";border-color:",
@@ -36751,9 +36751,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                               ";:hover{background-color:",
                                                               "rgba(255, 255, 255, 0)",
                                                               ";border-color:",
-                                                              "#ebebeb26",
+                                                              "transparent",
                                                               ";color:",
-                                                              "#3d0c51",
+                                                              "#410057",
                                                               ";}}&[disabled],&.disabled{background-color:",
                                                               "rgba(255, 255, 255, 0)",
                                                               ";border-color:",
@@ -38548,11 +38548,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                               ";color:",
                                                               "#702785",
                                                               ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                              "#ebebeb26",
+                                                              "transparent",
                                                               ";border-color:",
-                                                              "#ebebeb26",
+                                                              "transparent",
                                                               ";color:",
-                                                              "#68267b",
+                                                              "#410057",
                                                               ";}&.active{background-color:",
                                                               "rgba(255, 255, 255, 0)",
                                                               ";border-color:",
@@ -38562,9 +38562,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                               ";:hover{background-color:",
                                                               "rgba(255, 255, 255, 0)",
                                                               ";border-color:",
-                                                              "#ebebeb26",
+                                                              "transparent",
                                                               ";color:",
-                                                              "#3d0c51",
+                                                              "#410057",
                                                               ";}}&[disabled],&.disabled{background-color:",
                                                               "rgba(255, 255, 255, 0)",
                                                               ";border-color:",
@@ -40743,11 +40743,11 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                 ";color:",
                                                 "#702785",
                                                 ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                "#ebebeb26",
+                                                "transparent",
                                                 ";border-color:",
-                                                "#ebebeb26",
+                                                "transparent",
                                                 ";color:",
-                                                "#68267b",
+                                                "#410057",
                                                 ";}&.active{background-color:",
                                                 "rgba(255, 255, 255, 0)",
                                                 ";border-color:",
@@ -40757,9 +40757,9 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                 ";:hover{background-color:",
                                                 "rgba(255, 255, 255, 0)",
                                                 ";border-color:",
-                                                "#ebebeb26",
+                                                "transparent",
                                                 ";color:",
-                                                "#3d0c51",
+                                                "#410057",
                                                 ";}}&[disabled],&.disabled{background-color:",
                                                 "rgba(255, 255, 255, 0)",
                                                 ";border-color:",
@@ -42717,7 +42717,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                             >
                                               <FormControl
                                                 bsClass="form-control"
-                                                className="FormControl-sc-1amoaox-0 fKSsjP"
+                                                className="FormControl-sc-1amoaox-0 cmyoyp"
                                                 componentClass="input"
                                                 inputRef={[Function]}
                                                 label="Threshold"
@@ -42728,7 +42728,7 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                                 value={0}
                                               >
                                                 <input
-                                                  className="FormControl-sc-1amoaox-0 fKSsjP form-control"
+                                                  className="FormControl-sc-1amoaox-0 cmyoyp form-control"
                                                   id="aggregation-threshold"
                                                   label="Threshold"
                                                   name="threshold"
@@ -42798,12 +42798,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                 bsClass="btn"
                                 bsSize="sm"
                                 bsStyle="default"
-                                className="Button-c9cbmb-0 bNulii"
+                                className="Button-c9cbmb-0 kLwsUP"
                                 disabled={false}
                                 onClick={[Function]}
                               >
                                 <button
-                                  className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                                  className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                                   disabled={false}
                                   onClick={[Function]}
                                   type="button"
@@ -42840,12 +42840,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                 bsClass="btn"
                                 bsSize="sm"
                                 bsStyle="default"
-                                className="Button-c9cbmb-0 bNulii"
+                                className="Button-c9cbmb-0 kLwsUP"
                                 disabled={false}
                                 onClick={[Function]}
                               >
                                 <button
-                                  className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                                  className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                                   disabled={false}
                                   onClick={[Function]}
                                   type="button"
@@ -42882,12 +42882,12 @@ exports[`AggregationConditionExpression rendering conditions should render a gro
                                 bsClass="btn"
                                 bsSize="sm"
                                 bsStyle="default"
-                                className="Button-c9cbmb-0 bNulii"
+                                className="Button-c9cbmb-0 kLwsUP"
                                 disabled={false}
                                 onClick={[Function]}
                               >
                                 <button
-                                  className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                                  className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                                   disabled={false}
                                   onClick={[Function]}
                                   type="button"
@@ -43391,11 +43391,11 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                       ";color:",
                                       "#702785",
                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#68267b",
+                                      "#410057",
                                       ";}&.active{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -43405,9 +43405,9 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                       ";:hover{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#3d0c51",
+                                      "#410057",
                                       ";}}&[disabled],&.disabled{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -45621,11 +45621,11 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                       ";color:",
                                                       "#702785",
                                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#68267b",
+                                                      "#410057",
                                                       ";}&.active{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -45635,9 +45635,9 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                       ";:hover{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#3d0c51",
+                                                      "#410057",
                                                       ";}}&[disabled],&.disabled{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -47430,11 +47430,11 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                       ";color:",
                                                       "#702785",
                                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#68267b",
+                                                      "#410057",
                                                       ";}&.active{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -47444,9 +47444,9 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                                       ";:hover{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#3d0c51",
+                                                      "#410057",
                                                       ";}}&[disabled],&.disabled{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -49429,11 +49429,11 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                         ";color:",
                                         "#702785",
                                         ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";border-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";color:",
-                                        "#68267b",
+                                        "#410057",
                                         ";}&.active{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
@@ -49443,9 +49443,9 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                         ";:hover{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";color:",
-                                        "#3d0c51",
+                                        "#410057",
                                         ";}}&[disabled],&.disabled{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
@@ -51391,7 +51391,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                     >
                                       <FormControl
                                         bsClass="form-control"
-                                        className="FormControl-sc-1amoaox-0 fKSsjP"
+                                        className="FormControl-sc-1amoaox-0 cmyoyp"
                                         componentClass="input"
                                         inputRef={[Function]}
                                         label="Threshold"
@@ -51402,7 +51402,7 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                                         value={0}
                                       >
                                         <input
-                                          className="FormControl-sc-1amoaox-0 fKSsjP form-control"
+                                          className="FormControl-sc-1amoaox-0 cmyoyp form-control"
                                           id="aggregation-threshold"
                                           label="Threshold"
                                           name="threshold"
@@ -51472,12 +51472,12 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                         bsClass="btn"
                         bsSize="sm"
                         bsStyle="default"
-                        className="Button-c9cbmb-0 bNulii"
+                        className="Button-c9cbmb-0 kLwsUP"
                         disabled={false}
                         onClick={[Function]}
                       >
                         <button
-                          className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                          className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                           disabled={false}
                           onClick={[Function]}
                           type="button"
@@ -51514,12 +51514,12 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                         bsClass="btn"
                         bsSize="sm"
                         bsStyle="default"
-                        className="Button-c9cbmb-0 bNulii"
+                        className="Button-c9cbmb-0 kLwsUP"
                         disabled={false}
                         onClick={[Function]}
                       >
                         <button
-                          className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                          className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                           disabled={false}
                           onClick={[Function]}
                           type="button"
@@ -51556,12 +51556,12 @@ exports[`AggregationConditionExpression rendering conditions should render empty
                         bsClass="btn"
                         bsSize="sm"
                         bsStyle="default"
-                        className="Button-c9cbmb-0 bNulii"
+                        className="Button-c9cbmb-0 kLwsUP"
                         disabled={false}
                         onClick={[Function]}
                       >
                         <button
-                          className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                          className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                           disabled={false}
                           onClick={[Function]}
                           type="button"
@@ -52067,11 +52067,11 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                       ";color:",
                                       "#702785",
                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#68267b",
+                                      "#410057",
                                       ";}&.active{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -52081,9 +52081,9 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                       ";:hover{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
-                                      "#ebebeb26",
+                                      "transparent",
                                       ";color:",
-                                      "#3d0c51",
+                                      "#410057",
                                       ";}}&[disabled],&.disabled{background-color:",
                                       "rgba(255, 255, 255, 0)",
                                       ";border-color:",
@@ -54316,11 +54316,11 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                       ";color:",
                                                       "#702785",
                                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#68267b",
+                                                      "#410057",
                                                       ";}&.active{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -54330,9 +54330,9 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                       ";:hover{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#3d0c51",
+                                                      "#410057",
                                                       ";}}&[disabled],&.disabled{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -56127,11 +56127,11 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                       ";color:",
                                                       "#702785",
                                                       ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#68267b",
+                                                      "#410057",
                                                       ";}&.active{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -56141,9 +56141,9 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                                       ";:hover{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
-                                                      "#ebebeb26",
+                                                      "transparent",
                                                       ";color:",
-                                                      "#3d0c51",
+                                                      "#410057",
                                                       ";}}&[disabled],&.disabled{background-color:",
                                                       "rgba(255, 255, 255, 0)",
                                                       ";border-color:",
@@ -58323,11 +58323,11 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                         ";color:",
                                         "#702785",
                                         ";transition:background-color 150ms ease-in-out,border 150ms ease-in-out,color 150ms ease-in-out;:hover{background-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";border-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";color:",
-                                        "#68267b",
+                                        "#410057",
                                         ";}&.active{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
@@ -58337,9 +58337,9 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                         ";:hover{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
-                                        "#ebebeb26",
+                                        "transparent",
                                         ";color:",
-                                        "#3d0c51",
+                                        "#410057",
                                         ";}}&[disabled],&.disabled{background-color:",
                                         "rgba(255, 255, 255, 0)",
                                         ";border-color:",
@@ -60332,7 +60332,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                     >
                                       <FormControl
                                         bsClass="form-control"
-                                        className="FormControl-sc-1amoaox-0 fKSsjP"
+                                        className="FormControl-sc-1amoaox-0 cmyoyp"
                                         componentClass="input"
                                         inputRef={[Function]}
                                         label="Threshold"
@@ -60343,7 +60343,7 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                                         value={12}
                                       >
                                         <input
-                                          className="FormControl-sc-1amoaox-0 fKSsjP form-control"
+                                          className="FormControl-sc-1amoaox-0 cmyoyp form-control"
                                           id="aggregation-threshold"
                                           label="Threshold"
                                           name="threshold"
@@ -60413,12 +60413,12 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                         bsClass="btn"
                         bsSize="sm"
                         bsStyle="default"
-                        className="Button-c9cbmb-0 bNulii"
+                        className="Button-c9cbmb-0 kLwsUP"
                         disabled={false}
                         onClick={[Function]}
                       >
                         <button
-                          className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                          className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                           disabled={false}
                           onClick={[Function]}
                           type="button"
@@ -60455,12 +60455,12 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                         bsClass="btn"
                         bsSize="sm"
                         bsStyle="default"
-                        className="Button-c9cbmb-0 bNulii"
+                        className="Button-c9cbmb-0 kLwsUP"
                         disabled={false}
                         onClick={[Function]}
                       >
                         <button
-                          className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                          className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                           disabled={false}
                           onClick={[Function]}
                           type="button"
@@ -60497,12 +60497,12 @@ exports[`AggregationConditionExpression rendering conditions should render simpl
                         bsClass="btn"
                         bsSize="sm"
                         bsStyle="default"
-                        className="Button-c9cbmb-0 bNulii"
+                        className="Button-c9cbmb-0 kLwsUP"
                         disabled={false}
                         onClick={[Function]}
                       >
                         <button
-                          className="Button-c9cbmb-0 bNulii btn btn-sm btn-default"
+                          className="Button-c9cbmb-0 kLwsUP btn btn-sm btn-default"
                           disabled={false}
                           onClick={[Function]}
                           type="button"
