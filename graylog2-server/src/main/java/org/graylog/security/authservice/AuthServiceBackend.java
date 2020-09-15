@@ -20,7 +20,7 @@ import java.util.Optional;
 
 public interface AuthServiceBackend {
     Optional<UserProfile> authenticateAndProvision(AuthServiceCredentials authCredentials,
-                                                   UserProfileProvisioner userProfileProvisioner);
+                                                   ProvisionerService provisionerService);
 
     String backendType();
 
