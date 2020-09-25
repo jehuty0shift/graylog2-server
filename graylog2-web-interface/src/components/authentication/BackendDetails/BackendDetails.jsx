@@ -4,8 +4,8 @@ import * as React from 'react';
 import { getAuthServicePlugin } from 'util/AuthenticationService';
 import AuthenticationBackend from 'logic/authentication/AuthenticationBackend';
 import SectionGrid from 'components/common/Section/SectionGrid';
-
-import SyncedUsersSection from './SyncedUsersSection';
+import { Alert } from 'components/graylog';
+import SectionComponent from 'components/common/Section/SectionComponent';
 
 type Props = {
   authenticationBackend: AuthenticationBackend,
@@ -18,15 +18,19 @@ const BackendDetails = ({ authenticationBackend }: Props) => {
     return `No authentication service plugin configured for type "${authenticationBackend.config.type}"`;
   }
 
-  const { detailsComponent: BackendSettings } = authService;
+  const { configDetailsComponent: BackendConfigDetails } = authService;
 
   return (
     <SectionGrid>
       <div>
-        <BackendSettings authenticationBackend={authenticationBackend} />
+        <BackendConfigDetails authenticationBackend={authenticationBackend} />
       </div>
       <div>
-        <SyncedUsersSection authenticationBackend={authenticationBackend} />
+        <SectionComponent title="Synchronized Users">
+          <Alert>
+            Managing synchronized users is only possible for the active authentication service.
+          </Alert>
+        </SectionComponent>
       </div>
     </SectionGrid>
   );
