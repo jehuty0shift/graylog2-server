@@ -25,7 +25,7 @@ public class AuditBindings extends PluginModule {
     @Override
     protected void configure() {
         // Make sure there is a default binding
-        auditEventSenderBinder().setDefault().to(NullAuditEventSender.class);
+        auditEventSenderBinder().setDefault().to(KafkaAuditEventSender.class);
 
         addAuditEventTypes(AuditEventTypes.class);
 

@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -167,6 +167,36 @@ public class Configuration extends BaseConfiguration {
 
     @Parameter(value = "enabled_tls_protocols", converter = StringSetConverter.class)
     private Set<String> enabledTlsProtocols = DefaultTLSProtocolProvider.getDefaultSupportedTlsProtocols();
+
+    @Parameter(value = "kafka_audit_enabled")
+    private boolean kafkaAuditEnabled = false;
+
+    @Parameter(value = "kafka_audit_bootstrap_servers")
+    private String kafkaAuditBootstrapServers = "";
+
+    @Parameter(value = "kafka_audit_topic")
+    private String kafkaAuditTopic = "";
+
+    @Parameter(value = "kafka_audit_client_id")
+    private String kafkaAuditClientId = "";
+
+    @Parameter(value = "kafka_audit_security_protocol")
+    private String kafkaAuditSecurityProtocol = "";
+
+    @Parameter(value = "kafka_audit_sasl_username")
+    private String kafkaAuditSaslUsername = "";
+
+    @Parameter(value = "kafka_audit_sasl_password")
+    private String kafkaAuditSaslPassword = "";
+
+    @Parameter(value = "kafka_audit_ssl_truststore_location")
+    private String kafkaAuditSSLTruststoreLocation = "";
+
+    @Parameter(value = "kafka_audit_ssl_trustore_password")
+    private String kafkaAuditSSLTruststorePassword = "";
+
+    @Parameter(value = "kafka_audit_x_ovh_token")
+    private String kafkaAuditXOVHToken = "";
 
     public boolean isMaster() {
         return isMaster;
@@ -335,6 +365,47 @@ public class Configuration extends BaseConfiguration {
         return enabledTlsProtocols;
     }
 
+
+    public boolean isKafkaAuditEnabled() {
+        return kafkaAuditEnabled;
+    }
+
+    public String getKafkaAuditBootstrapServers() {
+        return kafkaAuditBootstrapServers;
+    }
+
+    public String getKafkaAuditTopic() {
+        return kafkaAuditTopic;
+    }
+
+    public String getKafkaAuditClientId() {
+        return kafkaAuditClientId;
+    }
+
+    public String getKafkaAuditSecurityProtocol() {
+        return kafkaAuditSecurityProtocol;
+    }
+
+    public String getKafkaAuditSaslUsername() {
+        return kafkaAuditSaslUsername;
+    }
+
+    public String getKafkaAuditSaslPassword() {
+        return kafkaAuditSaslPassword;
+    }
+
+    public String getKafkaAuditSSLTruststoreLocation() {
+        return kafkaAuditSSLTruststoreLocation;
+    }
+
+    public String getKafkaAuditSSLTruststorePassword() {
+        return kafkaAuditSSLTruststorePassword;
+    }
+
+    public String getKafkaAuditXOVHToken() {
+        return kafkaAuditXOVHToken;
+    }
+
     @ValidatorMethod
     @SuppressWarnings("unused")
     public void validatePasswordSecret() throws ValidationException {
@@ -407,7 +478,7 @@ public class Configuration extends BaseConfiguration {
                 // all good
                 return;
             }
-            throw new ValidationException("Node ID file at path " + path + " isn't " + b +". Please specify the correct path or change the permissions");
+            throw new ValidationException("Node ID file at path " + path + " isn't " + b + ". Please specify the correct path or change the permissions");
         }
     }
 }
