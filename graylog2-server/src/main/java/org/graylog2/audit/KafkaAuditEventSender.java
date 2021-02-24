@@ -25,6 +25,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaAuditEventSender.class);
     private final boolean enabled;
     private String clientId;
+    private String nodeName;
     private String topic;
     private KafkaProducer kProducer;
     private ObjectMapper objMapper;
@@ -44,6 +45,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
         topic = configuration.getKafkaAuditTopic();
         clientId = configuration.getKafkaAuditClientId();
         XOvhToken = configuration.getKafkaAuditXOVHToken();
+        nodeName = configuration.getKafkaAuditNodeName();
         final String securityProtocol = configuration.getKafkaAuditSecurityProtocol();
         final String SASLUsername = configuration.getKafkaAuditSaslUsername();
         final String SASLPassword = configuration.getKafkaAuditSaslPassword();
@@ -51,8 +53,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
         final String SSLTruststorePassword = configuration.getKafkaAuditSSLTruststorePassword();
 
 
-
-        LOG.info("Kafka audit configuration is :  bootstrapServers={}, topic={}, clientId={}, securityProtocol={}, SASLUsername={}", bootstrapServers, topic, clientId, securityProtocol, SASLUsername);
+        LOG.info("Kafka audit Sender configuration is :  bootstrapServers={}, topic={}, clientId={}, securityProtocol={}, SASLUsername={}", bootstrapServers, topic, clientId, securityProtocol, SASLUsername);
 
         kProp.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         kProp.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
@@ -88,29 +89,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
 
     @Override
     public void success(AuditActor actor, AuditEventType type, Map<String, Object> context) {
-        if (!enabled) {
-            return;
-        }
-
-        ObjectNode auditNode = buildGelf(objMapper.createObjectNode());
-
-        auditNode.put("_status", "success");
-        auditNode.put("_actor", actor.urn());
-        auditNode.put("_namespace", type.namespace());
-        auditNode.put("_object", type.object());
-        auditNode.put("_action", type.action());
-        auditNode.put("message", type.toTypeString());
-
-        context.entrySet().stream().forEach(e -> auditNode.put("_" + e.getKey(), e.getValue().toString()));
-
-        try {
-            final String auditString =  objMapper.writeValueAsString(auditNode);
-            kProducer.send(new ProducerRecord(topic, auditString));
-            LOG.debug("sent audit event {}",auditString);
-        } catch (JsonProcessingException ex) {
-            LOG.error("fatal error on JSON Processing, shouldn't happen", ex);
-            throw new IllegalStateException(ex);
-        }
+        sendAuditMessage("success", actor, type, context);
     }
 
     @Override
@@ -121,38 +100,45 @@ public class KafkaAuditEventSender implements AuditEventSender {
 
     @Override
     public void failure(AuditActor actor, AuditEventType type, Map<String, Object> context) {
+        sendAuditMessage("failure", actor, type, context);
+    }
+
+    private void sendAuditMessage(final String status, AuditActor actor, AuditEventType type, Map<String, Object> context) {
         if (!enabled) {
             return;
         }
 
-        ObjectNode auditNode = buildGelf(objMapper.createObjectNode());
+        Instant timestamp = Instant.now();
 
-        auditNode.put("_status", "failure");
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double)timestamp.toEpochMilli() / 1000.0f);
+
+        auditNode.put("_status", status);
         auditNode.put("_actor", actor.urn());
         auditNode.put("_namespace", type.namespace());
         auditNode.put("_object", type.object());
         auditNode.put("_action", type.action());
-        auditNode.put("message", type.toTypeString());
+        auditNode.put("short_message", type.toTypeString());
 
         context.entrySet().stream().forEach(e -> auditNode.put("_" + e.getKey(), e.getValue().toString()));
 
         try {
-            final String auditString =  objMapper.writeValueAsString(auditNode);
-            kProducer.send(new ProducerRecord(topic, auditString));
-            LOG.debug("sent audit event {}",auditString);
+            final String auditString = objMapper.writeValueAsString(auditNode);
+            kProducer.send(new ProducerRecord(topic, null, timestamp.toEpochMilli(), null, auditString));
+            LOG.debug("sent audit event {}", auditString);
         } catch (JsonProcessingException ex) {
             LOG.error("fatal error on JSON Processing, shouldn't happen", ex);
             throw new IllegalStateException(ex);
         }
     }
 
-    private ObjectNode buildGelf(final ObjectNode objNode) {
+    private ObjectNode buildGelf(final ObjectNode objNode, double timestamp) {
         objNode.put("version", "1.1");
-        objNode.put("source", clientId);
-        objNode.put("timestamp", Instant.now().toEpochMilli() / 1000.0f);
+        objNode.put("host", clientId);
+        objNode.put("timestamp", timestamp);
         objNode.put("_type", "audit");
         objNode.put("_client_id", clientId);
-        if(!XOvhToken.equals("")) {
+        objNode.put("_node_name", nodeName);
+        if (!XOvhToken.equals("")) {
             objNode.put("_X-OVH-TOKEN", XOvhToken);
         }
         return objNode;
