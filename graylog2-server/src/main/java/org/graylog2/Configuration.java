@@ -198,6 +198,9 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "kafka_audit_x_ovh_token")
     private String kafkaAuditXOVHToken = "";
 
+    @Parameter(value = "kafka_audit_node_name")
+    private String kafkaAuditNodeName = "";
+
     public boolean isMaster() {
         return isMaster;
     }
@@ -404,6 +407,10 @@ public class Configuration extends BaseConfiguration {
 
     public String getKafkaAuditXOVHToken() {
         return kafkaAuditXOVHToken;
+    }
+
+    public String getKafkaAuditNodeName() {
+        return kafkaAuditNodeName;
     }
 
     @ValidatorMethod
