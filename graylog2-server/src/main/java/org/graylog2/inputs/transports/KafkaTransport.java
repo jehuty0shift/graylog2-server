@@ -192,7 +192,7 @@ public class KafkaTransport extends ThrottleableTransport {
         serverEventBus.register(this);
 
         final Properties props = new Properties();
-
+        Thread.currentThread().setContextClassLoader(KafkaConsumer.class.getClassLoader());
         props.put("group.id", configuration.getString(CK_GROUP_ID, DEFAULT_GROUP_ID));
         props.put("client.id", "gl2-" + nodeId + "-" + input.getId());
         props.put("group.instance.id", "gl2-" + nodeId + "-" + input.getId());
@@ -221,9 +221,15 @@ public class KafkaTransport extends ThrottleableTransport {
             if (!"".equals(configuration.getString(CK_SSL_KEY_PASSWORD))) {
                 props.put("ssl.key.password", configuration.getString(CK_SSL_KEY_PASSWORD));
             }
-            props.put("ssl.truststore.location", configuration.getString(CK_SSL_TRUSTSTORE_LOCATION));
-            props.put("ssl.truststore.password", configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD));
-            props.put("ssl.enabled.protocols", configuration.getString(CK_SSL_ENABLED_PROTOCOL));
+            if (!"".equals(configuration.getString(CK_SSL_TRUSTSTORE_LOCATION))) {
+                props.put("ssl.truststore.location", configuration.getString(CK_SSL_TRUSTSTORE_LOCATION));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD))) {
+                props.put("ssl.truststore.password", configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD));
+            }
+            if ("".equals(configuration.getString(CK_SSL_ENABLED_PROTOCOL))) {
+                props.put("ssl.enabled.protocols", configuration.getString(CK_SSL_ENABLED_PROTOCOL));
+            }
             props.put("security.protocol", "SSL");
         }
 
@@ -419,35 +425,35 @@ public class KafkaTransport extends ThrottleableTransport {
             cr.addField(new TextField(
                     CK_SSL_KEYSTORE_LOCATION,
                     "ssl keystore location",
-                    "location",
+                    "",
                     "Path to the Physical location of Keystore file, required when SSL is true ",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_KEYSTORE_PASSWORD,
                     "ssl keystore password",
-                    "password",
+                    "",
                     "password for Keystore file , required when SSL is true",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_KEY_PASSWORD,
                     "ssl key password",
-                    "password",
+                    "",
                     "Key Password",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_TRUSTSTORE_LOCATION,
                     "ssl truststore location",
-                    "location",
+                    "",
                     "Path to the physical location of truststore file, required when SSL is true",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_TRUSTSTORE_PASSWORD,
                     "ssl truststore password",
-                    "password",
+                    "",
                     "Password for the trust store file, required when SSL is true",
                     ConfigurationField.Optional.OPTIONAL,
                     TextField.Attribute.IS_PASSWORD));
