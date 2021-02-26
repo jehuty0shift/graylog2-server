@@ -79,6 +79,10 @@ public class KafkaTransport extends ThrottleableTransport {
     public static final String CK_SSL_TRUSTSTORE_PASSWORD="ssl_truststore_password";
     public static final String CK_SSL_ENABLED_PROTOCOL="ssl_enabled_protocol";
 
+    public static final String CK_SASL = "sasl";
+    public static final String CK_SASL_USERNAME = "sasl_plain_username";
+    public static final String CK_SASL_PASSWORD = "sasl_plain_password";
+
     // See https://kafka.apache.org/090/documentation.html for available values for "auto.offset.reset".
     private static final Map<String, String> OFFSET_RESET_VALUES = ImmutableMap.of(
         "latest", "Automatically reset the offset to the latest offset",
@@ -200,15 +204,40 @@ public class KafkaTransport extends ThrottleableTransport {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,ByteArrayDeserializer.class.getName());
 
         // SSL settings
-
-        if(configuration.getBoolean(CK_SSL) == true) {
-            props.put("ssl.keystore.location", configuration.getString(CK_SSL_KEYSTORE_LOCATION));
-            props.put("ssl.keystore.password", configuration.getString(CK_SSL_KEYSTORE_PASSWORD));
-            props.put("ssl.key.password", configuration.getString(CK_SSL_KEY_PASSWORD));
-            props.put("ssl.truststore.location", configuration.getString(CK_SSL_TRUSTSTORE_LOCATION));
-            props.put("ssl.truststore.password", configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD));
+        if (configuration.getBoolean(CK_SSL)) {
+            if (!"".equals(configuration.getString(CK_SSL_KEYSTORE_LOCATION))) {
+                props.put("ssl.keystore.location", configuration.getString(CK_SSL_KEYSTORE_LOCATION));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_KEYSTORE_PASSWORD))) {
+                props.put("ssl.keystore.password", configuration.getString(CK_SSL_KEYSTORE_PASSWORD));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_KEY_PASSWORD))) {
+                props.put("ssl.key.password", configuration.getString(CK_SSL_KEY_PASSWORD));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_TRUSTSTORE_LOCATION))) {
+                props.put("ssl.truststore.location", configuration.getString(CK_SSL_TRUSTSTORE_LOCATION));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD))) {
+                props.put("ssl.truststore.password", configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD));
+            }
             props.put("ssl.enabled.protocols", configuration.getString(CK_SSL_ENABLED_PROTOCOL));
             props.put("security.protocol", "SSL");
+        }
+
+        //SASL Settings
+
+        if (configuration.getBoolean(CK_SASL)) {
+            if (configuration.getBoolean(CK_SSL)) {
+                props.put("security.protocol", "SASL_SSL");
+            } else {
+                props.put("security.protocol", "SASL_PLAINTEXT");
+            }
+            props.put("sasl.mechanism", "PLAIN");
+            final String jaasConfig = "org.apache.kafka.common.security.plain.PlainLoginModule required \n" +
+                "  username=\"" + configuration.getString(CK_SASL_USERNAME) + "\" \n" +
+                "  password=\"" + configuration.getString(CK_SASL_PASSWORD) + "\";";
+            props.put("sasl.jaas.config", jaasConfig);
+
         }
 
         final int numThreads = configuration.getInt(CK_THREADS);
@@ -419,6 +448,28 @@ public class KafkaTransport extends ThrottleableTransport {
                 "TLSv1.2",
                 "Enabled Protocols for SSL, required when SSL is true",
                 ConfigurationField.Optional.OPTIONAL));
+
+
+            cr.addField(new BooleanField(
+                CK_SASL,
+                "SASL",
+                false,
+                "Enabling SASL authentication"));
+
+            cr.addField(new TextField(
+                CK_SASL_USERNAME,
+                "SASL Plain username",
+                "username",
+                "SASL Protocol plain username",
+                ConfigurationField.Optional.OPTIONAL));
+
+            cr.addField(new TextField(
+                CK_SASL_PASSWORD,
+                "SASL Plain password",
+                "password",
+                "SASL Plain Password",
+                ConfigurationField.Optional.OPTIONAL,
+                TextField.Attribute.IS_PASSWORD));
 
 
             cr.addField(new NumberField(
