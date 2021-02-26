@@ -180,6 +180,12 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "kafka_audit_client_id")
     private String kafkaAuditClientId = "";
 
+    @Parameter(value = "kafka_audit_compression")
+    private String kafkaAuditCompression = "gzip";
+
+    @Parameter(value = "kafka_audit_acks_config")
+    private String kafkaAuditAcksConfig = "1";
+
     @Parameter(value = "kafka_audit_security_protocol")
     private String kafkaAuditSecurityProtocol = "";
 
@@ -383,6 +389,14 @@ public class Configuration extends BaseConfiguration {
 
     public String getKafkaAuditClientId() {
         return kafkaAuditClientId;
+    }
+
+    public String getKafkaAuditCompression() {
+        return kafkaAuditCompression;
+    }
+
+    public String getKafkaAuditAcksConfig() {
+        return kafkaAuditAcksConfig;
     }
 
     public String getKafkaAuditSecurityProtocol() {

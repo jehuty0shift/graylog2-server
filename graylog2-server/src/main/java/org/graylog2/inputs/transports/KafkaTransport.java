@@ -212,9 +212,15 @@ public class KafkaTransport extends ThrottleableTransport {
         // SSL settings
 
         if (configuration.getBoolean(CK_SSL)) {
-            props.put("ssl.keystore.location", configuration.getString(CK_SSL_KEYSTORE_LOCATION));
-            props.put("ssl.keystore.password", configuration.getString(CK_SSL_KEYSTORE_PASSWORD));
-            props.put("ssl.key.password", configuration.getString(CK_SSL_KEY_PASSWORD));
+            if (!"".equals(configuration.getString(CK_SSL_KEYSTORE_LOCATION))) {
+                props.put("ssl.keystore.location", configuration.getString(CK_SSL_KEYSTORE_LOCATION));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_KEYSTORE_PASSWORD))) {
+                props.put("ssl.keystore.password", configuration.getString(CK_SSL_KEYSTORE_PASSWORD));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_KEY_PASSWORD))) {
+                props.put("ssl.key.password", configuration.getString(CK_SSL_KEY_PASSWORD));
+            }
             props.put("ssl.truststore.location", configuration.getString(CK_SSL_TRUSTSTORE_LOCATION));
             props.put("ssl.truststore.password", configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD));
             props.put("ssl.enabled.protocols", configuration.getString(CK_SSL_ENABLED_PROTOCOL));
@@ -227,7 +233,7 @@ public class KafkaTransport extends ThrottleableTransport {
             if (configuration.getBoolean(CK_SSL)) {
                 props.put("security.protocol", "SASL_SSL");
             } else {
-                props.put("securty.protocol", "SASL_PLAINTEXT");
+                props.put("security.protocol", "SASL_PLAINTEXT");
             }
             props.put("sasl.mechanism", "PLAIN");
             final String jaasConfig = "org.apache.kafka.common.security.plain.PlainLoginModule required \n" +
@@ -454,10 +460,10 @@ public class KafkaTransport extends ThrottleableTransport {
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new BooleanField(
-                    CK_SSL,
-                    "SSL",
+                    CK_SASL,
+                    "SASL",
                     false,
-                    "true or false for SSL "));
+                    "Enabling SASL authentication"));
 
             cr.addField(new TextField(
                     CK_SASL_USERNAME,

@@ -51,12 +51,20 @@ public class KafkaAuditEventSender implements AuditEventSender {
         final String SASLPassword = configuration.getKafkaAuditSaslPassword();
         final String SSLTruststoreLocation = configuration.getKafkaAuditSSLTruststoreLocation();
         final String SSLTruststorePassword = configuration.getKafkaAuditSSLTruststorePassword();
-
+        final String compression = configuration.getKafkaAuditCompression();
+        final String acksConfig = configuration.getKafkaAuditAcksConfig();
 
         LOG.info("Kafka audit Sender configuration is :  bootstrapServers={}, topic={}, clientId={}, securityProtocol={}, SASLUsername={}", bootstrapServers, topic, clientId, securityProtocol, SASLUsername);
 
         kProp.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         kProp.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
+        if(!"".equals(compression)) {
+           kProp.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, compression);
+        }
+        if("".equals(acksConfig)) {
+            kProp.put(ProducerConfig.ACKS_CONFIG, acksConfig);
+        }
+
         kProp.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         kProp.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
@@ -135,7 +143,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
         objNode.put("version", "1.1");
         objNode.put("host", clientId);
         objNode.put("timestamp", timestamp);
-        objNode.put("_type", "audit");
+        objNode.put("_type", "audit_graylog");
         objNode.put("_client_id", clientId);
         objNode.put("_node_name", nodeName);
         if (!XOvhToken.equals("")) {
