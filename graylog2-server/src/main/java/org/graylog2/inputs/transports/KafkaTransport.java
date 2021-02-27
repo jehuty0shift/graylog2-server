@@ -410,35 +410,35 @@ public class KafkaTransport extends ThrottleableTransport {
             cr.addField(new TextField(
                 CK_SSL_KEYSTORE_LOCATION,
                 "ssl keystore location",
-                "location",
+                "",
                 "Path to the Physical location of Keystore file, required when SSL is true ",
                 ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                 CK_SSL_KEYSTORE_PASSWORD,
                 "ssl keystore password",
-                "password",
+                "",
                 "password for Keystore file , required when SSL is true",
                 ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                 CK_SSL_KEY_PASSWORD,
                 "ssl key password",
-                "password",
+                "",
                 "Key Password",
                 ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                 CK_SSL_TRUSTSTORE_LOCATION,
                 "ssl truststore location",
-                "location",
+                "",
                 "Path to the physical location of truststore file, required when SSL is true",
                 ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                 CK_SSL_TRUSTSTORE_PASSWORD,
                 "ssl truststore password",
-                "password",
+                "",
                 "Password for the trust store file, required when SSL is true",
                 ConfigurationField.Optional.OPTIONAL));
 
