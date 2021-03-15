@@ -21,14 +21,8 @@ public class KIndexMapping {
     }
 
 
-
     public boolean addFieldsForStream(String streamId, Collection<String> fieldNames) {
-        Set fSet = streamFieldsMap.computeIfAbsent(streamId, k -> new HashSet<>(fieldNames.size()));
-        boolean changed = fSet.addAll(fieldNames);
-        if(changed) {
-            updateDate = Instant.now();
-        }
-        return changed;
+        return streamFieldsMap.computeIfAbsent(streamId, k -> new HashSet<>(fieldNames.size())).addAll(fieldNames);
     }
 
     public String getkId() {
@@ -52,7 +46,20 @@ public class KIndexMapping {
     }
 
     public boolean containsField(Collection<String> streamIds, String fieldName) {
-        return streamFieldsMap.entrySet().stream().filter(e -> streamIds.contains(e.getKey())).anyMatch(s -> s.getValue().contains(fieldName));
+        return streamIds.stream().anyMatch(s -> streamFieldsMap.getOrDefault(s, Collections.emptySet()).contains(fieldName));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KIndexMapping that = (KIndexMapping) o;
+        return index.equals(that.index) && kId.equals(that.kId) && streamFieldsMap.equals(that.streamFieldsMap) && updateDate.equals(that.updateDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index, kId, streamFieldsMap, updateDate);
     }
 
     @Override
@@ -61,7 +68,7 @@ public class KIndexMapping {
                 "index='" + index + '\'' +
                 ", kId='" + kId + '\'' +
                 ", streamFieldsMap=" + streamFieldsMap.size() +
-                ", updateDate=" + updateDate+
+                ", updateDate=" + updateDate +
                 '}';
     }
 

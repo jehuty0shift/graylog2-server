@@ -11,6 +11,8 @@ import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.graylog2.indexer.fieldtypes.kefla.KIndexMapping;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +38,12 @@ public class KIndexMappingCodec implements Codec<KIndexMapping> {
 
     @Override
     public KIndexMapping decode(BsonReader bsonReader, DecoderContext decoderContext) {
+        DateTime dt = DateTime.now(DateTimeZone.UTC);
         Document document = documentCodec.decode(bsonReader, decoderContext);
 
         KIndexMapping kIM = new KIndexMapping(document.getString("index"), document.getString("kId"));
 
-        List<Document> streamFields = document.get("stream_fields", List.class);
+        List<Document> streamFields = document.getList("stream_fields", Document.class);
 
         for (Document strFDoc : streamFields) {
             StreamFieldsHolder strFHolder = StreamFieldsHolderCodec.fromDocument(strFDoc);
@@ -49,6 +52,10 @@ public class KIndexMappingCodec implements Codec<KIndexMapping> {
 
         kIM.setUpdateDate(document.getDate("update_date").toInstant());
 
+        final String index = "graylog2_3713";
+        if(kIM.getIndex().equals(index)) {
+            LOG.info("creating KIM for index {} took {} ms",index, DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        }
         return kIM;
     }
 

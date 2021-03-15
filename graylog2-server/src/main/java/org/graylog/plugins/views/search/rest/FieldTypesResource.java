@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -26,6 +26,8 @@ import org.graylog2.plugin.rest.PluginRestResource;
 import org.graylog2.shared.rest.exceptions.MissingStreamPermissionException;
 import org.graylog2.shared.rest.resources.RestResource;
 import org.graylog2.shared.security.RestPermissions;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +59,11 @@ public class FieldTypesResource extends RestResource implements PluginRestResour
     @GET
     @ApiOperation(value = "Get all known fields.", notes = "Retrieve the list of all fields present in the system")
     public Set<MappedFieldTypeDTO> allFieldTypes() {
-        return mappedFieldTypesService.fieldTypesByStreamIds(permittedStreams.load(this::allowedToReadStream));
+        DateTime dt = DateTime.now(DateTimeZone.UTC);
+        LOG.info("calling /views/fields/ allFIeldTypes {}", dt.toString());
+        ImmutableSet<String> streams = permittedStreams.load(this::allowedToReadStream);
+        LOG.info("load allowed fields took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        return mappedFieldTypesService.fieldTypesByStreamIds(streams);
     }
 
     private boolean allowedToReadStream(String streamId) {
@@ -68,7 +74,10 @@ public class FieldTypesResource extends RestResource implements PluginRestResour
     @ApiOperation(value = "Get fields for given streams.", notes = "Retrieve the field list of a given set of streams")
     @NoAuditEvent("This is not changing any data")
     public Set<MappedFieldTypeDTO> byStreams(FieldTypesForStreamsRequest request) {
+        DateTime dt = DateTime.now(DateTimeZone.UTC);
+        LOG.info("calling /views/fields/ byStreams");
         checkStreamPermission(request.streams());
+        LOG.info("check Permission took {} ms",DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
         return mappedFieldTypesService.fieldTypesByStreamIds(request.streams());
     }
