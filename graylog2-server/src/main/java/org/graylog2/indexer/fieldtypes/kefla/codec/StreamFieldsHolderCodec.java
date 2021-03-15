@@ -41,7 +41,7 @@ public class StreamFieldsHolderCodec implements Codec<StreamFieldsHolder> {
 
     public static StreamFieldsHolder fromDocument(Document document) {
         final String streamId = document.getString("stream_id");
-        final List<String> fields = document.get("fields", List.class);
+        final List<String> fields = document.getList("fields", String.class);
 
         return new StreamFieldsHolder(streamId, fields);
     }
