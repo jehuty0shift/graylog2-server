@@ -51,7 +51,7 @@ class FieldNameCompletion implements Completer {
 
   fields: FieldTypesStoreState;
 
-  currentQueryFieldNames: { [string]: string };
+  currentQueryFieldNames: Set<string>;
 
   staticSuggestions: Array<Suggestion>;
 
@@ -61,6 +61,8 @@ class FieldNameCompletion implements Completer {
     ViewMetadataStore.listen(this.onViewMetadataStoreUpdate);
 
     this._newFields(FieldTypesStore.getInitialState());
+    this.activeQuery = "";
+    //this.currentQueryFields = new Set();
     FieldTypesStore.listen((newState) => this._newFields(newState));
   }
 
@@ -71,8 +73,10 @@ class FieldNameCompletion implements Completer {
     if (this.activeQuery) {
       const currentQueryFields: FieldTypeMappingsList = queryFields.get(this.activeQuery, Immutable.List());
 
-      this.currentQueryFieldNames = currentQueryFields.map((fieldMapping) => fieldMapping.name)
-        .reduce((prev, cur) => ({ ...prev, [cur]: cur }), {});
+      //this.currentQueryFieldNames = currentQueryFields.map((fieldMapping) => fieldMapping.name)
+       //                                     .reduce((prev, cur) => ({ ...prev, [cur]: cur }), {});
+     this.currentQueryFieldNames = new Set(currentQueryFields.map((fieldMapping) => fieldMapping.name));
+
     }
   };
 
@@ -105,7 +109,8 @@ class FieldNameCompletion implements Completer {
 
     const valuePosition = this._isFollowingExistsOperator(lastToken);
 
-    const allButInCurrent = all.filter((field) => !this.currentQueryFieldNames[field.name]);
+    const allButInCurrent = all.filter((field) => !this.currentQueryFieldNames.has(field.name));
+ //   const allButInCurrent = all.filter((field) => !this.currentQueryFieldNames[field.name]);
     const fieldsToMatchIn = valuePosition
       ? [...currentQueryFields]
       : [...this.staticSuggestions, ...currentQueryFields];
