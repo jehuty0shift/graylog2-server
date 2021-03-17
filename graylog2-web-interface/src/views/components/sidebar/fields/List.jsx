@@ -64,13 +64,15 @@ const List = ({ viewMetadata: { activeQuery }, filter, activeQueryFields, allFie
               style={style} />
   );
 
+  const sizeMax = fieldList.size > 500?500:fieldList.size;
+
   return (
     <SizeMe monitorHeight refreshRate={100}>
       {({ size: { height, width } }) => (
         <DynamicHeight>
           <FixedSizeList height={height || DEFAULT_HEIGHT_PX}
                          width={width}
-                         itemCount={fieldList.size}
+                         itemCount={sizeMax}
                          itemSize={20}>
             {Row}
           </FixedSizeList>
