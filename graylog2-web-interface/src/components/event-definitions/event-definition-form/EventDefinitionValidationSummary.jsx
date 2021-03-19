@@ -10,6 +10,12 @@ class EventDefinitionValidationSummary extends React.Component {
     validation: PropTypes.object.isRequired,
   };
 
+  static defaultProps = {
+    validation: {
+      errors: {}
+    }
+  }
+
   render() {
     const { validation = {} } = this.props;
     const fieldsWithErrors = Object.keys(validation.errors);

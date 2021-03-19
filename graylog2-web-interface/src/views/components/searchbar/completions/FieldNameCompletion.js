@@ -62,7 +62,7 @@ class FieldNameCompletion implements Completer {
 
     this._newFields(FieldTypesStore.getInitialState());
     this.activeQuery = "";
-    //this.currentQueryFields = new Set();
+    this.currentQueryFields = new Set();
     FieldTypesStore.listen((newState) => this._newFields(newState));
   }
 
