@@ -19,6 +19,7 @@ package org.graylog2.indexer.fieldtypes;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.graylog.plugins.views.search.rest.MappedFieldTypeDTO;
+import org.graylog2.indexer.IndexSet;
 import org.graylog2.indexer.IndexSetRegistry;
 import org.graylog2.indexer.fieldtypes.kefla.KeflaService;
 import org.graylog2.streams.StreamService;
@@ -47,6 +48,7 @@ public class MappedFieldTypesService {
 
     private static final FieldTypes.Type UNKNOWN_TYPE = createType("unknown", of());
     private static final String PROP_COMPOUND_TYPE = "compound";
+    private static final List<String> reservedFields = Arrays.asList("source","message","full_message");
     private static final Logger LOG = LoggerFactory.getLogger(MappedFieldTypesService.class);
 
     @Inject
@@ -57,40 +59,42 @@ public class MappedFieldTypesService {
         this.indexSetRegistry = indexSetRegistry;
         this.fieldTypeMapper = fieldTypeMapper;
         indexFieldTypesMap = this.indexFieldTypesService.findAll().stream().collect(Collectors.toMap(IndexFieldTypesDTO::indexName, Function.identity()));
-        LOG.info("loaded {} indexFieldTypes.",indexFieldTypesMap.size());
+        LOG.info("loaded {} indexFieldTypes.", indexFieldTypesMap.size());
     }
 
     public Set<MappedFieldTypeDTO> fieldTypesByStreamIds(Collection<String> streamIds) {
         DateTime dt = DateTime.now(DateTimeZone.UTC);
         DateTime globalDT = dt;
-        LOG.info("starting fieldTypesByStreamIds on {} streams at {}", streamIds.size(), dt.toString());
+        LOG.debug("starting fieldTypesByStreamIds on {} streams at {}", streamIds.size(), dt.toString());
         final Set<String> indexSets = streamService.indexSetIdsByIds(streamIds);
-        LOG.info("streamService  indexSetIdsByIds took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        LOG.debug("streamService  indexSetIdsByIds took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+
+        Map<String, IndexSet> indexSetMap = indexSets.stream().collect(Collectors.toMap(Function.identity(), id -> indexSetRegistry.get(id).get()));
 
         dt = DateTime.now(DateTimeZone.UTC);
-        List<String> indicesToUpdate = indexSets.stream().map(id -> indexSetRegistry.get(id).get().getActiveWriteIndex()).collect(Collectors.toList());
-        LOG.info("indices to Update are {}, found in {} ms.", indicesToUpdate, DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        List<String> indicesToUpdate = indexSets.stream().map(id -> indexSetMap.get(id).getActiveWriteIndex()).collect(Collectors.toList());
+        LOG.debug("indices to Update are {}, found in {} ms.", indicesToUpdate, DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
         dt = DateTime.now(DateTimeZone.UTC);
         Set<String> fieldsByStream = keflaService.fieldByStreamId(streamIds, indicesToUpdate).values().stream().flatMap(s -> s.stream()).collect(Collectors.toSet());
-        LOG.info("Found {} fields in {} ms.",fieldsByStream.size(), DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        LOG.debug("Found {} fields in {} ms.", fieldsByStream.size(), DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
         dt = DateTime.now(DateTimeZone.UTC);
         indexFieldTypesMap.putAll(this.indexFieldTypesService.findForIndexName(indicesToUpdate).stream().collect(Collectors.toMap(IndexFieldTypesDTO::indexName, Function.identity())));
-        LOG.info("Index types found in {} ms.", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        LOG.debug("Index types found in {} ms.", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
         dt = DateTime.now(DateTimeZone.UTC);
-        final java.util.stream.Stream<MappedFieldTypeDTO> types = indexFieldTypesMap.values().stream()
-                .flatMap(indexFieldTypesDTO ->
-                        indexFieldTypesDTO.fields().stream().filter(f -> fieldsByStream.contains(f.fieldName())))
+        //rewrite this to take indexSet ids into accounts
+        final java.util.stream.Stream<MappedFieldTypeDTO> types = indexSetMap.values().stream().flatMap(iSet -> Arrays.asList(iSet.getManagedIndices()).stream())
+                .flatMap(i -> indexFieldTypesMap.get(i).fields().stream().filter(f -> fieldsByStream.contains(f.fieldName())))
                 .map(this::mapPhysicalFieldType);
-        LOG.info("filtering streams took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        LOG.debug("filtering streams took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
         dt = DateTime.now(DateTimeZone.UTC);
         Set<MappedFieldTypeDTO> mappedFieldSet = mergeCompoundFieldTypes(types);
-        LOG.info("merge Field took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
+        LOG.debug("merge Field took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
-        LOG.info("global field Filtering took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - globalDT.getMillis());
+        LOG.debug("global field Filtering took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - globalDT.getMillis());
         return mappedFieldSet;
     }
 
@@ -110,6 +114,10 @@ public class MappedFieldTypesService {
                         return fieldTypes.iterator().next();
                     }
 
+                    if (reservedFields.contains(fieldName)) {
+                        return MappedFieldTypeDTO.create(fieldName, FieldTypeMapper.mapType("text").get());
+                    }
+
                     final Set<String> distinctTypes = fieldTypes.stream()
                             .map(mappedFieldTypeDTO -> mappedFieldTypeDTO.type().type())
                             .sorted()
@@ -121,7 +129,7 @@ public class MappedFieldTypesService {
                             .map(mappedFieldTypeDTO -> mappedFieldTypeDTO.type().properties())
                             .reduce((s1, s2) -> Sets.intersection(s1, s2).immutableCopy())
                             .orElse(ImmutableSet.of());
-
+                    LOG.info("{} is compound due to types {}", fieldName, fieldTypes.stream().map(f -> "[" + f.name() + ":" + f.type() + "]").collect(Collectors.joining(",")));
                     final ImmutableSet<String> properties = ImmutableSet.<String>builder().addAll(commonProperties).add(PROP_COMPOUND_TYPE).build();
                     return MappedFieldTypeDTO.create(fieldName, createType(compoundFieldType, properties));
 

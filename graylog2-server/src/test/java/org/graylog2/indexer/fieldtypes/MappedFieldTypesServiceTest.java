@@ -87,6 +87,7 @@ public class MappedFieldTypesServiceTest {
         when(indexFieldTypesService.findAll()).thenReturn(fieldTypes);
         when(indexFieldTypesService.findForIndexName(any())).thenReturn(fieldTypes);
         when(iSet.getActiveWriteIndex()).thenReturn("testIndex2");
+        when(iSet.getManagedIndices()).thenReturn(new String[]{"testIndex","testIndex2"});
         when(indexSetRegistry.get(any())).thenReturn(Optional.of(iSet));
         when(kService.fieldByStreamId(any(), any())).thenReturn(Maps.of("stream1", Sets.newHashSet("field1", "field2")));
 
@@ -120,6 +121,7 @@ public class MappedFieldTypesServiceTest {
         when(indexFieldTypesService.findAll()).thenReturn(fieldTypes);
         when(indexFieldTypesService.findForIndexName(any())).thenReturn(fieldTypes);
         when(iSet.getActiveWriteIndex()).thenReturn("testIndex2");
+        when(iSet.getManagedIndices()).thenReturn(new String[]{"testIndex","testIndex2"});
         when(indexSetRegistry.get(any())).thenReturn(Optional.of(iSet));
         when(kService.fieldByStreamId(any(), any())).thenReturn(Maps.of("stream1", Sets.newHashSet("field1", "field2")));
 
