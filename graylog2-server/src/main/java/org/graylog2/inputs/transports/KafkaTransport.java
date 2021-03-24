@@ -192,7 +192,7 @@ public class KafkaTransport extends ThrottleableTransport {
         serverEventBus.register(this);
 
         final Properties props = new Properties();
-
+        Thread.currentThread().setContextClassLoader(KafkaConsumer.class.getClassLoader());
         props.put("group.id", configuration.getString(CK_GROUP_ID, DEFAULT_GROUP_ID));
         props.put("client.id", "gl2-" + nodeId + "-" + input.getId());
         props.put("group.instance.id", "gl2-" + nodeId + "-" + input.getId());
@@ -212,12 +212,24 @@ public class KafkaTransport extends ThrottleableTransport {
         // SSL settings
 
         if (configuration.getBoolean(CK_SSL)) {
-            props.put("ssl.keystore.location", configuration.getString(CK_SSL_KEYSTORE_LOCATION));
-            props.put("ssl.keystore.password", configuration.getString(CK_SSL_KEYSTORE_PASSWORD));
-            props.put("ssl.key.password", configuration.getString(CK_SSL_KEY_PASSWORD));
-            props.put("ssl.truststore.location", configuration.getString(CK_SSL_TRUSTSTORE_LOCATION));
-            props.put("ssl.truststore.password", configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD));
-            props.put("ssl.enabled.protocols", configuration.getString(CK_SSL_ENABLED_PROTOCOL));
+            if (!"".equals(configuration.getString(CK_SSL_KEYSTORE_LOCATION))) {
+                props.put("ssl.keystore.location", configuration.getString(CK_SSL_KEYSTORE_LOCATION));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_KEYSTORE_PASSWORD))) {
+                props.put("ssl.keystore.password", configuration.getString(CK_SSL_KEYSTORE_PASSWORD));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_KEY_PASSWORD))) {
+                props.put("ssl.key.password", configuration.getString(CK_SSL_KEY_PASSWORD));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_TRUSTSTORE_LOCATION))) {
+                props.put("ssl.truststore.location", configuration.getString(CK_SSL_TRUSTSTORE_LOCATION));
+            }
+            if (!"".equals(configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD))) {
+                props.put("ssl.truststore.password", configuration.getString(CK_SSL_TRUSTSTORE_PASSWORD));
+            }
+            if ("".equals(configuration.getString(CK_SSL_ENABLED_PROTOCOL))) {
+                props.put("ssl.enabled.protocols", configuration.getString(CK_SSL_ENABLED_PROTOCOL));
+            }
             props.put("security.protocol", "SSL");
         }
 
@@ -227,7 +239,7 @@ public class KafkaTransport extends ThrottleableTransport {
             if (configuration.getBoolean(CK_SSL)) {
                 props.put("security.protocol", "SASL_SSL");
             } else {
-                props.put("securty.protocol", "SASL_PLAINTEXT");
+                props.put("security.protocol", "SASL_PLAINTEXT");
             }
             props.put("sasl.mechanism", "PLAIN");
             final String jaasConfig = "org.apache.kafka.common.security.plain.PlainLoginModule required \n" +
@@ -413,35 +425,35 @@ public class KafkaTransport extends ThrottleableTransport {
             cr.addField(new TextField(
                     CK_SSL_KEYSTORE_LOCATION,
                     "ssl keystore location",
-                    "location",
+                    "",
                     "Path to the Physical location of Keystore file, required when SSL is true ",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_KEYSTORE_PASSWORD,
                     "ssl keystore password",
-                    "password",
+                    "",
                     "password for Keystore file , required when SSL is true",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_KEY_PASSWORD,
                     "ssl key password",
-                    "password",
+                    "",
                     "Key Password",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_TRUSTSTORE_LOCATION,
                     "ssl truststore location",
-                    "location",
+                    "",
                     "Path to the physical location of truststore file, required when SSL is true",
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new TextField(
                     CK_SSL_TRUSTSTORE_PASSWORD,
                     "ssl truststore password",
-                    "password",
+                    "",
                     "Password for the trust store file, required when SSL is true",
                     ConfigurationField.Optional.OPTIONAL,
                     TextField.Attribute.IS_PASSWORD));
@@ -454,10 +466,10 @@ public class KafkaTransport extends ThrottleableTransport {
                     ConfigurationField.Optional.OPTIONAL));
 
             cr.addField(new BooleanField(
-                    CK_SSL,
-                    "SSL",
+                    CK_SASL,
+                    "SASL",
                     false,
-                    "true or false for SSL "));
+                    "Enabling SASL authentication"));
 
             cr.addField(new TextField(
                     CK_SASL_USERNAME,

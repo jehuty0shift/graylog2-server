@@ -75,7 +75,7 @@ public class FieldTypeMapper {
      * @param typeName Elasticsearch type name
      * @return the Graylog type object
      */
-    public Optional<FieldTypes.Type> mapType(String typeName) {
+    public static Optional<FieldTypes.Type> mapType(String typeName) {
         return Optional.ofNullable(TYPE_MAP.get(typeName));
     }
 }
