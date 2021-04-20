@@ -66,6 +66,8 @@ public class KafkaTransport extends ThrottleableTransport {
     public static final String CK_THREADS = "threads";
     public static final String CK_OFFSET_RESET = "offset_reset";
     public static final String CK_GROUP_ID = "group_id";
+    public static final String CK_GROUP_INSTANCE_ID = "group_instance_id";
+
 
     public static final String CK_AUTO_COMMIT_INTERVAL_MS = "auto_commit_interval_ms";
     public static final String CK_BOOTSTRAP = "bootstrap_server";
@@ -195,7 +197,9 @@ public class KafkaTransport extends ThrottleableTransport {
         Thread.currentThread().setContextClassLoader(KafkaConsumer.class.getClassLoader());
         props.put("group.id", configuration.getString(CK_GROUP_ID, DEFAULT_GROUP_ID));
         props.put("client.id", "gl2-" + nodeId + "-" + input.getId());
-        props.put("group.instance.id", "gl2-" + nodeId + "-" + input.getId());
+        if (configuration.getBoolean(CK_GROUP_INSTANCE_ID)) {
+            props.put("group.instance.id", "gl2-" + nodeId + "-" + input.getId());
+        }
         props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, String.valueOf(configuration.getInt(CK_FETCH_MIN_BYTES)));
         props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, String.valueOf(configuration.getInt(CK_FETCH_WAIT_MAX)));
         props.put("auto.offset.reset", configuration.getString(CK_OFFSET_RESET, DEFAULT_OFFSET_RESET));
@@ -415,6 +419,12 @@ public class KafkaTransport extends ThrottleableTransport {
                     "^your-topic$",
                     "Every topic that matches this regular expression will be consumed.",
                     ConfigurationField.Optional.NOT_OPTIONAL));
+
+            cr.addField(new BooleanField(
+                    CK_GROUP_INSTANCE_ID,
+                    "Enable Group Instance Id",
+                    true,
+                    "true or false to enable group instance id based on the clientId"));
 
             cr.addField(new BooleanField(
                     CK_SSL,
