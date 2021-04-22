@@ -1,5 +1,5 @@
 window.appConfig = {
-  gl2ServerUrl: 'http://localhost:9000/api',
+	gl2ServerUrl: 'https://gra255.logs.ovh.com/api',
   gl2AppPathPrefix: '',
   rootTimeZone: 'Europe/Berlin',
   customUsername: 'Username',
