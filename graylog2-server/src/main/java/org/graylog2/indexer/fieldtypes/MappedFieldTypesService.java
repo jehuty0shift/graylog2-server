@@ -33,6 +33,7 @@ import javax.inject.Singleton;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableSet.of;
 import static org.graylog2.indexer.fieldtypes.FieldTypes.Type.createType;
@@ -86,7 +87,7 @@ public class MappedFieldTypesService {
         dt = DateTime.now(DateTimeZone.UTC);
         //rewrite this to take indexSet ids into accounts
         final java.util.stream.Stream<MappedFieldTypeDTO> types = indexSetMap.values().stream().flatMap(iSet -> Arrays.asList(iSet.getManagedIndices()).stream())
-                .flatMap(i -> indexFieldTypesMap.get(i).fields().stream().filter(f -> fieldsByStream.contains(f.fieldName())))
+                .flatMap(i -> indexFieldTypesMap.get(i)==null? Stream.empty():indexFieldTypesMap.get(i).fields().stream().filter(f -> fieldsByStream.contains(f.fieldName())))
                 .map(this::mapPhysicalFieldType);
         LOG.debug("filtering streams took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
