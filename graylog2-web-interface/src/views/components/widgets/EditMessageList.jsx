@@ -13,7 +13,6 @@ import AggregationWidgetConfig from 'views/logic/aggregationbuilder/AggregationW
 import MessagesWidgetConfig from 'views/logic/widgets/MessagesWidgetConfig';
 import FieldTypeMapping from 'views/logic/fieldtypes/FieldTypeMapping';
 import DescriptionBox from 'views/components/aggregationbuilder/DescriptionBox';
-import DecoratorSidebar from 'views/components/messagelist/decorators/DecoratorSidebar';
 
 const FullHeightCol = styled(Col)`
   height: 100%;
@@ -78,12 +77,6 @@ const EditMessageList = ({ children, config, fields, onChange }: Props) => {
           <SortDirectionSelect disabled={!sort || sort.length === 0}
                                direction={sortDirection && sortDirection.direction}
                                onChange={(data) => _onSortDirectionChange(data, config, onChange)} />
-        </DescriptionBox>
-        <DescriptionBox description="Decorators">
-          <DecoratorSidebar stream="000000000000000000000001"
-                            decorators={config.decorators}
-                            maximumHeight={600}
-                            onChange={onDecoratorsChange} />
         </DescriptionBox>
       </FullHeightCol>
       <FullHeightCol md={9}>
