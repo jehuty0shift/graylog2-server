@@ -1,17 +1,13 @@
 // @flow strict
 import * as Immutable from 'immutable';
 
-import CombinedProvider from 'injection/CombinedProvider';
-
 import View from './View';
 import ViewState from './ViewState';
 import type { ViewType } from './View';
 
 import { resultHistogram, allMessagesTable } from '../Widgets';
 import WidgetPosition from '../widgets/WidgetPosition';
-import Widget from '../widgets/Widget';
 
-const { DecoratorsActions } = CombinedProvider.get('Decorators');
 
 type Result = {
   titles: { widget: { [string]: string } },
@@ -21,10 +17,8 @@ type Result = {
 
 const _defaultWidgets: { [ViewType]: (?string) => Promise<Result> } = {
   [View.Type.Search]: async (streamId: ?string) => {
-    const decorators = await DecoratorsActions.list();
-    const streamDecorators = decorators ? decorators.filter((decorator) => decorator.stream === streamId) : [];
     const histogram = resultHistogram();
-    const messageTable = allMessagesTable(undefined, streamDecorators);
+    const messageTable = allMessagesTable(undefined, []);
     const widgets = [
       histogram,
       messageTable,
