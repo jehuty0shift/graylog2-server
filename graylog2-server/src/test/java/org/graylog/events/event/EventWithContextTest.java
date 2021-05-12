@@ -21,6 +21,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -40,7 +42,7 @@ public class EventWithContextTest {
     @Test
     public void createWithMessageAndWithoutEventContext() {
         final Event event = new TestEvent();
-        final Message message = new Message("", "", DateTime.now(DateTimeZone.UTC));
+        final Message message = new Message("", "", Instant.now());
         final EventWithContext withContext = EventWithContext.builder()
                 .event(event)
                 .messageContext(message)
@@ -69,7 +71,7 @@ public class EventWithContextTest {
     @Test
     public void addMessageContext() {
         final Event event = new TestEvent();
-        final Message message = new Message("", "", DateTime.now(DateTimeZone.UTC));
+        final Message message = new Message("", "", Instant.now());
         final EventWithContext withContext = EventWithContext.builder()
                 .event(event)
                 .build();

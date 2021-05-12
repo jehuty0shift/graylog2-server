@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,6 +29,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,8 +114,8 @@ public class EventImpl implements Event {
     }
 
     @Override
-    public DateTime getTimestamp() {
-        return getEventTimestamp();
+    public Instant getTimestamp() {
+        return Instant.ofEpochMilli(getEventTimestamp().getMillis());
     }
 
     @Override
@@ -180,16 +181,16 @@ public class EventImpl implements Event {
     @Override
     public void addSourceStream(String sourceStream) {
         this.sourceStreams = ImmutableSet.<String>builder()
-            .addAll(sourceStreams)
-            .add(sourceStream)
-            .build();
+                .addAll(sourceStreams)
+                .add(sourceStream)
+                .build();
     }
 
     @Override
     public void removeSourceStream(String sourceStream) {
         this.sourceStreams = ImmutableSet.<String>builder()
-            .addAll(sourceStreams.stream().filter(s -> !s.equals(sourceStream)).collect(Collectors.toSet()))
-            .build();
+                .addAll(sourceStreams.stream().filter(s -> !s.equals(sourceStream)).collect(Collectors.toSet()))
+                .build();
     }
 
     @Override
@@ -297,13 +298,13 @@ public class EventImpl implements Event {
 
         // "Fix" timestamps to be in the correct format. Our message index mapping is using this format so we have
         // to use it for our events as well to make sure we can use the search without errors.
-        source.put(EventDto.FIELD_EVENT_TIMESTAMP, buildElasticSearchTimeFormat(requireNonNull(this.getEventTimestamp()).withZone(UTC)));
-        source.put(EventDto.FIELD_PROCESSING_TIMESTAMP, buildElasticSearchTimeFormat(requireNonNull(this.getProcessingTimestamp()).withZone(UTC)));
+        source.put(EventDto.FIELD_EVENT_TIMESTAMP, buildElasticSearchTimeFormat(Instant.ofEpochMilli(requireNonNull(this.getEventTimestamp()).withZone(UTC).getMillis())));
+        source.put(EventDto.FIELD_PROCESSING_TIMESTAMP, buildElasticSearchTimeFormat(Instant.ofEpochMilli(requireNonNull(this.getProcessingTimestamp()).withZone(UTC).getMillis())));
         if (this.getTimerangeStart() != null) {
-            source.put(EventDto.FIELD_TIMERANGE_START, buildElasticSearchTimeFormat(this.getTimerangeStart().withZone(UTC)));
+            source.put(EventDto.FIELD_TIMERANGE_START, buildElasticSearchTimeFormat(Instant.ofEpochMilli(this.getTimerangeStart().withZone(UTC).getMillis())));
         }
         if (this.getTimerangeEnd() != null) {
-            source.put(EventDto.FIELD_TIMERANGE_END, buildElasticSearchTimeFormat(this.getTimerangeEnd().withZone(UTC)));
+            source.put(EventDto.FIELD_TIMERANGE_END, buildElasticSearchTimeFormat(Instant.ofEpochMilli(this.getTimerangeEnd().withZone(UTC).getMillis())));
         }
 
         // We cannot index events that don't have any stream set

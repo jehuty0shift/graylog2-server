@@ -38,6 +38,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -86,7 +87,7 @@ public class Beats2Codec extends AbstractCodec {
         final String rootPath = noBeatsPrefix ? "" : beatsType;
         final String message = event.path("message").asText("-");
         final String timestampField = event.path("@timestamp").asText();
-        final DateTime timestamp = Tools.dateTimeFromString(timestampField);
+        final ZonedDateTime timestamp = Tools.dateTimeFromString(timestampField);
 
         JsonNode agentOrBeat = event.path("agent");
         // backwards compatibility for beats < 7.0
@@ -95,7 +96,7 @@ public class Beats2Codec extends AbstractCodec {
         }
         final String hostname = agentOrBeat.path("hostname").asText(BEATS_UNKNOWN);
 
-        final Message gelfMessage = new Message(message, hostname, timestamp);
+        final Message gelfMessage = new Message(message, hostname, timestamp.toInstant());
         gelfMessage.addField("beats_type", beatsType);
 
         // This field should be stored without a prefix
