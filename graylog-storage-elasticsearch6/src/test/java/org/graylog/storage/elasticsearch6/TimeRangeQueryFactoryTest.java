@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,6 +30,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,7 +62,7 @@ public class TimeRangeQueryFactoryTest {
         final RangeQueryBuilder queryBuilder = (RangeQueryBuilder) TimeRangeQueryFactory.create(timeRange);
         assertThat(queryBuilder).isNotNull();
         assertThat(queryBuilder.fieldName()).isEqualTo("timestamp");
-        assertThat(queryBuilder.from()).isEqualTo(Tools.buildElasticSearchTimeFormat(from));
-        assertThat(queryBuilder.to()).isEqualTo(Tools.buildElasticSearchTimeFormat(to));
+        assertThat(queryBuilder.from()).isEqualTo(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(from.getMillis())));
+        assertThat(queryBuilder.to()).isEqualTo(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(to.getMillis())));
     }
 }

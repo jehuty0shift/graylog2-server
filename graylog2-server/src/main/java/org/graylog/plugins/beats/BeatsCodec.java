@@ -35,6 +35,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -118,11 +119,11 @@ public class BeatsCodec extends AbstractCodec {
             name = String.valueOf(beat.get("name"));
         }
         final String timestampField = String.valueOf(event.remove("@timestamp"));
-        final DateTime timestamp = Tools.dateTimeFromString(timestampField);
+        final ZonedDateTime timestamp = Tools.dateTimeFromString(timestampField);
         final String type = String.valueOf(event.get("type"));
         final Object tags = event.get("tags");
 
-        final Message result = new Message(message, hostname, timestamp);
+        final Message result = new Message(message, hostname, timestamp.toInstant());
         result.addField("name", name);
         result.addField("type", type);
         result.addField("tags", tags);

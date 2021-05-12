@@ -121,25 +121,25 @@ public abstract class EventsIndexMapping implements IndexMappingTemplate {
                         .put("type", "date")
                         // Use the same format we use for the "message" mapping to make sure we
                         // can use the search.
-                        .put("format", Tools.ES_DATE_FORMAT)
+                        .put("format", Tools.ES_DATE_FORMAT_MS)
                         .build())
                 .put("timestamp_processing", map()
                         .put("type", "date")
                         // Use the same format we use for the "message" mapping to make sure we
                         // can use the search.
-                        .put("format", Tools.ES_DATE_FORMAT)
+                        .put("format", Tools.ES_DATE_FORMAT_MS)
                         .build())
                 .put("timerange_start", map()
                         .put("type", "date")
                         // Use the same format we use for the "message" mapping to make sure we
                         // can use the search.
-                        .put("format", Tools.ES_DATE_FORMAT)
+                        .put("format", Tools.ES_DATE_FORMAT_MS)
                         .build())
                 .put("timerange_end", map()
                         .put("type", "date")
                         // Use the same format we use for the "message" mapping to make sure we
                         // can use the search.
-                        .put("format", Tools.ES_DATE_FORMAT)
+                        .put("format", Tools.ES_DATE_FORMAT_MS)
                         .build())
                 .put("streams", map()
                         .put("type", "keyword")
