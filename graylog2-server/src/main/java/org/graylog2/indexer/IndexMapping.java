@@ -120,7 +120,7 @@ public abstract class IndexMapping implements IndexMappingTemplate {
     protected Map<String, Object> typeTimeWithMillis() {
         return ImmutableMap.of(
                 "type", "date",
-                "format", Tools.ES_DATE_FORMAT);
+                "format", Tools.ES_DATE_FORMAT_MS);
     }
 
     protected Map<String, Object> typeLong() {

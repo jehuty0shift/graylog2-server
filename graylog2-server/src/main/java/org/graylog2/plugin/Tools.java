@@ -48,6 +48,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,11 +74,17 @@ public final class Tools {
     private static final byte[] EMPTY_BYTE_ARRAY_4 = {0,0,0,0};
     private static final byte[] EMPTY_BYTE_ARRAY_16 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    public static final String ES_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ES_DATE_FORMAT_NANO = "yyyy-MM-dd HH:mm:ss.SSSSSSSSS";
+    public static final String ES_DATE_FORMAT_MS = "yyyy-MM-dd HH:mm:ss.SSS";
     public static final String ES_DATE_FORMAT_NO_MS = "yyyy-MM-dd HH:mm:ss";
 
-    public static final DateTimeFormatter ES_DATE_FORMAT_FORMATTER = DateTimeFormat.forPattern(Tools.ES_DATE_FORMAT).withZoneUTC();
-    public static final DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = ISODateTimeFormat.dateTime().withZoneUTC();
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER =  new java.time.format.DateTimeFormatterBuilder().append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
+            .appendLiteral(' ')
+            .append(java.time.format.DateTimeFormatter.ISO_LOCAL_TIME)
+            .toFormatter()
+            .withZone(ZoneOffset.UTC);
+
+    public static final java.time.format.DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = java.time.format.DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.of("UTC"));
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private Tools() {
@@ -317,8 +327,8 @@ public final class Tools {
         return ImmutableSortedSet.copyOf(c);
     }
 
-    public static String buildElasticSearchTimeFormat(DateTime timestamp) {
-        return timestamp.toString(ES_DATE_FORMAT_FORMATTER);
+    public static String buildElasticSearchTimeFormat(Instant timestamp) {
+        return ES_DATE_FORMAT_FORMATTER.format(timestamp);
     }
 
     /**
@@ -333,8 +343,8 @@ public final class Tools {
     /**
      * Parse the string representation of an ISO 8601 date/timestamp with milliseconds and timezone.
      */
-    public static DateTime dateTimeFromString(String s) {
-        return ISO_DATE_FORMAT_FORMATTER.parseDateTime(s);
+    public static ZonedDateTime dateTimeFromString(String s) {
+        return ZonedDateTime.parse(s);
     }
 
     /**
@@ -360,14 +370,10 @@ public final class Tools {
         return new DateTime(DateTimeZone.UTC);
     }
 
-    /**
-     * @return The current date with timezone UTC.
-     * @deprecated Use {@link #nowUTC()} instead.
-     */
-    @Deprecated
-    public static DateTime iso8601() {
-        return nowUTC();
+    public static ZonedDateTime nowUTC8() {
+        return ZonedDateTime.now(ZoneOffset.UTC);
     }
+
 
     public static String getISO8601String(DateTime time) {
         return ISODateTimeFormat.dateTime().print(time);
@@ -379,8 +385,7 @@ public final class Tools {
      */
     public static String elasticSearchTimeFormatToISO8601(String time) {
         try {
-            DateTime dt = DateTime.parse(time, ES_DATE_FORMAT_FORMATTER);
-            return getISO8601String(dt);
+            return Instant.from(ES_DATE_FORMAT_FORMATTER.parse(time)).toString();
         } catch (IllegalArgumentException e) {
             return time;
         }

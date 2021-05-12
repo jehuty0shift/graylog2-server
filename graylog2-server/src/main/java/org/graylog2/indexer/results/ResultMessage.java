@@ -72,7 +72,7 @@ public class ResultMessage {
         if (tmp.containsKey(Message.FIELD_TIMESTAMP)) {
             final Object tsField = tmp.get(Message.FIELD_TIMESTAMP);
             try {
-                tmp.put(Message.FIELD_TIMESTAMP, ES_DATE_FORMAT_FORMATTER.parseDateTime(String.valueOf(tsField)));
+                tmp.put(Message.FIELD_TIMESTAMP, ES_DATE_FORMAT_FORMATTER.parse(String.valueOf(tsField)));
             } catch (IllegalArgumentException e) {
                 // could not parse date string, this is likely a bug, but we will leave the original value alone
                 LOG.warn("Could not parse timestamp of message {}", message.get("id"), e);

@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -47,6 +47,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,8 +69,7 @@ import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_EVENT_SUBC
 import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_EVENT_TYPE;
 import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_EVENT_TYPE_CODE;
 import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_TAGS;
-import static org.graylog2.plugin.Tools.ES_DATE_FORMAT_FORMATTER;
-import static org.graylog2.plugin.Tools.buildElasticSearchTimeFormat;
+import static org.graylog2.plugin.Tools.*;
 import static org.joda.time.DateTimeZone.UTC;
 
 @NotThreadSafe
@@ -189,19 +189,19 @@ public class Message implements Messages, Indexable {
     private static final char KEY_REPLACEMENT_CHAR = '_';
 
     private static final ImmutableSet<String> GRAYLOG_FIELDS = ImmutableSet.of(
-        FIELD_GL2_ORIGINAL_TIMESTAMP,
-        FIELD_GL2_PROCESSING_ERROR,
-        FIELD_GL2_PROCESSING_TIMESTAMP,
-        FIELD_GL2_RECEIVE_TIMESTAMP,
-        FIELD_GL2_REMOTE_HOSTNAME,
-        FIELD_GL2_REMOTE_IP,
-        FIELD_GL2_REMOTE_PORT,
-        FIELD_GL2_SOURCE_COLLECTOR,
-        FIELD_GL2_SOURCE_COLLECTOR_INPUT,
-        FIELD_GL2_SOURCE_INPUT,
-        FIELD_GL2_SOURCE_NODE,
-        FIELD_GL2_SOURCE_RADIO,
-        FIELD_GL2_SOURCE_RADIO_INPUT
+            FIELD_GL2_ORIGINAL_TIMESTAMP,
+            FIELD_GL2_PROCESSING_ERROR,
+            FIELD_GL2_PROCESSING_TIMESTAMP,
+            FIELD_GL2_RECEIVE_TIMESTAMP,
+            FIELD_GL2_REMOTE_HOSTNAME,
+            FIELD_GL2_REMOTE_IP,
+            FIELD_GL2_REMOTE_PORT,
+            FIELD_GL2_SOURCE_COLLECTOR,
+            FIELD_GL2_SOURCE_COLLECTOR_INPUT,
+            FIELD_GL2_SOURCE_INPUT,
+            FIELD_GL2_SOURCE_NODE,
+            FIELD_GL2_SOURCE_RADIO,
+            FIELD_GL2_SOURCE_RADIO_INPUT
     );
 
     // Graylog Illuminate Fields
@@ -214,41 +214,41 @@ public class Message implements Messages, Indexable {
     );
 
     private static final ImmutableSet<String> CORE_MESSAGE_FIELDS = ImmutableSet.of(
-        FIELD_MESSAGE,
-        FIELD_SOURCE,
-        FIELD_TIMESTAMP
+            FIELD_MESSAGE,
+            FIELD_SOURCE,
+            FIELD_TIMESTAMP
     );
 
     private static final ImmutableSet<String> ES_FIELDS = ImmutableSet.of(
-        // ElasticSearch fields.
-        FIELD_ID,
-        "_ttl",
-        "_source",
-        "_all",
-        "_index",
-        "_type",
-        "_score"
+            // ElasticSearch fields.
+            FIELD_ID,
+            "_ttl",
+            "_source",
+            "_all",
+            "_index",
+            "_type",
+            "_score"
     );
 
     public static final ImmutableSet<String> RESERVED_SETTABLE_FIELDS = new ImmutableSet.Builder<String>()
-        .addAll(GRAYLOG_FIELDS)
-        .addAll(CORE_MESSAGE_FIELDS)
-        .build();
+            .addAll(GRAYLOG_FIELDS)
+            .addAll(CORE_MESSAGE_FIELDS)
+            .build();
 
     public static final ImmutableSet<String> RESERVED_FIELDS = new ImmutableSet.Builder<String>()
-        .addAll(RESERVED_SETTABLE_FIELDS)
-        .addAll(ES_FIELDS)
-        .build();
+            .addAll(RESERVED_SETTABLE_FIELDS)
+            .addAll(ES_FIELDS)
+            .build();
 
     public static final ImmutableSet<String> FILTERED_FIELDS = new ImmutableSet.Builder<String>()
-        .addAll(GRAYLOG_FIELDS)
-        .addAll(ES_FIELDS)
-        .add(FIELD_STREAMS)
-        .add(FIELD_FULL_MESSAGE)
-        .build();
+            .addAll(GRAYLOG_FIELDS)
+            .addAll(ES_FIELDS)
+            .add(FIELD_STREAMS)
+            .add(FIELD_FULL_MESSAGE)
+            .build();
 
     private static final ImmutableSet<String> REQUIRED_FIELDS = ImmutableSet.of(
-        FIELD_MESSAGE, FIELD_ID
+            FIELD_MESSAGE, FIELD_ID
     );
 
     @Deprecated
@@ -272,7 +272,7 @@ public class Message implements Messages, Indexable {
 
     private ArrayList<Recording> recordings;
 
-    public Message(final String message, final String source, final DateTime timestamp) {
+    public Message(final String message, final String source, final Instant timestamp) {
         fields.put(FIELD_ID, new UUID().toString());
         addRequiredField(FIELD_MESSAGE, message);
         addRequiredField(FIELD_SOURCE, source);
@@ -322,8 +322,8 @@ public class Message implements Messages, Indexable {
         return getFieldAs(String.class, FIELD_ID);
     }
 
-    public DateTime getTimestamp() {
-        return getFieldAs(DateTime.class, FIELD_TIMESTAMP).withZone(UTC);
+    public Instant getTimestamp() {
+        return getFieldAs(Instant.class, FIELD_TIMESTAMP);
     }
 
     @Override
@@ -349,7 +349,7 @@ public class Message implements Messages, Indexable {
                     obj.put(newKey, value);
                 } else {
                     LOG.warn("Keys must not contain a \".\" character! Ignoring field \"{}\"=\"{}\" in message [{}] - Unable to replace \".\" with a \"{}\" because of key conflict: \"{}\"=\"{}\"",
-                        key, value, getId(), KEY_REPLACEMENT_CHAR, newKey, obj.get(newKey));
+                            key, value, getId(), KEY_REPLACEMENT_CHAR, newKey, obj.get(newKey));
                     LOG.debug("Full message with \".\" in message key: {}", this);
                 }
             } else {
@@ -358,7 +358,7 @@ public class Message implements Messages, Indexable {
                     // Deliberate warning duplicates because the key with the "." might be transformed before reaching
                     // the duplicate original key with a "_". Otherwise we would silently overwrite the transformed key.
                     LOG.warn("Keys must not contain a \".\" character! Ignoring field \"{}\"=\"{}\" in message [{}] - Unable to replace \".\" with a \"{}\" because of key conflict: \"{}\"=\"{}\"",
-                        newKey, fields.get(newKey), getId(), KEY_REPLACEMENT_CHAR, key, value);
+                            newKey, fields.get(newKey), getId(), KEY_REPLACEMENT_CHAR, key, value);
                     LOG.debug("Full message with \".\" in message key: {}", this);
                 }
                 obj.put(key, value);
@@ -370,29 +370,31 @@ public class Message implements Messages, Indexable {
         obj.put(FIELD_STREAMS, getStreamIds());
 
         final Object timestampValue = getField(FIELD_TIMESTAMP);
-        DateTime dateTime;
+        Instant instant;
         if (timestampValue instanceof Date) {
-            dateTime = new DateTime(timestampValue);
+            instant = ((Date) timestampValue).toInstant();
         } else if (timestampValue instanceof DateTime) {
-            dateTime = (DateTime) timestampValue;
+            instant = ((DateTime) timestampValue).toDate().toInstant();
         } else if (timestampValue instanceof String) {
             // if the timestamp value is a string, we try to parse it in the correct format.
             // we fall back to "now", this avoids losing messages which happen to have the wrong timestamp format
             try {
-                dateTime = ES_DATE_FORMAT_FORMATTER.parseDateTime((String) timestampValue);
+                DateTimeFormatter instantFormatter = DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO).withZone(ZoneId.of("UTC"));
+                instant = Instant.from(LocalDate.parse((String) timestampValue, instantFormatter));
+
             } catch (IllegalArgumentException e) {
                 LOG.trace("Invalid format for field timestamp '{}' in message {}, forcing to current time.", timestampValue, getId());
                 invalidTimestampMeter.mark();
-                dateTime = Tools.nowUTC();
+                instant = Instant.now();
             }
         } else {
             // don't allow any other types for timestamp, force to "now"
             LOG.trace("Invalid type for field timestamp '{}' in message {}, forcing to current time.", timestampValue.getClass().getSimpleName(), getId());
             invalidTimestampMeter.mark();
-            dateTime = Tools.nowUTC();
+            instant = Instant.now();
         }
-        if (dateTime != null) {
-            obj.put(FIELD_TIMESTAMP, buildElasticSearchTimeFormat(dateTime.withZone(UTC)));
+        if (instant != null) {
+            obj.put(FIELD_TIMESTAMP, buildElasticSearchTimeFormat(instant));
         }
 
         return obj;
@@ -466,33 +468,33 @@ public class Message implements Messages, Indexable {
 
         final boolean isTimestamp = FIELD_TIMESTAMP.equals(trimmedKey);
         if (isTimestamp && value instanceof Date) {
-            fields.put(FIELD_TIMESTAMP, new DateTime(value));
+            fields.put(FIELD_TIMESTAMP, ((Date) value).toInstant());
         } else if (isTimestamp && value instanceof Temporal) {
-            final Date date;
+            final Instant date;
             if (value instanceof ZonedDateTime) {
-                date = Date.from(((ZonedDateTime) value).toInstant());
+                date = ((ZonedDateTime) value).toInstant();
             } else if (value instanceof OffsetDateTime) {
-                date = Date.from(((OffsetDateTime) value).toInstant());
+                date = ((OffsetDateTime) value).toInstant();
             } else if (value instanceof LocalDateTime) {
                 final LocalDateTime localDateTime = (LocalDateTime) value;
                 final ZoneId defaultZoneId = ZoneId.systemDefault();
                 final ZoneOffset offset = defaultZoneId.getRules().getOffset(localDateTime);
-                date = Date.from(localDateTime.toInstant(offset));
+                date = localDateTime.toInstant(offset);
             } else if (value instanceof LocalDate) {
                 final LocalDate localDate = (LocalDate) value;
                 final LocalDateTime localDateTime = localDate.atStartOfDay();
                 final ZoneId defaultZoneId = ZoneId.systemDefault();
                 final ZoneOffset offset = defaultZoneId.getRules().getOffset(localDateTime);
-                date = Date.from(localDateTime.toInstant(offset));
+                date = localDateTime.toInstant(offset);
             } else if (value instanceof Instant) {
-                date = Date.from((Instant) value);
+                date = (Instant) value;
             } else {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Unsupported temporal type {}. Using current date and time in message {}.", value.getClass(), getId());
                 }
-                date = new Date();
+                date = Instant.now();
             }
-            fields.put(FIELD_TIMESTAMP, new DateTime(date));
+            fields.put(FIELD_TIMESTAMP, date);
         } else if (value instanceof String) {
             final String str = ((String) value).trim();
             if (isRequiredField || !str.isEmpty()) {
@@ -776,6 +778,7 @@ public class Message implements Messages, Indexable {
         static Timing timing(String name, long elapsedNanos) {
             return new Timing(name, elapsedNanos);
         }
+
         public static Message.Counter counter(String name, int counter) {
             return new Counter(name, counter);
         }

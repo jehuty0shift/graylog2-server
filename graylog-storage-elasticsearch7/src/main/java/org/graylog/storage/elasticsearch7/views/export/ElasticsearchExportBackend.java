@@ -197,7 +197,7 @@ public class ElasticsearchExportBackend implements ExportBackend {
 
     private Object fixTimestampFormat(Object rawTimestamp) {
         try {
-            return ES_DATE_FORMAT_FORMATTER.parseDateTime(String.valueOf(rawTimestamp)).toString();
+            return ES_DATE_FORMAT_FORMATTER.parse(String.valueOf(rawTimestamp)).toString();
         } catch (IllegalArgumentException e) {
             LOG.warn("Could not parse timestamp {}", rawTimestamp, e);
             return rawTimestamp;

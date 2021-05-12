@@ -25,6 +25,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class EventSummaryTest {
                 EventDto.FIELD_ID, "dead-beef",
                 EventDto.FIELD_MESSAGE, "message",
                 EventDto.FIELD_SOURCE_STREAMS, streams,
-                EventDto.FIELD_EVENT_TIMESTAMP, now.toString(Tools.ES_DATE_FORMAT_FORMATTER),
+                EventDto.FIELD_EVENT_TIMESTAMP, Tools.ES_DATE_FORMAT_FORMATTER.format(Instant.ofEpochMilli(now.getMillis())),
                 EventDto.FIELD_ALERT, false
         );
 
@@ -50,8 +51,8 @@ public class EventSummaryTest {
         assertThat(eventSummary.id()).isEqualTo("dead-beef");
         assertThat(eventSummary.message()).isEqualTo("message");
         assertThat(eventSummary.streams()).isEqualTo(ImmutableSet.of("stream-id-1", "stream-id-2"));
-        assertThat(eventSummary.timestamp().toString(Tools.ES_DATE_FORMAT_FORMATTER))
-                .isEqualTo(now.toString(Tools.ES_DATE_FORMAT_FORMATTER));
+        assertThat(Tools.ES_DATE_FORMAT_FORMATTER.format(eventSummary.timestamp()))
+                .isEqualTo(Tools.ES_DATE_FORMAT_FORMATTER.format(Instant.ofEpochMilli(now.getMillis())));
         assertThat(eventSummary.alert()).isEqualTo(false);
     }
 }
