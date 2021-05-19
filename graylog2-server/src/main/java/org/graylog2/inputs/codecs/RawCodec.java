@@ -33,6 +33,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 @Codec(name = "raw", displayName = "Raw String")
 public class RawCodec extends AbstractCodec {
@@ -45,7 +46,7 @@ public class RawCodec extends AbstractCodec {
     @Nullable
     @Override
     public Message decode(@Nonnull RawMessage raw) {
-        return new Message(new String(raw.getPayload(), StandardCharsets.UTF_8), null, raw.getTimestamp());
+        return new Message(new String(raw.getPayload(), StandardCharsets.UTF_8), null, Instant.ofEpochMilli(raw.getTimestamp().getMillis()));
     }
 
     @Nullable

@@ -37,6 +37,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import javax.inject.Provider;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -784,6 +785,6 @@ public class StreamRouterEngineTest {
     }
 
     private Message getMessage() {
-        return new Message("test message", "localhost", new DateTime(DateTimeZone.UTC));
+        return new Message("test message", "localhost", Instant.now());
     }
 }

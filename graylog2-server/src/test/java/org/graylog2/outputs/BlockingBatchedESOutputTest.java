@@ -32,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -95,7 +96,7 @@ public class BlockingBatchedESOutputTest {
     private List<Map.Entry<IndexSet, Message>> buildMessages(final int count) {
         final ImmutableList.Builder<Map.Entry<IndexSet, Message>> builder = ImmutableList.builder();
         for (int i = 0; i < count; i++) {
-            builder.add(Maps.immutableEntry(mock(IndexSet.class), new Message("message" + i, "test", Tools.nowUTC())));
+            builder.add(Maps.immutableEntry(mock(IndexSet.class), new Message("message" + i, "test", Instant.now())));
         }
 
         return builder.build();

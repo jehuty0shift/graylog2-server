@@ -154,6 +154,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import javax.inject.Provider;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -368,7 +369,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     @Test
     public void stringConcat(){
         final Rule rule = parser.parseRule(ruleForTest(), false);
-        final Message message = evaluateRule(rule, new Message("Dummy Message", "test", Tools.nowUTC()));
+        final Message message = evaluateRule(rule, new Message("Dummy Message", "test", Instant.now()));
 
         assertThat(message.hasField("result")).isTrue();
         assertThat(message.getField("result")).isEqualTo("aabbcc");
@@ -415,7 +416,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
                 "}";
 
         final Rule rule = parser.parseRule(ruleForTest(), false);
-        final Message message = evaluateRule(rule, new Message(json, "test", Tools.nowUTC()));
+        final Message message = evaluateRule(rule, new Message(json, "test", Instant.now()));
 
         assertThat(message.hasField("author_first")).isTrue();
         assertThat(message.getField("author_first")).isEqualTo("Nigel Rees");
@@ -443,7 +444,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
                 "}";
 
         final Rule rule = parser.parseRule(ruleForTest(), false);
-        final Message message = new Message("JSON", "test", Tools.nowUTC());
+        final Message message = new Message("JSON", "test", Instant.now());
         message.addField("flat_json", flatJson);
         message.addField("nested_json", nestedJson);
         final Message evaluatedMessage = evaluateRule(rule, message);
@@ -616,7 +617,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     @Test
     public void ipMatching() {
         final Rule rule = parser.parseRule(ruleForTest(), false);
-        final Message in = new Message("test", "test", Tools.nowUTC());
+        final Message in = new Message("test", "test", Instant.now());
         in.addField("ip", "192.168.1.20");
         final Message message = evaluateRule(rule, in);
 
@@ -630,7 +631,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     public void evalErrorSuppressed() {
         final Rule rule = parser.parseRule(ruleForTest(), false);
 
-        final Message message = new Message("test", "test", Tools.nowUTC());
+        final Message message = new Message("test", "test", Instant.now());
         message.addField("this_field_was_set", true);
         final EvaluationContext context = contextForRuleEval(rule, message);
 
@@ -641,7 +642,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
 
     @Test
     public void newlyCreatedMessage() {
-        final Message message = new Message("test", "test", Tools.nowUTC());
+        final Message message = new Message("test", "test", Instant.now());
         message.addField("foo", "bar");
         message.addStream(mock(Stream.class));
         final Rule rule = parser.parseRule(ruleForTest(), false);
@@ -663,7 +664,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
 
     @Test
     public void clonedMessage() {
-        final Message message = new Message("test", "test", Tools.nowUTC());
+        final Message message = new Message("test", "test", Instant.now());
         message.addField("foo", "bar");
         message.addStream(mock(Stream.class));
         final Rule rule = parser.parseRule(ruleForTest(), false);
@@ -691,7 +692,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
 
     @Test
     public void clonedMessageWithInvalidTimestamp() {
-        final Message message = new Message("test", "test", Tools.nowUTC());
+        final Message message = new Message("test", "test", Instant.now());
         message.addField("timestamp", "foobar");
         final Rule rule = parser.parseRule(ruleForTest(), false);
         final EvaluationContext context = contextForRuleEval(rule, message);
@@ -700,7 +701,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
         final Message clonedMessage = Iterables.get(context.createdMessages(), 0);
 
         assertThat(origMessage).isNotEqualTo(clonedMessage);
-        assertThat(origMessage.getField("timestamp")).isNotInstanceOf(DateTime.class);
+        assertThat(origMessage.getField("timestamp")).isNotInstanceOf(Instant.class);
 
         assertThat(clonedMessage).isNotNull();
         assertThat(clonedMessage.getMessage()).isEqualTo(origMessage.getMessage());
@@ -717,7 +718,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
 
         assertThat(message).isNotNull();
         assertThat(message.getFieldCount()).isEqualTo(6);
-        assertThat(message.getTimestamp()).isEqualTo(DateTime.parse("2015-07-31T10:05:36.773Z"));
+        assertThat(message.getTimestamp()).isEqualTo(Instant.parse("2015-07-31T10:05:36.773Z"));
         // named captures only
         assertThat(message.hasField("num")).isTrue();
         assertThat(message.hasField("BASE10NUM")).isFalse();
@@ -804,7 +805,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     @Test
     public void ipMatchingIssue28() {
         final Rule rule = parser.parseRule(ruleForTest(), false);
-        final Message in = new Message("some message", "somehost.graylog.org", Tools.nowUTC());
+        final Message in = new Message("some message", "somehost.graylog.org", Instant.now());
         evaluateRule(rule, in);
 
         assertThat(actionsTriggered.get()).isFalse();
@@ -814,7 +815,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     public void fieldRenaming() {
         final Rule rule = parser.parseRule(ruleForTest(), false);
 
-        final Message in = new Message("some message", "somehost.graylog.org", Tools.nowUTC());
+        final Message in = new Message("some message", "somehost.graylog.org", Instant.now());
         in.addField("field_a", "fieldAContent");
         in.addField("field_b", "not deleted");
 
@@ -828,7 +829,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     @Test
     public void comparisons() {
         final Rule rule = parser.parseRule(ruleForTest(), false);
-        final EvaluationContext context = contextForRuleEval(rule, new Message("", "", Tools.nowUTC()));
+        final EvaluationContext context = contextForRuleEval(rule, new Message("", "", Instant.now()));
         assertThat(context.hasEvaluationErrors()).isFalse();
         assertThat(evaluateRule(rule)).isNotNull();
         assertThat(actionsTriggered.get()).isTrue();
@@ -838,7 +839,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     public void conversions() {
         final Rule rule = parser.parseRule(ruleForTest(), false);
 
-        final EvaluationContext context = contextForRuleEval(rule, new Message("test", "test", Tools.nowUTC()));
+        final EvaluationContext context = contextForRuleEval(rule, new Message("test", "test", Instant.now()));
 
         assertThat(context.evaluationErrors()).isEmpty();
         final Message message = context.currentMessage();
@@ -923,7 +924,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     public void keyValue() {
         final Rule rule = parser.parseRule(ruleForTest(), true);
 
-        final EvaluationContext context = contextForRuleEval(rule, new Message("", "", Tools.nowUTC()));
+        final EvaluationContext context = contextForRuleEval(rule, new Message("", "", Instant.now()));
 
         assertThat(context).isNotNull();
         assertThat(context.evaluationErrors()).isEmpty();
@@ -948,7 +949,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     @Test
     public void keyValueFailure() {
         final Rule rule = parser.parseRule(ruleForTest(), true);
-        final EvaluationContext context = contextForRuleEval(rule, new Message("", "", Tools.nowUTC()));
+        final EvaluationContext context = contextForRuleEval(rule, new Message("", "", Instant.now()));
 
         assertThat(context.hasEvaluationErrors()).isTrue();
     }
@@ -1157,7 +1158,7 @@ public class FunctionsSnippetsTest extends BaseParserTest {
     public void notExpressionTypeCheck() {
         try {
             Rule rule = parser.parseRule(ruleForTest(), true);
-            Message in = new Message("test", "source", Tools.nowUTC());
+            Message in = new Message("test", "source", Instant.now());
             in.addField("facility", "mail");
             evaluateRule(rule, in);
             fail("missing type check for non-boolean type in unary NOT");

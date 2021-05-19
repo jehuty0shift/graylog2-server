@@ -27,6 +27,8 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -37,7 +39,7 @@ public class IndexedAccessExpressionTest {
 
     @Before
     public void setup() {
-        context = new EvaluationContext(new Message("test message", "test", DateTime.parse("2010-07-30T16:03:25Z")));
+        context = new EvaluationContext(new Message("test message", "test", Instant.parse("2010-07-30T16:03:25Z")));
     }
 
     @Test

@@ -24,6 +24,7 @@ import org.graylog2.plugin.streams.StreamRule;
 import org.graylog2.streams.InvalidStreamRuleTypeException;
 import org.graylog2.streams.StreamRuleMatcherFactory;
 
+import java.time.Instant;
 import java.util.Map;
 
 /**
@@ -39,7 +40,7 @@ public class MatcherTest {
     }
 
     protected Message getSampleMessage() {
-        return new Message("foo", "bar", Tools.nowUTC());
+        return new Message("foo", "bar", Instant.now());
     }
 
     protected StreamRuleMatcher getMatcher(StreamRule rule) {

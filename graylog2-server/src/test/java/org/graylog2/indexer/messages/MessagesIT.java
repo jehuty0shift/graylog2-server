@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.AbstractMap;
@@ -248,8 +249,8 @@ public abstract class MessagesIT extends ElasticsearchBaseTest {
         return new AbstractMap.SimpleEntry<>(indexSet, message);
     }
 
-    private DateTime now() {
-        return DateTime.now(DateTimeZone.UTC);
+    private Instant now() {
+        return Instant.now();
     }
 
     private ArrayList<Map.Entry<IndexSet, Message>> createMessageBatch(int size, int count) {
