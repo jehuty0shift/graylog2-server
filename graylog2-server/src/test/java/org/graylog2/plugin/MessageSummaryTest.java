@@ -26,6 +26,7 @@ import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class MessageSummaryTest {
 
     @Before
     public void setUp() throws Exception {
-        message = new Message("message", "source", DateTime.now(DateTimeZone.UTC));
+        message = new Message("message", "source", Instant.now());
         message.addField("streams", STREAM_IDS);
         messageSummary = new MessageSummary(INDEX_NAME, message);
     }

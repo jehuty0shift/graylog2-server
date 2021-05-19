@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
@@ -90,7 +91,7 @@ public class TestHelper {
     }
 
     public static Message simpleLogMessage() {
-        return new Message("bar", "foo", Tools.nowUTC());
+        return new Message("bar", "foo", Instant.now());
     }
 
 }

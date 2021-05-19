@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -193,7 +194,7 @@ public class AggregationEventProcessor implements EventProcessor {
 
             for (final ResultMessage resultMessage : messages) {
                 final Message msg = resultMessage.getMessage();
-                final Event event = eventFactory.createEvent(eventDefinition, msg.getTimestamp(), eventDefinition.title());
+                final Event event = eventFactory.createEvent(eventDefinition, new DateTime(msg.getTimestamp().toEpochMilli()), eventDefinition.title());
                 event.setOriginContext(EventOriginContext.elasticsearchMessage(resultMessage.getIndex(), msg.getId()));
 
                 // We don't want source streams in the event which are unrelated to the event definition
@@ -332,7 +333,7 @@ public class AggregationEventProcessor implements EventProcessor {
             fields.put("aggregation_key", keyString);
 
             // TODO: Can we find a useful source value?
-            final Message message = new Message(eventMessage, "", result.effectiveTimerange().to());
+            final Message message = new Message(eventMessage, "", Instant.ofEpochMilli(result.effectiveTimerange().to().getMillis()));
             message.addFields(fields);
 
             LOG.debug("Creating event {}/{} - {} {} ({})", eventDefinition.title(), eventDefinition.id(), keyResult.key(), seriesString(keyResult), fields);

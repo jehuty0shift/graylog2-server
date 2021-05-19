@@ -26,6 +26,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.graylog2.alerts.AbstractAlertCondition;
 import org.graylog2.alerts.types.DummyAlertCondition;
+import org.graylog2.jackson.MongoZonedDateTimeDeserializerTest;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
 import org.graylog2.plugin.alarms.AlertCondition;
@@ -49,6 +50,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -124,8 +126,8 @@ public class HTTPAlarmCallbackTest {
                 "Alert Condition Title"
         );
         final List<MessageSummary> messageSummaries = ImmutableList.of(
-                new MessageSummary("graylog_1", new Message("Test message 1", "source1", new DateTime(2016, 9, 6, 17, 0, DateTimeZone.UTC))),
-                new MessageSummary("graylog_2", new Message("Test message 2", "source2", new DateTime(2016, 9, 6, 17, 0, DateTimeZone.UTC)))
+                new MessageSummary("graylog_1", new Message("Test message 1", "source1", Instant.parse("2016-09-06T17:00:00Z"))),
+                new MessageSummary("graylog_2", new Message("Test message 2", "source2", Instant.parse("2016-09-06T17:00:00Z")))
         );
         final AlertCondition.CheckResult checkResult = new AbstractAlertCondition.CheckResult(
                 true,

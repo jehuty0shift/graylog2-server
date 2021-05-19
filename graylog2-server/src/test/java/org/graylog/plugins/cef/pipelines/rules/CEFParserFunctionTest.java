@@ -29,6 +29,7 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ public class CEFParserFunctionTest {
     @Test
     public void evaluate_returns_null_for_missing_CEF_string() throws Exception {
         final FunctionArgs functionArgs = new FunctionArgs(function, Collections.emptyMap());
-        final Message message = new Message("__dummy", "__dummy", DateTime.parse("2010-07-30T16:03:25Z"));
+        final Message message = new Message("__dummy", "__dummy", Instant.parse("2010-07-30T16:03:25Z"));
         final EvaluationContext evaluationContext = new EvaluationContext(message);
 
         final CEFParserResult result = function.evaluate(functionArgs, evaluationContext);
@@ -58,7 +59,7 @@ public class CEFParserFunctionTest {
                 CEFParserFunction.VALUE, new StringExpression(new CommonToken(0), "")
         );
         final FunctionArgs functionArgs = new FunctionArgs(function, arguments);
-        final Message message = new Message("__dummy", "__dummy", DateTime.parse("2010-07-30T16:03:25Z"));
+        final Message message = new Message("__dummy", "__dummy", Instant.parse("2010-07-30T16:03:25Z"));
         final EvaluationContext evaluationContext = new EvaluationContext(message);
 
         final CEFParserResult result = function.evaluate(functionArgs, evaluationContext);
@@ -72,7 +73,7 @@ public class CEFParserFunctionTest {
                 CEFParserFunction.USE_FULL_NAMES, new BooleanExpression(new CommonToken(0), false)
         );
         final FunctionArgs functionArgs = new FunctionArgs(function, arguments);
-        final Message message = new Message("__dummy", "__dummy", DateTime.parse("2010-07-30T16:03:25Z"));
+        final Message message = new Message("__dummy", "__dummy", Instant.parse("2010-07-30T16:03:25Z"));
         final EvaluationContext evaluationContext = new EvaluationContext(message);
 
         final CEFParserResult result = function.evaluate(functionArgs, evaluationContext);
@@ -86,7 +87,7 @@ public class CEFParserFunctionTest {
                 CEFParserFunction.USE_FULL_NAMES, new BooleanExpression(new CommonToken(0), false)
         );
         final FunctionArgs functionArgs = new FunctionArgs(function, arguments);
-        final Message message = new Message("__dummy", "__dummy", DateTime.parse("2010-07-30T16:03:25Z"));
+        final Message message = new Message("__dummy", "__dummy", Instant.parse("2010-07-30T16:03:25Z"));
         final EvaluationContext evaluationContext = new EvaluationContext(message);
 
         final CEFParserResult result = function.evaluate(functionArgs, evaluationContext);
@@ -107,7 +108,7 @@ public class CEFParserFunctionTest {
                 CEFParserFunction.VALUE, new StringExpression(new CommonToken(0), "CEF:0|vendor|product|1.0|id|name|low|dvc=example.com msg=Foobar")
         );
         final FunctionArgs functionArgs = new FunctionArgs(function, arguments);
-        final Message message = new Message("__dummy", "__dummy", DateTime.parse("2010-07-30T16:03:25Z"));
+        final Message message = new Message("__dummy", "__dummy", Instant.parse("2010-07-30T16:03:25Z"));
         final EvaluationContext evaluationContext = new EvaluationContext(message);
 
         final CEFParserResult result = function.evaluate(functionArgs, evaluationContext);
@@ -130,7 +131,7 @@ public class CEFParserFunctionTest {
                 CEFParserFunction.USE_FULL_NAMES, new BooleanExpression(new CommonToken(0), true)
         );
         final FunctionArgs functionArgs = new FunctionArgs(function, arguments);
-        final Message message = new Message("__dummy", "__dummy", DateTime.parse("2010-07-30T16:03:25Z"));
+        final Message message = new Message("__dummy", "__dummy", Instant.parse("2010-07-30T16:03:25Z"));
         final EvaluationContext evaluationContext = new EvaluationContext(message);
 
         final CEFParserResult result = function.evaluate(functionArgs, evaluationContext);
@@ -152,7 +153,7 @@ public class CEFParserFunctionTest {
                 CEFParserFunction.USE_FULL_NAMES, new BooleanExpression(new CommonToken(0), false)
         );
         final FunctionArgs functionArgs = new FunctionArgs(function, arguments);
-        final Message message = new Message("__dummy", "__dummy", DateTime.parse("2010-07-30T16:03:25Z"));
+        final Message message = new Message("__dummy", "__dummy", Instant.parse("2010-07-30T16:03:25Z"));
         final EvaluationContext evaluationContext = new EvaluationContext(message);
 
         final CEFParserResult result = function.evaluate(functionArgs, evaluationContext);

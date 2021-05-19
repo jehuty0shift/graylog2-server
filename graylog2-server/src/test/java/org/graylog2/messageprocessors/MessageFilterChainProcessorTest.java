@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,6 +36,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -63,9 +67,9 @@ public class MessageFilterChainProcessorTest {
         final DummyFilter second = new DummyFilter(20);
         final Set<MessageFilter> filters = ImmutableSet.of(third, first, second);
         final MessageFilterChainProcessor processor = new MessageFilterChainProcessor(new MetricRegistry(),
-                                                                                      filters,
-                                                                                      journal,
-                                                                                      serverStatus);
+                filters,
+                journal,
+                serverStatus);
         final List<MessageFilter> filterRegistry = processor.getFilterRegistry();
 
         Assert.assertEquals(filterRegistry.get(0), first);
@@ -77,11 +81,12 @@ public class MessageFilterChainProcessorTest {
     public void testHandleMessageEmptyFilterSet() throws Exception {
         try {
             new MessageFilterChainProcessor(new MetricRegistry(),
-                                            Collections.emptySet(),
-                                            journal,
-                                            serverStatus);
+                    Collections.emptySet(),
+                    journal,
+                    serverStatus);
             Assert.fail("A processor without message filters should fail on creation");
-        } catch (RuntimeException ignored) {}
+        } catch (RuntimeException ignored) {
+        }
     }
 
     @Test
@@ -112,12 +117,12 @@ public class MessageFilterChainProcessorTest {
         };
 
         final MessageFilterChainProcessor filterTest = new MessageFilterChainProcessor(new MetricRegistry(),
-                                                                                       Collections.singleton(filterOnlyFirst),
-                                                                                       journal,
-                                                                                       serverStatus);
-        Message filteredoutMessage = new Message("filtered out", "source", Tools.nowUTC());
+                Collections.singleton(filterOnlyFirst),
+                journal,
+                serverStatus);
+        Message filteredoutMessage = new Message("filtered out", "source", Instant.now());
         filteredoutMessage.setJournalOffset(1);
-        Message unfilteredMessage = new Message("filtered out", "source", Tools.nowUTC());
+        Message unfilteredMessage = new Message("filtered out", "source", Instant.now());
 
         final Messages messages1 = filterTest.process(filteredoutMessage);
         final Messages messages2 = filterTest.process(unfilteredMessage);
@@ -139,7 +144,7 @@ public class MessageFilterChainProcessorTest {
                 journal,
                 serverStatus);
 
-        final Message message = new Message("message", "source", new DateTime(2016, 1, 1, 0, 0, DateTimeZone.UTC));
+        final Message message = new Message("message", "source", LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0).toInstant(ZoneOffset.UTC));
         final Message result = Iterables.getFirst(processor.process(message), null);
 
         assertThat(result).isNotNull();
@@ -156,7 +161,7 @@ public class MessageFilterChainProcessorTest {
                 journal,
                 serverStatus);
 
-        final Message message = new Message("message", "source", new DateTime(2016, 1, 1, 0, 0, DateTimeZone.UTC));
+        final Message message = new Message("message", "source", LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0).toInstant(ZoneOffset.UTC));
         final Messages result = processor.process(message);
 
         assertThat(result).isEmpty();

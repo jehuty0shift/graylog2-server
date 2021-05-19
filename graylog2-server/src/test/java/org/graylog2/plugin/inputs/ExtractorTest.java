@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -920,7 +921,7 @@ public class ExtractorTest {
     }
 
     private Message createMessage(String message) {
-        return new Message(message, "localhost", DateTime.now(UTC));
+        return new Message(message, "localhost", Instant.now());
     }
 
     private static class TestExtractor extends Extractor {

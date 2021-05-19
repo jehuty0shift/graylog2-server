@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -37,6 +37,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -65,8 +66,8 @@ public class JsonPathCodec extends AbstractCodec {
         final Map<String, Object> fields = read(json);
 
         final Message message = new Message(buildShortMessage(fields),
-                                            configuration.getString(CK_SOURCE),
-                                            rawMessage.getTimestamp());
+                configuration.getString(CK_SOURCE),
+                Instant.ofEpochMilli(rawMessage.getTimestamp().getMillis()));
         message.addFields(fields);
         return message;
     }
@@ -145,7 +146,8 @@ public class JsonPathCodec extends AbstractCodec {
                     ConfigurationField.Optional.NOT_OPTIONAL
             ));
 
-            return r;        }
+            return r;
+        }
 
         @Override
         public void overrideDefaultValues(@Nonnull ConfigurationRequest cr) {
