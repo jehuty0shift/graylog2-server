@@ -39,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -74,7 +75,7 @@ public final class Tools {
     private static final byte[] EMPTY_BYTE_ARRAY_4 = {0,0,0,0};
     private static final byte[] EMPTY_BYTE_ARRAY_16 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    public static final String ES_DATE_FORMAT_NANO = "yyyy-MM-dd HH:mm:ss.SSSSSSSSS";
+    public static final String ES_DATE_FORMAT_NANO = "yyyy-MM-dd HH:mm:ss.SSS[SSS[SSS]]";
     public static final String ES_DATE_FORMAT_MS = "yyyy-MM-dd HH:mm:ss.SSS";
     public static final String ES_DATE_FORMAT_NO_MS = "yyyy-MM-dd HH:mm:ss";
 
@@ -338,6 +339,16 @@ public final class Tools {
      */
     public static DateTime dateTimeFromDouble(double x) {
         return new DateTime(Math.round(x * 1000), DateTimeZone.UTC);
+    }
+
+    /**
+     * The BigDecimal representation of a UNIX timestamp with milliseconds is a strange, human readable format.
+     * <p/>
+     * This sucks and no format should use the double representation. Change GELF to use long. (zomg)
+     */
+    public static Instant InstantFromBigDecimal(BigDecimal x) {
+        long seconds = x.longValue();
+        return Instant.ofEpochSecond(seconds,x.subtract(BigDecimal.valueOf(seconds)).multiply(BigDecimal.valueOf(1000000000)).longValue());
     }
 
     /**

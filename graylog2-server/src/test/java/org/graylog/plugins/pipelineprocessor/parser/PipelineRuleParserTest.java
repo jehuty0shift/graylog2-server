@@ -67,6 +67,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -212,7 +213,7 @@ public class PipelineRuleParserTest extends BaseParserTest {
     @Test
     public void messageRef() throws Exception {
         final Rule rule = parseRuleWithOptionalCodegen();
-        Message message = new Message("hello test", "source", DateTime.now(DateTimeZone.UTC));
+        Message message = new Message("hello test", "source", Instant.now());
         message.addField("responseCode", 500);
         final Message processedMsg = evaluateRule(rule, message);
 
@@ -223,7 +224,7 @@ public class PipelineRuleParserTest extends BaseParserTest {
     @Test
     public void messageRefQuotedField() throws Exception {
         final Rule rule = parseRuleWithOptionalCodegen();
-        Message message = new Message("hello test", "source", DateTime.now(DateTimeZone.UTC));
+        Message message = new Message("hello test", "source", Instant.now());
         message.addField("@specialfieldname", "string");
         evaluateRule(rule, message);
 
@@ -234,7 +235,7 @@ public class PipelineRuleParserTest extends BaseParserTest {
     public void optionalArguments() throws Exception {
         final Rule rule = parseRuleWithOptionalCodegen();
 
-        Message message = new Message("hello test", "source", DateTime.now(DateTimeZone.UTC));
+        Message message = new Message("hello test", "source", Instant.now());
         evaluateRule(rule, message);
         assertTrue(actionsTriggered.get());
     }
@@ -265,7 +266,7 @@ public class PipelineRuleParserTest extends BaseParserTest {
     @Test
     public void mapArrayLiteral() {
         final Rule rule = parseRuleWithOptionalCodegen();
-        Message message = new Message("hello test", "source", DateTime.now(DateTimeZone.UTC));
+        Message message = new Message("hello test", "source", Instant.now());
         evaluateRule(rule, message);
         assertTrue(actionsTriggered.get());
     }
@@ -273,14 +274,14 @@ public class PipelineRuleParserTest extends BaseParserTest {
     @Test
     public void typedFieldAccess() throws Exception {
         final Rule rule = parseRuleWithOptionalCodegen();
-        evaluateRule(rule, new Message("hallo", "test", DateTime.now(DateTimeZone.UTC)));
+        evaluateRule(rule, new Message("hallo", "test", Instant.now()));
         assertTrue("condition should be true", actionsTriggered.get());
     }
 
     @Test
     public void nestedFieldAccess() throws Exception {
         final Rule rule = parseRuleWithOptionalCodegen();
-        evaluateRule(rule, new Message("hello", "world", DateTime.now(DateTimeZone.UTC)));
+        evaluateRule(rule, new Message("hello", "world", Instant.now()));
         assertTrue("condition should be true", actionsTriggered.get());
     }
 
@@ -308,7 +309,7 @@ public class PipelineRuleParserTest extends BaseParserTest {
     public void indexedAccess() {
         final Rule rule = parseRuleWithOptionalCodegen();
 
-        evaluateRule(rule, new Message("hallo", "test", DateTime.now(DateTimeZone.UTC)));
+        evaluateRule(rule, new Message("hallo", "test", Instant.now()));
         assertTrue("condition should be true", actionsTriggered.get());
     }
 

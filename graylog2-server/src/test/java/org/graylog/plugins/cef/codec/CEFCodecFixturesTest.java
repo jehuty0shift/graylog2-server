@@ -133,7 +133,7 @@ public class CEFCodecFixturesTest {
     @Test
     public void timestamp() throws Exception {
         if (fixture.expectedTimestamp != null) {
-            assertThat(message.getTimestamp().toDate()).isEqualTo(fixture.expectedTimestamp);
+            assertThat(Date.from(message.getTimestamp())).isEqualTo(fixture.expectedTimestamp);
         }
     }
 

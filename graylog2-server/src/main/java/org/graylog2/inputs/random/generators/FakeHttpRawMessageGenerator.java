@@ -24,6 +24,7 @@ import org.graylog2.plugin.Message;
 import org.graylog2.plugin.Tools;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -161,7 +162,7 @@ public class FakeHttpRawMessageGenerator {
     }
 
     private static Message createMessage(GeneratorState state, int httpCode, Resource resource, int tookMs, DateTime ingestTime) {
-        final Message msg = new Message(shortMessage(ingestTime, state.method, state.resource, httpCode, tookMs), state.source, Tools.nowUTC());
+        final Message msg = new Message(shortMessage(ingestTime, state.method, state.resource, httpCode, tookMs), state.source, Instant.now());
         msg.addFields(ingestTimeFields(ingestTime));
         msg.addFields(resourceFields(resource));
         msg.addField("ticks", System.nanoTime());

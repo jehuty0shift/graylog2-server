@@ -25,6 +25,7 @@ import org.graylog2.plugin.Message;
 import org.graylog2.plugin.Tools;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static com.google.common.collect.ImmutableList.of;
@@ -59,7 +60,7 @@ public class CreateMessage extends AbstractFunction<Message> {
         final Optional<DateTime> optTimestamp = timestampParam.optional(args, context);
         final DateTime timestamp = optTimestamp.isPresent() ? optTimestamp.get() : Tools.nowUTC();
 
-        final Message newMessage = new Message(message, source, timestamp);
+        final Message newMessage = new Message(message, source, Instant.ofEpochMilli(timestamp.getMillis()));
 
         // register in context so the processor can inject it later on
         context.addCreatedMessage(newMessage);

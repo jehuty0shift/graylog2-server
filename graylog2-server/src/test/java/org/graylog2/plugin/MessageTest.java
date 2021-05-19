@@ -38,12 +38,7 @@ import org.junit.Test;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.chrono.ThaiBuddhistDate;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,7 +77,7 @@ public class MessageTest {
 
         metricRegistry = new MetricRegistry();
         originalTimestamp = Tools.nowUTC();
-        message = new Message("foo", "bar", originalTimestamp);
+        message = new Message("foo", "bar", Instant.ofEpochMilli(1524139200000L));
         invalidTimestampMeter = metricRegistry.meter("test");
 
     }
@@ -94,26 +89,26 @@ public class MessageTest {
 
     @Test
     public void testAddFieldDoesOnlyAcceptAlphanumericKeys() throws Exception {
-        Message m = new Message("foo", "bar", Tools.nowUTC());
+        Message m = new Message("foo", "bar", Instant.now());
         m.addField("some_thing", "bar");
         assertEquals("bar", m.getField("some_thing"));
 
-        m = new Message("foo", "bar", Tools.nowUTC());
+        m = new Message("foo", "bar", Instant.now());
         m.addField("some-thing", "bar");
         assertEquals("bar", m.getField("some-thing"));
 
-        m = new Message("foo", "bar", Tools.nowUTC());
+        m = new Message("foo", "bar", Instant.now());
         m.addField("somethin$g", "bar");
         assertNull(m.getField("somethin$g"));
 
-        m = new Message("foo", "bar", Tools.nowUTC());
+        m = new Message("foo", "bar", Instant.now());
         m.addField("someäthing", "bar");
         assertNull(m.getField("someäthing"));
     }
 
     @Test
     public void testAddFieldTrimsValue() throws Exception {
-        Message m = new Message("foo", "bar", Tools.nowUTC());
+        Message m = new Message("foo", "bar", Instant.now());
         m.addField("something", " bar ");
         assertEquals("bar", m.getField("something"));
 
@@ -134,7 +129,7 @@ public class MessageTest {
                 "something_else", " "
         );
 
-        Message m = new Message((String) messageFields.get(Message.FIELD_MESSAGE), (String) messageFields.get(Message.FIELD_SOURCE), Tools.nowUTC());
+        Message m = new Message((String) messageFields.get(Message.FIELD_MESSAGE), (String) messageFields.get(Message.FIELD_SOURCE), Instant.now());
         assertEquals("foo", m.getMessage());
         assertEquals("bar", m.getSource());
 
@@ -147,7 +142,7 @@ public class MessageTest {
 
     @Test
     public void testAddFieldWorksWithIntegers() throws Exception {
-        Message m = new Message("foo", "bar", Tools.nowUTC());
+        Message m = new Message("foo", "bar", Instant.now());
         m.addField("something", 3);
         assertEquals(3, m.getField("something"));
     }
@@ -339,9 +334,9 @@ public class MessageTest {
     @Test
     public void testGetTimestamp() {
         try {
-            final DateTime timestamp = message.getTimestamp();
+            final Instant timestamp = message.getTimestamp();
             assertNotNull(timestamp);
-            assertEquals(originalTimestamp.getZone(), timestamp.getZone());
+            //assertEquals(originalTimestamp.getZone(), timestamp.getZone()); XX if no Exception, there is none
         } catch (ClassCastException e) {
             fail("timestamp wasn't a DateTime " + e.getMessage());
         }
@@ -349,16 +344,17 @@ public class MessageTest {
 
     @Test
     public void testTimestampAsDate() {
-        final DateTime dateTime = new DateTime(2015, 9, 8, 0, 0, DateTimeZone.UTC);
+        final ZonedDateTime dateTime = ZonedDateTime.of(2015, 9, 8, 0, 0,0,0, ZoneOffset.UTC);
+
 
         message.addField(Message.FIELD_TIMESTAMP,
-                         dateTime.toDate());
+                         dateTime);
 
         final Map<String, Object> elasticSearchObject = message.toElasticSearchObject(objectMapper, invalidTimestampMeter);
         final Object esTimestampFormatted = elasticSearchObject.get(Message.FIELD_TIMESTAMP);
 
         assertEquals("Setting message timestamp as java.util.Date results in correct format for elasticsearch",
-                     Tools.buildElasticSearchTimeFormat(dateTime), esTimestampFormatted);
+                     Tools.buildElasticSearchTimeFormat(dateTime.toInstant()), esTimestampFormatted);
     }
 
     @Test
@@ -399,7 +395,7 @@ public class MessageTest {
         assertEquals("bar", object.get("source"));
         assertEquals("wat", object.get("field1"));
         assertEquals("that", object.get("field2"));
-        assertEquals(Tools.buildElasticSearchTimeFormat((DateTime) message.getField("timestamp")), object.get("timestamp"));
+        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp")), object.get("timestamp"));
 
         @SuppressWarnings("unchecked")
         final Collection<String> streams = (Collection<String>) object.get("streams");
@@ -418,7 +414,7 @@ public class MessageTest {
 
         assertEquals("foo", object.get("message"));
         assertEquals("bar", object.get("source"));
-        assertEquals(Tools.buildElasticSearchTimeFormat((DateTime) message.getField("timestamp")), object.get("timestamp"));
+        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp")), object.get("timestamp"));
 
         @SuppressWarnings("unchecked")
         final Collection<String> streams = (Collection<String>) object.get("streams");
@@ -453,26 +449,26 @@ public class MessageTest {
 
     @Test
     public void testIsComplete() throws Exception {
-        Message message = new Message("message", "source", Tools.nowUTC());
+        Message message = new Message("message", "source",Instant.now());
         assertTrue(message.isComplete());
 
-        message = new Message("message", "", Tools.nowUTC());
+        message = new Message("message", "", Instant.now());
         assertTrue(message.isComplete());
 
-        message = new Message("message", null, Tools.nowUTC());
+        message = new Message("message", null, Instant.now());
         assertTrue(message.isComplete());
 
-        message = new Message("", "source", Tools.nowUTC());
+        message = new Message("", "source", Instant.now());
         assertFalse(message.isComplete());
 
-        message = new Message(null, "source", Tools.nowUTC());
+        message = new Message(null, "source", Instant.now());
         assertFalse(message.isComplete());
     }
 
     @Test
     @SuppressWarnings("deprecation")
     public void testGetValidationErrorsWithEmptyMessage() throws Exception {
-        final Message message = new Message("", "source", Tools.nowUTC());
+        final Message message = new Message("", "source", Instant.now());
 
         assertEquals("message is empty, ", message.getValidationErrors());
     }
@@ -480,7 +476,7 @@ public class MessageTest {
     @Test
     @SuppressWarnings("deprecation")
     public void testGetValidationErrorsWithNullMessage() throws Exception {
-        final Message message = new Message(null, "source", Tools.nowUTC());
+        final Message message = new Message(null, "source", Instant.now());
 
         assertEquals("message is missing, ", message.getValidationErrors());
     }
@@ -529,18 +525,18 @@ public class MessageTest {
 
     @Test
     public void testDateConvertedToDateTime() {
-        final Message message = new Message("", "source", Tools.nowUTC());
+        final Message message = new Message("", "source", Instant.now());
 
         final Date dateObject = DateTime.parse("2010-07-30T16:03:25Z").toDate();
         message.addField(Message.FIELD_TIMESTAMP, dateObject);
 
-        assertEquals(message.getTimestamp().toDate(), dateObject);
-        assertEquals(message.getField(Message.FIELD_TIMESTAMP).getClass(), DateTime.class);
+        assertEquals(Date.from(message.getTimestamp()), dateObject);
+        assertEquals(message.getField(Message.FIELD_TIMESTAMP), Instant.class);
     }
 
     @Test
     public void getStreamIdsReturnsStreamsIdsIfFieldDoesNotExist() {
-        final Message message = new Message("", "source", Tools.nowUTC());
+        final Message message = new Message("", "source", Instant.now());
         final Stream stream = mock(Stream.class);
         when(stream.getId()).thenReturn("test");
         message.addStream(stream);
@@ -551,7 +547,7 @@ public class MessageTest {
 
     @Test
     public void getStreamIdsReturnsStreamsFieldContentsIfFieldDoesExist() {
-        final Message message = new Message("", "source", Tools.nowUTC());
+        final Message message = new Message("", "source", Instant.now());
         final Stream stream = mock(Stream.class);
         when(stream.getId()).thenReturn("test1");
         message.addField("streams", Collections.singletonList("test2"));
@@ -563,14 +559,14 @@ public class MessageTest {
 
     @Test
     public void assignZonedDateTimeAsTimestamp() {
-        final Message message = new Message("message", "source", Tools.nowUTC());
+        final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC));
         assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 12, 0, 0, 0, DateTimeZone.UTC));
     }
 
     @Test
     public void assignOffsetDateTimeAsTimestamp() {
-        final Message message = new Message("message", "source", Tools.nowUTC());
+        final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, OffsetDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC));
         assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 12, 0, 0, 0, DateTimeZone.UTC));
     }
@@ -578,7 +574,7 @@ public class MessageTest {
     @Test
     @SuppressForbidden("Intentionally using system default time zone")
     public void assignLocalDateTimeAsTimestamp() {
-        final Message message = new Message("message", "source", Tools.nowUTC());
+        final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, LocalDateTime.of(2018, 4, 19, 12, 0, 0, 0));
         final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
         assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 12, 0, 0, 0, defaultTimeZone).withZone(DateTimeZone.UTC));
@@ -587,23 +583,23 @@ public class MessageTest {
     @Test
     @SuppressForbidden("Intentionally using system default time zone")
     public void assignLocalDateAsTimestamp() {
-        final Message message = new Message("message", "source", Tools.nowUTC());
+        final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, LocalDate.of(2018, 4, 19));
-        final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 0, 0, 0, 0, defaultTimeZone).withZone(DateTimeZone.UTC));
+        final ZoneId defaultTimeZone = ZoneId.systemDefault();
+        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 0, 0, 0, 0, defaultTimeZone).withZoneSameInstant(ZoneOffset.UTC));
     }
 
     @Test
     public void assignInstantAsTimestamp() {
-        final Message message = new Message("message", "source", Tools.nowUTC());
+        final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, Instant.ofEpochMilli(1524139200000L));
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 12, 0, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC));
     }
 
     @Test
     public void assignUnsupportedTemporalTypeAsTimestamp() {
-        final Message message = new Message("message", "source", Tools.nowUTC());
+        final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, ThaiBuddhistDate.of(0, 4, 19));
-        assertThat(message.getTimestamp()).isGreaterThan(new DateTime(2018, 4, 19, 0, 0, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isAfter(ZonedDateTime.of(2018, 4, 19, 0, 0, 0, 0, ZoneOffset.UTC).toInstant());
     }
 }

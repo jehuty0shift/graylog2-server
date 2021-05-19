@@ -24,6 +24,7 @@ import org.graylog2.plugin.inputs.Converter;
 import org.graylog2.plugin.inputs.Extractor;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,7 +83,7 @@ public class RegexReplaceExtractorTest extends AbstractExtractorTest {
 
     @Test
     public void testReplacementWithNoMatchAndDefaultReplacement() throws Exception {
-        final Message message = new Message("Test", "source", Tools.nowUTC());
+        final Message message = new Message("Test", "source", Instant.now());
         final RegexReplaceExtractor extractor = new RegexReplaceExtractor(
                 metricRegistry,
                 "id",
@@ -103,7 +104,7 @@ public class RegexReplaceExtractorTest extends AbstractExtractorTest {
 
     @Test
     public void testReplacementWithOnePlaceholder() throws Exception {
-        final Message message = new Message("Test Foobar", "source", Tools.nowUTC());
+        final Message message = new Message("Test Foobar", "source", Instant.now());
         final RegexReplaceExtractor extractor = new RegexReplaceExtractor(
                 metricRegistry,
                 "id",
@@ -124,7 +125,7 @@ public class RegexReplaceExtractorTest extends AbstractExtractorTest {
 
     @Test(expected = RuntimeException.class)
     public void testReplacementWithTooManyPlaceholders() throws Exception {
-        final Message message = new Message("Foobar 123", "source", Tools.nowUTC());
+        final Message message = new Message("Foobar 123", "source", Instant.now());
         final RegexReplaceExtractor extractor = new RegexReplaceExtractor(
                 metricRegistry,
                 "id",
@@ -143,7 +144,7 @@ public class RegexReplaceExtractorTest extends AbstractExtractorTest {
 
     @Test
     public void testReplacementWithCustomReplacement() throws Exception {
-        final Message message = new Message("Foobar 123", "source", Tools.nowUTC());
+        final Message message = new Message("Foobar 123", "source", Instant.now());
         final RegexReplaceExtractor extractor = new RegexReplaceExtractor(
                 metricRegistry,
                 "id",
@@ -164,7 +165,7 @@ public class RegexReplaceExtractorTest extends AbstractExtractorTest {
 
     @Test
     public void testReplacementWithReplaceAll() throws Exception {
-        final Message message = new Message("Foobar 123 Foobaz 456", "source", Tools.nowUTC());
+        final Message message = new Message("Foobar 123 Foobaz 456", "source", Instant.now());
         final RegexReplaceExtractor extractor = new RegexReplaceExtractor(
                 metricRegistry,
                 "id",
@@ -185,7 +186,7 @@ public class RegexReplaceExtractorTest extends AbstractExtractorTest {
 
     @Test
     public void testReplacementWithoutReplaceAll() throws Exception {
-        final Message message = new Message("Foobar 123 Foobaz 456", "source", Tools.nowUTC());
+        final Message message = new Message("Foobar 123 Foobaz 456", "source", Instant.now());
         final RegexReplaceExtractor extractor = new RegexReplaceExtractor(
                 metricRegistry,
                 "id",

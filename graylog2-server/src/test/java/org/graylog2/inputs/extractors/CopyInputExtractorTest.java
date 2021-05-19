@@ -22,12 +22,14 @@ import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.inputs.Extractor;
 import org.junit.Test;
 
+import java.time.Instant;
+
 import static org.junit.Assert.assertEquals;
 
 public class CopyInputExtractorTest extends AbstractExtractorTest {
     @Test
     public void testCopy() throws Extractor.ReservedFieldException, ConfigurationException {
-        Message msg = new Message("The short message", "TestUnit", Tools.nowUTC());
+        Message msg = new Message("The short message", "TestUnit", Instant.now());
 
         msg.addField("somefield", "foo");
 

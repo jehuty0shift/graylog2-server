@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -289,6 +290,7 @@ public class ToolsTest {
         assertTrue(Tools.dateTimeFromDouble(1381076986).toString().startsWith("2013-10-06T"));
         assertTrue(Tools.dateTimeFromDouble(1381079085.6).toString().startsWith("2013-10-06T"));
         assertTrue(Tools.dateTimeFromDouble(1381079085.06).toString().startsWith("2013-10-06T"));
+        assertTrue(Tools.InstantFromBigDecimal(new BigDecimal("1381076986.306509")).toString().startsWith("2013-10-06T"));
     }
 
     @Test

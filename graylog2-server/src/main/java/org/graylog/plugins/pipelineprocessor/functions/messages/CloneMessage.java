@@ -28,6 +28,8 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
+
 import static org.graylog.plugins.pipelineprocessor.ast.functions.ParameterDescriptor.type;
 
 public class CloneMessage extends AbstractFunction<Message> {
@@ -47,19 +49,18 @@ public class CloneMessage extends AbstractFunction<Message> {
 
         final Object tsField = currentMessage.getField(Message.FIELD_TIMESTAMP);
         final Message clonedMessage;
-        if (tsField instanceof DateTime) {
+        if (tsField instanceof Instant) {
             clonedMessage = new Message(currentMessage.getMessage(), currentMessage.getSource(), currentMessage.getTimestamp());
             clonedMessage.addFields(currentMessage.getFields());
         } else {
             LOG.warn("Invalid timestamp <{}> (type: {}) in message <{}>. Using current time instead.",
                     tsField, tsField.getClass().getCanonicalName(), currentMessage.getId());
 
-            final DateTime now = DateTime.now(DateTimeZone.UTC);
-            clonedMessage = new Message(currentMessage.getMessage(), currentMessage.getSource(), now);
+            clonedMessage = new Message(currentMessage.getMessage(), currentMessage.getSource(), Instant.now());
             clonedMessage.addFields(currentMessage.getFields());
 
             // Message#addFields() overwrites the "timestamp" field.
-            clonedMessage.addField("timestamp", now);
+            clonedMessage.addField("timestamp", Instant.now());
             clonedMessage.addField(Message.FIELD_GL2_ORIGINAL_TIMESTAMP, String.valueOf(tsField));
         }
 

@@ -26,6 +26,8 @@ import org.joda.time.DateTimeZone;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.time.Instant;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
@@ -61,19 +63,19 @@ public class GelfOutputTest {
     public void testToGELFMessageTimestamp() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
 
         final GelfMessage gelfMessage = gelfOutput.toGELFMessage(message);
 
-        assertEquals(gelfMessage.getTimestamp(), now.getMillis() / 1000.0d, 0.0d);
+        assertEquals(gelfMessage.getTimestamp(), now.toEpochMilli() / 1000.0d, 0.0d);
     }
 
     @Test
     public void testToGELFMessageFullMessage() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField(Message.FIELD_FULL_MESSAGE, "Full Message");
 
@@ -86,7 +88,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithValidNumericLevel() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("level", 6);
 
@@ -99,7 +101,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithInvalidNumericLevel() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("level", -1L);
 
@@ -112,7 +114,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithValidStringLevel() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("level", "6");
 
@@ -125,7 +127,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithInvalidStringLevel() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("level", "BOOM");
 
@@ -138,7 +140,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithInvalidNumericStringLevel() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("level", "-1");
 
@@ -151,7 +153,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithInvalidTypeLevel() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("level", new Object());
 
@@ -164,7 +166,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithNullLevel() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("level", null);
 
@@ -177,7 +179,7 @@ public class GelfOutputTest {
     public void testToGELFMessageWithNonStringFacility() throws Exception {
         final GelfTransport transport = mock(GelfTransport.class);
         final GelfOutput gelfOutput = new GelfOutput(transport);
-        final DateTime now = DateTime.now(DateTimeZone.UTC);
+        final Instant now = Instant.now();
         final Message message = new Message("Test", "Source", now);
         message.addField("facility", 42L);
 

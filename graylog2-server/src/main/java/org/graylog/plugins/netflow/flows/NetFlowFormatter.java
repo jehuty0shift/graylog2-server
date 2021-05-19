@@ -29,6 +29,7 @@ import org.joda.time.DateTimeZone;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
 
@@ -90,7 +91,7 @@ public class NetFlowFormatter {
                                     @Nullable InetSocketAddress sender) {
         final String source = sender == null ? null : sender.getAddress().getHostAddress();
         final long timestamp = header.unixSecs() * 1000L + (header.unixNsecs() / 1000000L);
-        final Message message = new Message(toMessageString(record), source, new DateTime(timestamp, DateTimeZone.UTC));
+        final Message message = new Message(toMessageString(record), source, Instant.ofEpochMilli(timestamp));
 
         message.addField(MF_VERSION, 5);
         message.addField(MF_FLOW_PACKET_ID, header.flowSequence());
@@ -136,7 +137,7 @@ public class NetFlowFormatter {
                                     @Nullable InetSocketAddress sender) {
         final String source = sender == null ? null : sender.getAddress().getHostAddress();
         final long timestamp = header.unixSecs() * 1000L;
-        final Message message = new Message(toMessageString(record), source, new DateTime(timestamp, DateTimeZone.UTC));
+        final Message message = new Message(toMessageString(record), source, Instant.ofEpochMilli(timestamp));
 
         final Map<String, Object> fields = record.fields();
 

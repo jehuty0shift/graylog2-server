@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -18,6 +18,7 @@ package org.graylog2.inputs.codecs;
 
 import com.eaio.uuid.UUID;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.assistedinject.Assisted;
@@ -38,7 +39,6 @@ import org.graylog2.plugin.inputs.codecs.AbstractCodec;
 import org.graylog2.plugin.inputs.codecs.CodecAggregator;
 import org.graylog2.plugin.inputs.transports.NettyTransport;
 import org.graylog2.plugin.journal.RawMessage;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +46,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -64,8 +66,10 @@ public class GelfCodec extends AbstractCodec {
         super(configuration);
         this.aggregator = aggregator;
         this.objectMapper = new ObjectMapper().enable(
-            JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
-            JsonParser.Feature.ALLOW_TRAILING_COMMA);
+
+                JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
+                JsonParser.Feature.ALLOW_TRAILING_COMMA);
+        this.objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         this.decompressSizeLimit = configuration.getInt(CK_DECOMPRESS_SIZE_LIMIT, DEFAULT_DECOMPRESS_SIZE_LIMIT);
     }
 
@@ -102,19 +106,19 @@ public class GelfCodec extends AbstractCodec {
         return -1;
     }
 
-    private static double timestampValue(final JsonNode json) {
+    private static BigDecimal timestampValue(final JsonNode json) {
         final JsonNode value = json.path(Message.FIELD_TIMESTAMP);
         if (value.isNumber()) {
-            return value.asDouble(-1.0);
+            return value.isBigDecimal()?value.decimalValue():BigDecimal.valueOf(value.asDouble(-1.0));
         } else if (value.isTextual()) {
             try {
-                return Double.parseDouble(value.asText());
+                return new BigDecimal(value.asText());
             } catch (NumberFormatException e) {
                 log.debug("Unable to parse timestamp", e);
-                return -1.0;
+                return BigDecimal.valueOf(-1.0);
             }
         } else {
-            return -1.0;
+            return BigDecimal.valueOf(-1.0);
         }
     }
 
@@ -133,20 +137,20 @@ public class GelfCodec extends AbstractCodec {
             }
         } catch (final Exception e) {
             log.error("Could not parse JSON, first 400 characters: " +
-                              StringUtils.abbreviate(json, 403), e);
+                    StringUtils.abbreviate(json, 403), e);
             throw new IllegalStateException("JSON is null/could not be parsed (invalid JSON)", e);
         }
 
         validateGELFMessage(node, rawMessage.getId(), rawMessage.getRemoteAddress());
 
         // Timestamp.
-        final double messageTimestamp = timestampValue(node);
-        final DateTime timestamp;
-        if (messageTimestamp <= 0) {
-            timestamp = rawMessage.getTimestamp();
+        final BigDecimal messageTimestamp = timestampValue(node);
+        final Instant timestamp;
+        if (messageTimestamp.doubleValue() <= 0) {
+            timestamp = Instant.ofEpochMilli(rawMessage.getTimestamp().getMillis());
         } else {
             // we treat this as a unix timestamp
-            timestamp = Tools.dateTimeFromDouble(messageTimestamp);
+            timestamp = Tools.InstantFromBigDecimal(messageTimestamp);
         }
 
         final Message message = new Message(
@@ -300,11 +304,11 @@ public class GelfCodec extends AbstractCodec {
         public ConfigurationRequest getRequestedConfiguration() {
             final ConfigurationRequest requestedConfiguration = super.getRequestedConfiguration();
             requestedConfiguration.addField(new NumberField(
-                CK_DECOMPRESS_SIZE_LIMIT,
-                "Decompressed size limit",
-                DEFAULT_DECOMPRESS_SIZE_LIMIT,
-                "The maximum number of bytes after decompression.",
-                ConfigurationField.Optional.OPTIONAL));
+                    CK_DECOMPRESS_SIZE_LIMIT,
+                    "Decompressed size limit",
+                    DEFAULT_DECOMPRESS_SIZE_LIMIT,
+                    "The maximum number of bytes after decompression.",
+                    ConfigurationField.Optional.OPTIONAL));
 
             return requestedConfiguration;
         }

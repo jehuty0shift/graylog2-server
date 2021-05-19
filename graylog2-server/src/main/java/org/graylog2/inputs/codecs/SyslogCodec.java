@@ -51,6 +51,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -204,12 +205,12 @@ public class SyslogCodec extends AbstractCodec {
         return isNullOrEmpty(host) && remoteAddress != null ? InetAddresses.toAddrString(remoteAddress) : host;
     }
 
-    private DateTime parseDate(SyslogServerEventIF msg, DateTime receivedTimestamp) throws IllegalStateException {
+    private Instant parseDate(SyslogServerEventIF msg, DateTime receivedTimestamp) throws IllegalStateException {
         // Check if date could be parsed.
         if (msg.getDate() == null) {
             if (configuration.getBoolean(CK_ALLOW_OVERRIDE_DATE)) {
                 LOG.debug("Date could not be parsed. Was set to NOW because {} is true.", CK_ALLOW_OVERRIDE_DATE);
-                return receivedTimestamp;
+                return Instant.ofEpochMilli(receivedTimestamp.getMillis());
             } else {
                 LOG.warn("Syslog message is missing date or date could not be parsed. (Possibly set {} to true) "
                                 + "Not further handling. Message was: {}",
@@ -218,7 +219,7 @@ public class SyslogCodec extends AbstractCodec {
             }
         }
 
-        return new DateTime(msg.getDate());
+        return msg.getDate().toInstant();
     }
 
     @Nullable

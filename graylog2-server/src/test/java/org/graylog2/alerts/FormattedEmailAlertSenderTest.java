@@ -34,6 +34,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -228,7 +229,7 @@ public class FormattedEmailAlertSenderTest {
         when(checkResult.getTriggeredAt()).thenReturn(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
         when(checkResult.getTriggeredCondition()).thenReturn(alertCondition);
 
-        Message message = new Message("Test", "source", new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC));
+        Message message = new Message("Test", "source", Instant.ofEpochMilli(new DateTime(2015, 1, 1, 0, 0, DateTimeZone.UTC).getMillis()));
         String body = emailAlertSender.buildBody(stream, checkResult, Collections.singletonList(message));
 
         assertThat(body)

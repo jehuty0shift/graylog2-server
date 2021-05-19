@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
@@ -77,7 +78,7 @@ class MessagesBulkIndexRetryingTest {
 
         final Message mockedMessage = mock(Message.class);
         when(mockedMessage.getId()).thenReturn(messageId);
-        when(mockedMessage.getTimestamp()).thenReturn(DateTime.now(DateTimeZone.UTC));
+        when(mockedMessage.getTimestamp()).thenReturn(Instant.now());
 
         final List<Map.Entry<IndexSet, Message>> messageList = messageListWith(mockedMessage);
 
@@ -168,7 +169,7 @@ class MessagesBulkIndexRetryingTest {
     private Message messageWithId(String id) {
         final Message mockedMessage = mock(Message.class);
         when(mockedMessage.getId()).thenReturn(id);
-        when(mockedMessage.getTimestamp()).thenReturn(DateTime.now(DateTimeZone.UTC));
+        when(mockedMessage.getTimestamp()).thenReturn(Instant.now());
         return mockedMessage;
     }
 
@@ -180,7 +181,7 @@ class MessagesBulkIndexRetryingTest {
 
     private Messages.IndexingError errorResultItem(String messageId, Messages.IndexingError.ErrorType errorType, String errorReason) {
         final Message message = mock(Message.class);
-        when(message.getTimestamp()).thenReturn(DateTime.now(DateTimeZone.UTC));
+        when(message.getTimestamp()).thenReturn(Instant.now());
         when(message.getId()).thenReturn(messageId);
 
         return Messages.IndexingError.create(message, "randomIndex", errorType, errorReason);
