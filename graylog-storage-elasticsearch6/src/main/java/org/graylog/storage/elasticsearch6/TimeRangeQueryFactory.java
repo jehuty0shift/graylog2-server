@@ -33,6 +33,7 @@ public class TimeRangeQueryFactory {
         }
 
         return QueryBuilders.rangeQuery(Message.FIELD_TIMESTAMP)
+                .format(Tools.ES_DATE_FORMAT_NANO)
                 .gte(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(range.getFrom().getMillis())))
                 .lte(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(range.getTo().getMillis())));
     }
