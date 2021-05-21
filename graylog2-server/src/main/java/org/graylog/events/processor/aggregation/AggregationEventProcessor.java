@@ -51,6 +51,7 @@ import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.graylog2.streams.StreamImpl;
 import org.graylog2.streams.StreamService;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,7 +195,7 @@ public class AggregationEventProcessor implements EventProcessor {
 
             for (final ResultMessage resultMessage : messages) {
                 final Message msg = resultMessage.getMessage();
-                final Event event = eventFactory.createEvent(eventDefinition, new DateTime(msg.getTimestamp().toEpochMilli()), eventDefinition.title());
+                final Event event = eventFactory.createEvent(eventDefinition, new DateTime(msg.getTimestamp().toEpochMilli(), DateTimeZone.UTC), eventDefinition.title());
                 event.setOriginContext(EventOriginContext.elasticsearchMessage(resultMessage.getIndex(), msg.getId()));
 
                 // We don't want source streams in the event which are unrelated to the event definition

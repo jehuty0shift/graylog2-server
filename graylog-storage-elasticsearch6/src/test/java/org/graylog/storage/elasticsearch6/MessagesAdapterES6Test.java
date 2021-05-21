@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -188,7 +189,7 @@ class MessagesAdapterES6Test {
     private Message messageWithId(String id) {
         final Message mockedMessage = mock(Message.class);
         when(mockedMessage.getId()).thenReturn(id);
-        when(mockedMessage.getTimestamp()).thenReturn(DateTime.now(DateTimeZone.UTC));
+        when(mockedMessage.getTimestamp()).thenReturn(Instant.now());
         return mockedMessage;
     }
 

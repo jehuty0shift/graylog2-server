@@ -531,7 +531,7 @@ public class MessageTest {
         message.addField(Message.FIELD_TIMESTAMP, dateObject);
 
         assertEquals(Date.from(message.getTimestamp()), dateObject);
-        assertEquals(message.getField(Message.FIELD_TIMESTAMP), Instant.class);
+        assertEquals(message.getField(Message.FIELD_TIMESTAMP).getClass(), Instant.class);
     }
 
     @Test
@@ -561,23 +561,23 @@ public class MessageTest {
     public void assignZonedDateTimeAsTimestamp() {
         final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC));
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 12, 0, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC).toInstant());
     }
 
     @Test
     public void assignOffsetDateTimeAsTimestamp() {
         final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, OffsetDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC));
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 12, 0, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(OffsetDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC).toInstant());
     }
 
     @Test
     @SuppressForbidden("Intentionally using system default time zone")
     public void assignLocalDateTimeAsTimestamp() {
         final Message message = new Message("message", "source", Instant.now());
-        message.addField(Message.FIELD_TIMESTAMP, LocalDateTime.of(2018, 4, 19, 12, 0, 0, 0));
+        message.addField(Message.FIELD_TIMESTAMP, ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0,ZoneId.systemDefault()));
         final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2018, 4, 19, 12, 0, 0, 0, defaultTimeZone).withZone(DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0,ZoneId.systemDefault()).toInstant());
     }
 
     @Test
@@ -586,14 +586,14 @@ public class MessageTest {
         final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, LocalDate.of(2018, 4, 19));
         final ZoneId defaultTimeZone = ZoneId.systemDefault();
-        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 0, 0, 0, 0, defaultTimeZone).withZoneSameInstant(ZoneOffset.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 0, 0, 0, 0, defaultTimeZone).withZoneSameInstant(ZoneOffset.UTC).toInstant());
     }
 
     @Test
     public void assignInstantAsTimestamp() {
         final Message message = new Message("message", "source", Instant.now());
         message.addField(Message.FIELD_TIMESTAMP, Instant.ofEpochMilli(1524139200000L));
-        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneOffset.UTC).toInstant());
     }
 
     @Test

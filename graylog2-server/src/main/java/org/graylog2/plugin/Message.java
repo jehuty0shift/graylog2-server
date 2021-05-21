@@ -48,6 +48,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -371,7 +372,9 @@ public class Message implements Messages, Indexable {
 
         final Object timestampValue = getField(FIELD_TIMESTAMP);
         Instant instant;
-        if (timestampValue instanceof Date) {
+        if (timestampValue instanceof Instant) {
+            instant = (Instant) timestampValue;
+        } else if (timestampValue instanceof Date) {
             instant = ((Date) timestampValue).toInstant();
         } else if (timestampValue instanceof DateTime) {
             instant = ((DateTime) timestampValue).toDate().toInstant();
@@ -379,10 +382,10 @@ public class Message implements Messages, Indexable {
             // if the timestamp value is a string, we try to parse it in the correct format.
             // we fall back to "now", this avoids losing messages which happen to have the wrong timestamp format
             try {
-                DateTimeFormatter instantFormatter = DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO).withZone(ZoneId.of("UTC"));
+                DateTimeFormatter instantFormatter = ES_DATE_FORMAT_FORMATTER;
                 instant = Instant.from(LocalDate.parse((String) timestampValue, instantFormatter));
 
-            } catch (IllegalArgumentException e) {
+            } catch (DateTimeParseException e) {
                 LOG.trace("Invalid format for field timestamp '{}' in message {}, forcing to current time.", timestampValue, getId());
                 invalidTimestampMeter.mark();
                 instant = Instant.now();
@@ -500,6 +503,9 @@ public class Message implements Messages, Indexable {
             if (isRequiredField || !str.isEmpty()) {
                 fields.put(trimmedKey, str);
             }
+        } else if (value instanceof  DateTime) {
+            DateTime dt = (DateTime) value;
+            fields.put(FIELD_TIMESTAMP, Instant.ofEpochMilli(dt.getMillis()));
         } else if (value != null) {
             fields.put(trimmedKey, value);
         }
