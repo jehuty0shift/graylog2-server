@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -72,20 +72,22 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * Utility class for various tool/helper functions.
  */
 public final class Tools {
-    private static final byte[] EMPTY_BYTE_ARRAY_4 = {0,0,0,0};
-    private static final byte[] EMPTY_BYTE_ARRAY_16 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    private static final byte[] EMPTY_BYTE_ARRAY_4 = {0, 0, 0, 0};
+    private static final byte[] EMPTY_BYTE_ARRAY_16 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    public static final String ES_DATE_FORMAT_NANO = "yyyy-MM-dd HH:mm:ss.SSS[SSS[SSS]]";
+    public static final String ES_DATE_FORMAT_NANO = "yyyy-MM-dd HH:mm:ss.n";
     public static final String ES_DATE_FORMAT_MS = "yyyy-MM-dd HH:mm:ss.SSS";
     public static final String ES_DATE_FORMAT_NO_MS = "yyyy-MM-dd HH:mm:ss";
 
-    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER =  new java.time.format.DateTimeFormatterBuilder().append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER = new java.time.format.DateTimeFormatterBuilder().append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
             .appendLiteral(' ')
             .append(java.time.format.DateTimeFormatter.ISO_LOCAL_TIME)
             .toFormatter()
             .withZone(ZoneOffset.UTC);
 
-    public static final java.time.format.DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = java.time.format.DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.of("UTC"));
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO, Locale.ENGLISH).withZone(ZoneOffset.UTC);
+
+    public static final java.time.format.DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = java.time.format.DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneOffset.UTC);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private Tools() {
@@ -329,7 +331,7 @@ public final class Tools {
     }
 
     public static String buildElasticSearchTimeFormat(Instant timestamp) {
-        return ES_DATE_FORMAT_FORMATTER.format(timestamp);
+        return ES_DATE_FORMAT_FORMATTER_TO_ES.format(timestamp);
     }
 
     /**
@@ -348,7 +350,7 @@ public final class Tools {
      */
     public static Instant InstantFromBigDecimal(BigDecimal x) {
         long seconds = x.longValue();
-        return Instant.ofEpochSecond(seconds,x.subtract(BigDecimal.valueOf(seconds)).multiply(BigDecimal.valueOf(1000000000)).longValue());
+        return Instant.ofEpochSecond(seconds, x.subtract(BigDecimal.valueOf(seconds)).multiply(BigDecimal.valueOf(1000000000)).longValue());
     }
 
     /**
@@ -458,7 +460,7 @@ public final class Tools {
 
     public static Number getNumber(Object o, Number defaultValue) {
         if (o instanceof Number) {
-            return (Number)o;
+            return (Number) o;
         }
 
         try {
@@ -585,7 +587,7 @@ public final class Tools {
         }
 
         final String path = firstNonNull(uri.getPath(), "/");
-        if(path.endsWith("/")) {
+        if (path.endsWith("/")) {
             return uri;
         } else {
             try {
