@@ -19,6 +19,8 @@ package org.graylog2.indexer.searches.timeranges;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.Seconds;
 
+import java.time.Duration;
+
 public final class TimeRanges {
     private TimeRanges() {
     }
@@ -35,7 +37,7 @@ public final class TimeRanges {
         }
 
         try {
-            return Seconds.secondsBetween(timeRange.getFrom(), timeRange.getTo()).getSeconds();
+            return Long.valueOf(Duration.between(timeRange.getFrom(), timeRange.getTo()).getSeconds()).intValue();
         } catch (IllegalArgumentException e) {
             return 0;
         }

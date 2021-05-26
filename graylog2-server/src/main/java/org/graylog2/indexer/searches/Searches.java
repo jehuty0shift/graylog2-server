@@ -34,9 +34,11 @@ import org.graylog2.indexer.results.FieldStatsResult;
 import org.graylog2.indexer.results.ScrollResult;
 import org.graylog2.indexer.results.SearchResult;
 import org.graylog2.indexer.searches.timeranges.TimeRanges;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.streams.StreamService;
+import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -247,7 +249,7 @@ public class Searches {
         }
 
         final ImmutableSortedSet.Builder<IndexRange> indices = ImmutableSortedSet.orderedBy(IndexRange.COMPARATOR);
-        final SortedSet<IndexRange> indexRanges = indexRangeService.find(range.getFrom(), range.getTo());
+        final SortedSet<IndexRange> indexRanges = indexRangeService.find(Tools.instantToDt(range.getFrom()),Tools.instantToDt(range.getTo()));
         final Set<String> affectedIndexNames = indexRanges.stream().map(IndexRange::indexName).collect(Collectors.toSet());
         final Set<IndexSet> eventIndexSets = indexSetRegistry.getForIndices(affectedIndexNames).stream()
                 .filter(indexSet1 -> IndexSetConfig.TemplateType.EVENTS.equals(indexSet1.getConfig().indexTemplateType().orElse(IndexSetConfig.TemplateType.MESSAGES)))

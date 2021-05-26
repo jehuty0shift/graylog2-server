@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.joda.time.DateTime;
+
+import java.time.Instant;
 
 import static org.joda.time.DateTimeZone.UTC;
 
@@ -57,7 +59,7 @@ public abstract class QueryExecutionStats {
         public static Builder create() {
             return new AutoValue_QueryExecutionStats.Builder()
                     .timestamp(DateTime.now(UTC))
-                    .effectiveTimeRange(AbsoluteRange.create(DateTime.now(UTC), DateTime.now(UTC)))
+                    .effectiveTimeRange(AbsoluteRange.create(Instant.now(), Instant.now()))
                     .duration(0L);
         }
 

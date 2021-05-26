@@ -27,6 +27,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Seconds;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 @AutoValue
@@ -48,19 +50,19 @@ public abstract class RelativeRange extends TimeRange {
 
     @Override
     @JsonIgnore
-    public DateTime getFrom() {
+    public Instant getFrom() {
         // TODO this should be computed once
         if (range() > 0) {
-            return Tools.nowUTC().minus(Seconds.seconds(range()));
+            return Instant.now().minus(range(), ChronoUnit.SECONDS);
         }
-        return new DateTime(0, DateTimeZone.UTC);
+        return Instant.EPOCH;
     }
 
     @Override
     @JsonIgnore
-    public DateTime getTo() {
+    public Instant getTo() {
         // TODO this should be fixed
-        return Tools.nowUTC();
+        return Instant.now();
     }
 
     @JsonCreator

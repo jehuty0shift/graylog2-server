@@ -18,6 +18,7 @@ package org.graylog.plugins.views.search.export;
 
 import com.google.common.collect.ImmutableMultimap;
 import org.graylog.plugins.views.search.LegacyDecoratorProcessor;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.graylog2.rest.models.messages.responses.ResultMessageSummary;
 import org.graylog2.rest.resources.search.responses.SearchResponse;
@@ -72,8 +73,8 @@ public class LegacyChunkDecorator implements ChunkDecorator {
                 chunk.fieldsInOrder(),
                 -1,
                 -1,
-                timeRange.getFrom(),
-                timeRange.getTo()
+                Tools.instantToDt(timeRange.getFrom()),
+                Tools.instantToDt(timeRange.getTo())
         );
     }
 

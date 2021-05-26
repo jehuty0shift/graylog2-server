@@ -24,6 +24,8 @@ import org.graylog.events.processor.EventProcessorParametersWithTimerange;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
@@ -40,7 +42,7 @@ public abstract class TestEventProcessorParameters implements EventProcessorPara
     public abstract Builder toBuilder();
 
     public static TestEventProcessorParameters create(DateTime from, DateTime to) {
-        return builder().timerange(AbsoluteRange.create(from, to)).build();
+        return builder().timerange(AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()), Instant.ofEpochMilli(to.getMillis()))).build();
     }
 
     @Override
@@ -49,7 +51,7 @@ public abstract class TestEventProcessorParameters implements EventProcessorPara
         requireNonNull(to, "to cannot be null");
         checkArgument(to.isAfter(from), "to must be after from");
 
-        return builder().timerange(AbsoluteRange.create(from, to)).build();
+        return builder().timerange(AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()), Instant.ofEpochMilli(to.getMillis()))).build();
     }
 
     @AutoValue.Builder

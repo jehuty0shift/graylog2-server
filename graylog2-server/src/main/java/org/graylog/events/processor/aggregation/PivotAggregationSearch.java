@@ -48,6 +48,7 @@ import org.graylog.plugins.views.search.searchtypes.pivot.buckets.DateRangeBucke
 import org.graylog.plugins.views.search.searchtypes.pivot.buckets.DateRange;
 import org.graylog.plugins.views.search.searchtypes.pivot.buckets.Values;
 import org.graylog.plugins.views.search.searchtypes.pivot.series.Count;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.graylog2.plugin.streams.Stream;
 import org.joda.time.DateTime;
@@ -491,15 +492,16 @@ public class PivotAggregationSearch implements AggregationSearch {
     @VisibleForTesting
     static DateRangeBucket buildDateRangeBuckets(TimeRange timeRange, long searchWithinMs, long executeEveryMs) {
         final ImmutableList.Builder<DateRange> ranges = ImmutableList.builder();
-        DateTime from = timeRange.getFrom();
+        DateTime from = Tools.instantToDt(timeRange.getFrom());
         DateTime to;
+        DateTime tRangeTo = Tools.instantToDt(timeRange.getTo());
         do {
             // The smallest configurable unit is 1 sec.
             // By dividing it before casting we avoid a potential int overflow
             to = from.plusSeconds((int) (searchWithinMs / 1000));
             ranges.add(DateRange.builder().from(from).to(to).build());
             from = from.plusSeconds((int) executeEveryMs/ 1000);
-        } while (to.isBefore(timeRange.getTo()));
+        } while (to.isBefore(tRangeTo));
 
         return DateRangeBucket.builder().field("timestamp").ranges(ranges.build()).build();
     }

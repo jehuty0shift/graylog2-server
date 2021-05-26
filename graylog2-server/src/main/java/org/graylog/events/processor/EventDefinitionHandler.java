@@ -21,7 +21,9 @@ import org.graylog.scheduler.DBJobTriggerService;
 import org.graylog.scheduler.JobDefinitionDto;
 import org.graylog.scheduler.JobTriggerDto;
 import org.graylog.scheduler.clock.JobSchedulerClock;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.database.users.User;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -345,7 +347,7 @@ public class EventDefinitionHandler {
             // will fall back to the new one from the JobDefinition.
             unsavedJobTriggerBuilder.data(null);
             // schedule the next execution accordingly
-            unsavedJobTriggerBuilder.nextTime(config.parameters().timerange().getTo());
+            unsavedJobTriggerBuilder.nextTime(Tools.instantToDt(config.parameters().timerange().getTo()));
         }
 
         final JobTriggerDto jobTrigger = unsavedJobTriggerBuilder.build();
