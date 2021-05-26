@@ -43,6 +43,8 @@ import org.graylog2.shared.security.RestPermissions;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -109,10 +111,10 @@ public abstract class AggregationEventProcessorConfig implements EventProcessorC
 
     @Override
     public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
-        final DateTime now = clock.nowUTC();
+        final Instant now = Instant.now();
 
         // We need an initial timerange for the first execution of the event processor
-        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(searchWithinMs()), now);
+        final AbsoluteRange timerange = AbsoluteRange.create(now.minus(searchWithinMs(), ChronoUnit.MILLIS), now);
 
         final EventProcessorExecutionJob.Config jobDefinitionConfig = EventProcessorExecutionJob.Config.builder()
                 .eventDefinitionId(eventDefinition.id())

@@ -27,9 +27,11 @@ import org.graylog.plugins.views.search.SearchType;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -57,12 +59,12 @@ public abstract class OffsetRange extends TimeRange implements DerivableTimeRang
     public abstract String offset();
 
     @Override
-    public DateTime getFrom() {
+    public Instant getFrom() {
         throw new IllegalStateException("OffsetRange is not able to return its start point on its own. Please use DerivedTimeRange#effectiveTimeRange instead.");
     }
 
     @Override
-    public DateTime getTo() {
+    public Instant getTo() {
         throw new IllegalStateException("OffsetRange is not able to return its end point on its own. Please use DerivedTimeRange#effectiveTimeRange instead.");
     }
 
@@ -97,13 +99,13 @@ public abstract class OffsetRange extends TimeRange implements DerivableTimeRang
 
     private long deltaFromOffset(String offset, TimeRange referenceTimeRange) {
         return parseIntervalOffset(offset)
-                .map(intervals -> new Duration(referenceTimeRange.getFrom(), referenceTimeRange.getTo()).getMillis() * intervals)
+                .map(intervals -> Duration.between(referenceTimeRange.getFrom(), referenceTimeRange.getTo()).toMillis() * intervals)
                 .orElseGet(() -> (long) Integer.parseInt(offset, 10) * 1000);
     }
 
     private TimeRange deriveTimeRange(TimeRange referenceTimeRange) {
         final long delta = deltaFromOffset(offset(), referenceTimeRange);
-        return AbsoluteRange.create(referenceTimeRange.getFrom().minus(delta), referenceTimeRange.getTo().minus(delta));
+        return AbsoluteRange.create(referenceTimeRange.getFrom().minus(delta, ChronoUnit.MILLIS), referenceTimeRange.getTo().minus(delta, ChronoUnit.MILLIS));
     }
 
     public TimeRange deriveTimeRange(Query query, SearchType searchType) {

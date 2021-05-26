@@ -61,8 +61,8 @@ public class ComputationResult {
 
         if (computationTimeRange != null) {
             Map<String, Object> timeRangeMap = Maps.newHashMap();
-            timeRangeMap.put("from", Tools.getISO8601String(computationTimeRange.getFrom()));
-            timeRangeMap.put("to", Tools.getISO8601String(computationTimeRange.getTo()));
+            timeRangeMap.put("from", computationTimeRange.getFrom().toString());
+            timeRangeMap.put("to", computationTimeRange.getTo().toString());
             map.put("computation_time_range", timeRangeMap);
         }
 

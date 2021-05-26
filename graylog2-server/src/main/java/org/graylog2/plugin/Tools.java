@@ -25,6 +25,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.primitives.Doubles;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.shared.SuppressForbidden;
+import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -81,8 +82,8 @@ public final class Tools {
 
     public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER = new java.time.format.DateTimeFormatterBuilder().append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
             .appendLiteral(' ')
-            .append(java.time.format.DateTimeFormatter.ISO_LOCAL_TIME)
-            .toFormatter()
+            .append(java.time.format.DateTimeFormatter.ISO_TIME)
+            .toFormatter(Locale.ENGLISH)
             .withZone(ZoneOffset.UTC);
 
     public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO, Locale.ENGLISH).withZone(ZoneOffset.UTC);
@@ -674,4 +675,10 @@ public final class Tools {
             return Optional.empty();
         }
     }
+
+
+    public static DateTime instantToDt(Instant x) {
+        return new DateTime(x.toEpochMilli(), DateTimeZone.UTC);
+    }
+
 }

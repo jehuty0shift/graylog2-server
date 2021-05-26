@@ -28,6 +28,7 @@ import org.graylog2.plugin.indexer.searches.timeranges.InvalidRangeParametersExc
 import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Set;
 
@@ -53,7 +54,7 @@ public abstract class AggregationEventProcessorParameters implements EventProces
         requireNonNull(to, "to cannot be null");
         checkArgument(to.isAfter(from), "to must be after from");
 
-        return toBuilder().timerange(AbsoluteRange.create(from, to)).build();
+        return toBuilder().timerange(AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()), Instant.ofEpochMilli(to.getMillis()))).build();
     }
 
     public abstract Builder toBuilder();

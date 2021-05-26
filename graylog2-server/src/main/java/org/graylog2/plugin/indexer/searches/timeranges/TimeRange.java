@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(name = AbsoluteRange.ABSOLUTE, value = AbsoluteRange.class),
@@ -34,8 +36,8 @@ public abstract class TimeRange {
     public abstract String type();
 
     @JsonIgnore
-    public abstract DateTime getFrom();
+    public abstract Instant getFrom();
 
     @JsonIgnore
-    public abstract DateTime getTo();
+    public abstract Instant getTo();
 }

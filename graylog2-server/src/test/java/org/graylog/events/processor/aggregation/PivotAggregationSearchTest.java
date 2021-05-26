@@ -26,6 +26,7 @@ import org.graylog.plugins.views.search.rest.PermittedStreams;
 import org.graylog.plugins.views.search.searchtypes.pivot.PivotResult;
 import org.graylog.plugins.views.search.searchtypes.pivot.buckets.DateRange;
 import org.graylog.plugins.views.search.searchtypes.pivot.buckets.DateRangeBucket;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
@@ -117,7 +118,7 @@ public class PivotAggregationSearchTest {
         assertThat(results.size()).isEqualTo(2);
 
         assertThat(results.get(0)).isEqualTo(AggregationKeyResult.builder()
-                .timestamp(timerange.getTo())
+                .timestamp(Tools.instantToDt(timerange.getTo()))
                 .key(ImmutableList.of("a", "b"))
                 .seriesValues(ImmutableList.of(
                         AggregationSeriesValue.builder()
@@ -134,7 +135,7 @@ public class PivotAggregationSearchTest {
                 .build());
 
         assertThat(results.get(1)).isEqualTo(AggregationKeyResult.builder()
-                .timestamp(timerange.getTo())
+                .timestamp(Tools.instantToDt(timerange.getTo()))
                 .key(ImmutableList.of("a", "c"))
                 .seriesValues(ImmutableList.of(
                         AggregationSeriesValue.builder()
@@ -202,7 +203,7 @@ public class PivotAggregationSearchTest {
 
         assertThat(results.get(0)).isEqualTo(AggregationKeyResult.builder()
                 .key(ImmutableList.of())
-                .timestamp(timerange.getTo())
+                .timestamp(Tools.instantToDt(timerange.getTo()))
                 .seriesValues(ImmutableList.of(
                         AggregationSeriesValue.builder()
                                 .key(ImmutableList.of())
@@ -273,7 +274,7 @@ public class PivotAggregationSearchTest {
 
         assertThat(results.get(0)).isEqualTo(AggregationKeyResult.builder()
                 .key(ImmutableList.of())
-                .timestamp(timerange.getTo())
+                .timestamp(Tools.instantToDt(timerange.getTo()))
                 .seriesValues(ImmutableList.of(
                         AggregationSeriesValue.builder()
                                 .key(ImmutableList.of())

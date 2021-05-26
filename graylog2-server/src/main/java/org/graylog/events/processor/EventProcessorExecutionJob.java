@@ -32,6 +32,7 @@ import org.graylog.scheduler.JobScheduleStrategies;
 import org.graylog.scheduler.JobTriggerData;
 import org.graylog.scheduler.JobTriggerUpdate;
 import org.graylog.scheduler.clock.JobSchedulerClock;
+import org.graylog2.plugin.Tools;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,8 +90,8 @@ public class EventProcessorExecutionJob implements Job {
             parameters = config.parameters();
         }
 
-        final DateTime from = parameters.timerange().getFrom();
-        final DateTime to = parameters.timerange().getTo();
+        final DateTime from = Tools.instantToDt(parameters.timerange().getFrom());
+        final DateTime to = Tools.instantToDt(parameters.timerange().getTo());
 
         // The "to" timestamp must be after the "from" timestamp!
         if (!to.isAfter(from)) {

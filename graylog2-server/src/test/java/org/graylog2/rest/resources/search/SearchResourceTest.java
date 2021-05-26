@@ -19,6 +19,7 @@ package org.graylog2.rest.resources.search;
 import org.graylog2.decorators.DecoratorProcessor;
 import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.SearchesClusterConfig;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
@@ -31,6 +32,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -72,12 +75,12 @@ public class SearchResourceTest {
 
         final DateTime from = new DateTime(2015, 1, 15, 12, 0, DateTimeZone.UTC);
         final DateTime to = from.plusHours(1);
-        final TimeRange timeRange = AbsoluteRange.create(from, to);
+        final TimeRange timeRange = AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()), Instant.ofEpochMilli(to.getMillis()));
 
         final TimeRange restrictedTimeRange = searchResource.restrictTimeRange(timeRange);
         assertThat(restrictedTimeRange).isNotNull();
-        assertThat(restrictedTimeRange.getFrom()).isEqualTo(from);
-        assertThat(restrictedTimeRange.getTo()).isEqualTo(to);
+        assertThat(Tools.instantToDt(restrictedTimeRange.getFrom())).isEqualTo(from);
+        assertThat(Tools.instantToDt(restrictedTimeRange.getTo())).isEqualTo(to);
     }
 
     @Test
@@ -92,12 +95,12 @@ public class SearchResourceTest {
 
         final DateTime from = new DateTime(2015, 1, 15, 12, 0, DateTimeZone.UTC);
         final DateTime to = from.plusYears(1);
-        final TimeRange timeRange = AbsoluteRange.create(from, to);
+        final TimeRange timeRange = AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()),Instant.ofEpochMilli(to.getMillis()));
 
         final TimeRange restrictedTimeRange = resource.restrictTimeRange(timeRange);
         assertThat(restrictedTimeRange).isNotNull();
-        assertThat(restrictedTimeRange.getFrom()).isEqualTo(from);
-        assertThat(restrictedTimeRange.getTo()).isEqualTo(to);
+        assertThat(Tools.instantToDt(restrictedTimeRange.getFrom())).isEqualTo(from);
+        assertThat(Tools.instantToDt(restrictedTimeRange.getTo())).isEqualTo(to);
     }
 
     @Test
@@ -109,7 +112,7 @@ public class SearchResourceTest {
 
         final DateTime from = new DateTime(2015, 1, 15, 12, 0, DateTimeZone.UTC);
         final DateTime to = from.plus(queryLimitPeriod.multipliedBy(2));
-        final TimeRange timeRange = AbsoluteRange.create(from, to);
+        final TimeRange timeRange = AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()),Instant.ofEpochMilli(to.getMillis()));
         final TimeRange restrictedTimeRange = searchResource.restrictTimeRange(timeRange);
 
         assertThat(restrictedTimeRange).isNotNull();

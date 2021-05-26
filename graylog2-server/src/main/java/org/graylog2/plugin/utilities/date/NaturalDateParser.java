@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -24,11 +24,10 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class NaturalDateParser {
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -58,28 +57,28 @@ public class NaturalDateParser {
     }
 
     public static class Result {
-        private final DateTime from;
-        private final DateTime to;
+        private final Instant from;
+        private final Instant to;
 
         public Result(final Date from, final Date to) {
             if (from != null) {
-                this.from = new DateTime(from, DateTimeZone.UTC);
+                this.from = from.toInstant();
             } else {
-                this.from = Tools.nowUTC();
+                this.from = Instant.now();
             }
 
             if (to != null) {
-                this.to = new DateTime(to, DateTimeZone.UTC);
+                this.to = to.toInstant();
             } else {
-                this.to = Tools.nowUTC();
+                this.to = Instant.now();
             }
         }
 
-        public DateTime getFrom() {
+        public Instant getFrom() {
             return from;
         }
 
-        public DateTime getTo() {
+        public Instant getTo() {
             return to;
         }
 
@@ -92,8 +91,8 @@ public class NaturalDateParser {
             return result;
         }
 
-        private String dateFormat(final DateTime x) {
-            return x.toString(DateTimeFormat.forPattern(Tools.ES_DATE_FORMAT_NO_MS).withZoneUTC());
+        private String dateFormat(final Instant x) {
+            return DateTimeFormatter.ofPattern(Tools.ES_DATE_FORMAT_NO_MS, Locale.ENGLISH).withZone(ZoneOffset.UTC).format(x);
         }
     }
 

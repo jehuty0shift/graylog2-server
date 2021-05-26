@@ -16,6 +16,7 @@
  */
 package org.graylog2.plugin.indexer.searches.timeranges;
 
+import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 
@@ -27,18 +28,18 @@ public class AbsoluteRangeEntityTest {
     public void testStringParse() throws Exception {
         final AbsoluteRange range1 = AbsoluteRange.create("2016-03-24T00:00:00.000Z", "2016-03-24T23:59:59.000Z");
 
-        assertThat(range1.from().toString(ISODateTimeFormat.dateTime()))
-                .isEqualTo("2016-03-24T00:00:00.000Z");
-        assertThat(range1.to().toString(ISODateTimeFormat.dateTime()))
-                .isEqualTo("2016-03-24T23:59:59.000Z");
+        assertThat(range1.from().toString())
+                .isEqualTo("2016-03-24T00:00:00Z");
+        assertThat(range1.to().toString())
+                .isEqualTo("2016-03-24T23:59:59Z");
 
         final AbsoluteRange range2 = AbsoluteRange.create("2016-03-24T00:00:00.000+09:00", "2016-03-24T23:59:59.000+09:00");
 
         // Check that time zone is kept while parsing.
-        assertThat(range2.from().toString(ISODateTimeFormat.dateTime()))
-                .isEqualTo("2016-03-24T00:00:00.000+09:00");
-        assertThat(range2.to().toString(ISODateTimeFormat.dateTime()))
-                .isEqualTo("2016-03-24T23:59:59.000+09:00");
+        assertThat(range2.from().toEpochMilli())
+                .isEqualTo(ISODateTimeFormat.dateTime().parseDateTime("2016-03-24T00:00:00.000+09:00").getMillis());
+        assertThat(range2.to().toEpochMilli())
+                .isEqualTo((ISODateTimeFormat.dateTime().parseDateTime("2016-03-24T23:59:59.000+09:00").getMillis()));
     }
 
     @Test

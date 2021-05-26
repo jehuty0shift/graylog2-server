@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,6 +29,7 @@ import org.graylog2.indexer.searches.Searches;
 import org.graylog2.indexer.searches.SearchesClusterConfig;
 import org.graylog2.indexer.searches.Sorting;
 import org.graylog2.plugin.Message;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.rest.models.messages.responses.ResultMessageSummary;
@@ -44,6 +45,8 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -101,14 +104,14 @@ public abstract class SearchResource extends RestResource {
                                                  boolean decorate,
                                                  Optional<String> streamId) {
         final SearchResponse result = SearchResponse.create(sr.getOriginalQuery(),
-            sr.getBuiltQuery(),
-            indexRangeListToValueList(sr.getUsedIndices()),
-            resultMessageListtoValueList(sr.getResults()),
-            sr.getFields(),
-            sr.tookMs(),
-            sr.getTotalResults(),
-            timeRange.getFrom(),
-            timeRange.getTo());
+                sr.getBuiltQuery(),
+                indexRangeListToValueList(sr.getUsedIndices()),
+                resultMessageListtoValueList(sr.getResults()),
+                sr.getFields(),
+                sr.tookMs(),
+                sr.getTotalResults(),
+                Tools.instantToDt(timeRange.getFrom()),
+                Tools.instantToDt(timeRange.getTo()));
 
         return decorate ? decoratorProcessor.decorate(result, streamId) : result;
     }
@@ -118,11 +121,11 @@ public abstract class SearchResource extends RestResource {
 
         for (IndexRange indexRange : indexRanges) {
             result.add(IndexRangeSummary.create(
-                indexRange.indexName(),
-                indexRange.begin(),
-                indexRange.end(),
-                indexRange.calculatedAt(),
-                indexRange.calculationDuration()));
+                    indexRange.indexName(),
+                    indexRange.begin(),
+                    indexRange.end(),
+                    indexRange.calculatedAt(),
+                    indexRange.calculationDuration()));
         }
 
         return result;
@@ -130,9 +133,9 @@ public abstract class SearchResource extends RestResource {
 
     protected List<ResultMessageSummary> resultMessageListtoValueList(List<ResultMessage> resultMessages) {
         return resultMessages.stream()
-            // TODO module merge: migrate to resultMessage.getMessage() instead of Map<String, Object> via getFields()
-            .map((resultMessage) -> ResultMessageSummary.create(resultMessage.highlightRanges, resultMessage.getMessage().getFields(), resultMessage.getIndex()))
-            .collect(Collectors.toList());
+                // TODO module merge: migrate to resultMessage.getMessage() instead of Map<String, Object> via getFields()
+                .map((resultMessage) -> ResultMessageSummary.create(resultMessage.highlightRanges, resultMessage.getMessage().getFields(), resultMessage.getIndex()))
+                .collect(Collectors.toList());
     }
 
     protected Sorting buildSorting(String sort) {
@@ -194,11 +197,11 @@ public abstract class SearchResource extends RestResource {
                 ScrollResult.ScrollChunk chunk = scroll.nextChunk();
                 while (chunk != null) {
                     LOG.debug("[{}] Writing scroll chunk with {} messages",
-                        scroll.getQueryHash(),
-                        chunk.getMessages().size());
+                            scroll.getQueryHash(),
+                            chunk.getMessages().size());
                     if (output.isClosed()) {
                         LOG.debug("[{}] Client connection is closed, client disconnected. Aborting scroll.",
-                            scroll.getQueryHash());
+                                scroll.getQueryHash());
                         scroll.cancel();
                         return;
                     }
@@ -214,16 +217,16 @@ public abstract class SearchResource extends RestResource {
     }
 
     protected org.graylog2.plugin.indexer.searches.timeranges.TimeRange restrictTimeRange(final org.graylog2.plugin.indexer.searches.timeranges.TimeRange timeRange) {
-        final DateTime originalFrom = timeRange.getFrom();
-        final DateTime to = timeRange.getTo();
-        final DateTime from;
+        final Instant originalFrom = timeRange.getFrom();
+        final Instant to = timeRange.getTo();
+        final Instant from;
 
         final SearchesClusterConfig config = clusterConfigService.get(SearchesClusterConfig.class);
 
         if (config == null || Period.ZERO.equals(config.queryTimeRangeLimit())) {
             from = originalFrom;
         } else {
-            final DateTime limitedFrom = to.minus(config.queryTimeRangeLimit());
+            final Instant limitedFrom = to.minus(config.queryTimeRangeLimit().getMillis(), ChronoUnit.MILLIS);
             from = limitedFrom.isAfter(originalFrom) ? limitedFrom : originalFrom;
         }
 

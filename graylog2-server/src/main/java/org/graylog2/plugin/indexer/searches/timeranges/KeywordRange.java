@@ -24,6 +24,8 @@ import com.google.auto.value.AutoValue;
 import org.graylog2.plugin.utilities.date.NaturalDateParser;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
+
 @AutoValue
 @JsonTypeName(KeywordRange.KEYWORD)
 public abstract class KeywordRange extends TimeRange {
@@ -66,7 +68,7 @@ public abstract class KeywordRange extends TimeRange {
 
     @JsonIgnore
     @Override
-    public DateTime getFrom() {
+    public Instant getFrom() {
         try {
             return parseResult(keyword()).getFrom();
         } catch (InvalidRangeParametersException e) {
@@ -76,7 +78,7 @@ public abstract class KeywordRange extends TimeRange {
 
     @JsonIgnore
     @Override
-    public DateTime getTo() {
+    public Instant getTo() {
         try {
             return parseResult(keyword()).getTo();
         } catch (InvalidRangeParametersException e) {

@@ -43,8 +43,8 @@ public abstract class AbsoluteRangeEntity extends TimeRangeEntity {
     public abstract ValueReference to();
 
     public static AbsoluteRangeEntity of(AbsoluteRange absoluteRange) {
-        final String from = absoluteRange.from().toString(ISODateTimeFormat.dateTime());
-        final String to = absoluteRange.to().toString(ISODateTimeFormat.dateTime());
+        final String from = absoluteRange.from().toString();
+        final String to = absoluteRange.to().toString();
         return builder()
                 .from(ValueReference.of(from))
                 .to(ValueReference.of(to))

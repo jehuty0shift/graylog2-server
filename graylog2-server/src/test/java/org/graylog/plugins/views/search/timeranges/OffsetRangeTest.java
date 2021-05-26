@@ -26,6 +26,7 @@ import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,8 +39,8 @@ public class OffsetRangeTest {
     public void returnsCorrectRangeForTimeRangeOfQuery() throws Exception {
         final OffsetRange offsetRange = constructRange("300", "query", "");
         final TimeRange sourceRange = mock(TimeRange.class);
-        when(sourceRange.getFrom()).thenReturn(DateTime.parse("2019-11-18T10:00:00.000Z"));
-        when(sourceRange.getTo()).thenReturn(DateTime.parse("2019-11-21T12:00:00.000Z"));
+        when(sourceRange.getFrom()).thenReturn(Instant.parse("2019-11-18T10:00:00.000Z"));
+        when(sourceRange.getTo()).thenReturn(Instant.parse("2019-11-21T12:00:00.000Z"));
 
         final Query query = queryWithTimeRange(sourceRange);
 
@@ -52,8 +53,8 @@ public class OffsetRangeTest {
     public void returnsCorrectRangeForTimeRangeOfQueryWithOffsetInUnits() throws Exception {
         final OffsetRange offsetRange = constructRange("3i", "query", "");
         final TimeRange sourceRange = mock(TimeRange.class);
-        when(sourceRange.getFrom()).thenReturn(DateTime.parse("2019-11-18T10:00:00.000Z"));
-        when(sourceRange.getTo()).thenReturn(DateTime.parse("2019-11-21T12:00:00.000Z"));
+        when(sourceRange.getFrom()).thenReturn(Instant.parse("2019-11-18T10:00:00.000Z"));
+        when(sourceRange.getTo()).thenReturn(Instant.parse("2019-11-21T12:00:00.000Z"));
 
         final Query query = queryWithTimeRange(sourceRange);
 
@@ -66,8 +67,8 @@ public class OffsetRangeTest {
     public void returnsCorrectRangeForTimeRangeOfSearchType() throws Exception {
         final OffsetRange offsetRange = constructRange("300", "search_type", "searchTypeId");
         final TimeRange sourceRange = mock(TimeRange.class);
-        when(sourceRange.getFrom()).thenReturn(DateTime.parse("2019-11-18T10:00:00.000Z"));
-        when(sourceRange.getTo()).thenReturn(DateTime.parse("2019-11-21T12:00:00.000Z"));
+        when(sourceRange.getFrom()).thenReturn(Instant.parse("2019-11-18T10:00:00.000Z"));
+        when(sourceRange.getTo()).thenReturn(Instant.parse("2019-11-21T12:00:00.000Z"));
 
         final Query query = queryWithSearchTypeTimeRange(sourceRange, "searchTypeId");
 
@@ -80,8 +81,8 @@ public class OffsetRangeTest {
     public void returnsCorrectRangeForTimeRangeOfSearchTypeWithOffsetInUnits() throws Exception {
         final OffsetRange offsetRange = constructRange("2i", "search_type", "searchTypeId");
         final TimeRange sourceRange = mock(TimeRange.class);
-        when(sourceRange.getFrom()).thenReturn(DateTime.parse("2019-11-18T10:00:00.000Z"));
-        when(sourceRange.getTo()).thenReturn(DateTime.parse("2019-11-21T12:00:00.000Z"));
+        when(sourceRange.getFrom()).thenReturn(Instant.parse("2019-11-18T10:00:00.000Z"));
+        when(sourceRange.getTo()).thenReturn(Instant.parse("2019-11-21T12:00:00.000Z"));
 
         final Query query = queryWithSearchTypeTimeRange(sourceRange, "searchTypeId");
 
@@ -94,8 +95,8 @@ public class OffsetRangeTest {
     public void returnsCorrectRangeWithZeroUnitOffset() throws Exception {
         final OffsetRange offsetRange = constructRange("0i", "search_type", "searchTypeId");
         final TimeRange sourceRange = mock(TimeRange.class);
-        when(sourceRange.getFrom()).thenReturn(DateTime.parse("2019-11-18T10:00:00.000Z"));
-        when(sourceRange.getTo()).thenReturn(DateTime.parse("2019-11-21T12:00:00.000Z"));
+        when(sourceRange.getFrom()).thenReturn(Instant.parse("2019-11-18T10:00:00.000Z"));
+        when(sourceRange.getTo()).thenReturn(Instant.parse("2019-11-21T12:00:00.000Z"));
 
         final Query query = queryWithSearchTypeTimeRange(sourceRange, "searchTypeId");
 
@@ -108,8 +109,8 @@ public class OffsetRangeTest {
     public void throwsExceptionIfInvalidSearchTypeIsReferenced() throws Exception {
         final OffsetRange offsetRange = constructRange("300", "search_type", "invalidSearchType");
         final TimeRange sourceRange = mock(TimeRange.class);
-        when(sourceRange.getFrom()).thenReturn(DateTime.parse("2019-11-18T10:00:00.000Z"));
-        when(sourceRange.getTo()).thenReturn(DateTime.parse("2019-11-21T12:00:00.000Z"));
+        when(sourceRange.getFrom()).thenReturn(Instant.parse("2019-11-18T10:00:00.000Z"));
+        when(sourceRange.getTo()).thenReturn(Instant.parse("2019-11-21T12:00:00.000Z"));
 
         final Query query = mock(Query.class);
         final SearchType searchType = mock(SearchType.class);
@@ -127,8 +128,8 @@ public class OffsetRangeTest {
     public void throwsExceptionIfNoSearchTypeIsReferenced() throws Exception {
         final OffsetRange offsetRange = constructRange("300", "search_type", null);
         final TimeRange sourceRange = mock(TimeRange.class);
-        when(sourceRange.getFrom()).thenReturn(DateTime.parse("2019-11-18T10:00:00.000Z"));
-        when(sourceRange.getTo()).thenReturn(DateTime.parse("2019-11-21T12:00:00.000Z"));
+        when(sourceRange.getFrom()).thenReturn(Instant.parse("2019-11-18T10:00:00.000Z"));
+        when(sourceRange.getTo()).thenReturn(Instant.parse("2019-11-21T12:00:00.000Z"));
 
         final Query query = mock(Query.class);
         final SearchType searchType = mock(SearchType.class);

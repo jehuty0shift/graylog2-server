@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -32,7 +33,7 @@ import java.util.Set;
 public abstract class AggregationResult {
     private static final AggregationResult EMPTY_AGGREGATION_RESULT = builder()
             .keyResults(ImmutableList.of())
-            .effectiveTimerange(AbsoluteRange.create(Tools.nowUTC(), Tools.nowUTC()))
+            .effectiveTimerange(AbsoluteRange.create(Instant.now(), Instant.now()))
             .totalAggregatedMessages(0)
             .sourceStreams(ImmutableSet.of())
             .build();

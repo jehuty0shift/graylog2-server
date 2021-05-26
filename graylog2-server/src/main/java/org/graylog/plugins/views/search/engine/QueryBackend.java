@@ -31,6 +31,7 @@ import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -64,8 +65,8 @@ public interface QueryBackend<T extends GeneratedQueryContext> {
                     .filter(result -> result instanceof PivotResult)
                     .map(result -> ((PivotResult) result).effectiveTimerange())
                     .reduce((prev, next) -> {
-                        final DateTime from = prev.from().compareTo(next.from()) < 0 ? prev.from() : next.from();
-                        final DateTime to = prev.to().compareTo(next.to()) < 0 ? next.to() : prev.to();
+                        final Instant from = prev.from().compareTo(next.from()) < 0 ? prev.from() : next.from();
+                        final Instant to = prev.to().compareTo(next.to()) < 0 ? next.to() : prev.to();
                         return AbsoluteRange.create(from, to);
                     });
 

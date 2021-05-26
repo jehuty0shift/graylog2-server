@@ -44,6 +44,7 @@ import org.graylog2.rest.resources.search.responses.SearchResponse;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,8 +134,8 @@ public class ESMessageList implements ESSearchTypeHandler<MessageList> {
         final String undecoratedQueryString = ((ElasticsearchQueryString) query.query()).queryString();
         final String queryString = this.esQueryDecorators.decorate(undecoratedQueryString, job, query, Collections.emptySet());
 
-        final DateTime from = query.effectiveTimeRange(searchType).getFrom();
-        final DateTime to = query.effectiveTimeRange(searchType).getTo();
+        final Instant from = query.effectiveTimeRange(searchType).getFrom();
+        final Instant to = query.effectiveTimeRange(searchType).getTo();
 
         final SearchResponse searchResponse = SearchResponse.create(
                 undecoratedQueryString,
@@ -144,8 +145,8 @@ public class ESMessageList implements ESSearchTypeHandler<MessageList> {
                 Collections.emptySet(),
                 0,
                 result.getTotal(),
-                from,
-                to
+                new DateTime(from.toEpochMilli()),
+                new DateTime(to.toEpochMilli())
         );
 
         final SearchResponse decoratedSearchResponse = decoratorProcessor.decorateSearchResponse(searchResponse, searchType.decorators());
