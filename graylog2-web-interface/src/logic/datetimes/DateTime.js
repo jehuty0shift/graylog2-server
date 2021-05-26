@@ -16,9 +16,15 @@ class DateTime {
       DATETIME: 'YYYY-MM-DD HH:mm:ss', // Use to show local times when decimal second precision is not important
       DATETIME_TZ: 'YYYY-MM-DD HH:mm:ss Z', // Use when decimal second precision is not important, but TZ is
       TIMESTAMP: 'YYYY-MM-DD HH:mm:ss.SSS', // Use to show local times when decimal second precision is important (e.g. search results)
+      TIMESTAMP_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSS', // Use to show local times when decimal second precision is important (e.g. search results)
+      TIMESTAMP_NANO: 'YYYY-MM-DD HH:mm:ss.SSSSSSSSS', // Use to show local times when decimal second precision is important (e.g. search results)
       TIMESTAMP_TZ: 'YYYY-MM-DD HH:mm:ss.SSS Z', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TZ_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TZ_NANO: 'YYYY-MM-DD HH:mm:ss.SSSSSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
       COMPLETE: 'dddd D MMMM YYYY, HH:mm ZZ', // Easy to read date time, specially useful for graphs
       ISO_8601: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Standard, but not really nice to read. Mostly used for machine communication
+      ISO_8601_MICRO: 'YYYY-MM-DDTHH:mm:ss.SSSSSSZ', // Standard, but not really nice to read. Mostly used for machine communication
+      ISO_8601_NANO: 'YYYY-MM-DDTHH:mm:ss.SSSSSSSSSZ', // Standard, but not really nice to read. Mostly used for machine communication
     };
   }
 
@@ -44,9 +50,15 @@ class DateTime {
     // First date format matching the date wins, so we order them by strictness
     return [
       DateTime.Formats.ISO_8601,
+      DateTime.Formats.ISO_8601_MICRO,
+      DateTime.Formats.ISO_8601_NANO,
       DateTime.Formats.TIMESTAMP_TZ,
+      DateTime.Formats.TIMESTAMP_TZ_MICRO,
+      DateTime.Formats.TIMESTAMP_TZ_NANO,
       DateTime.Formats.DATETIME_TZ,
       DateTime.Formats.TIMESTAMP,
+      DateTime.Formats.TIMESTAMP_MICRO,
+      DateTime.Formats.TIMESTAMP_NANO,
       DateTime.Formats.DATETIME,
       DateTime.Formats.COMPLETE,
       DateTime.Formats.DATE,
@@ -61,7 +73,16 @@ class DateTime {
       throw new Error(`Date time ${dateTimeString} is not valid`);
     }
 
-    return new DateTime(parsedDateTime);
+    const matchNano = dateTimeString.match(/.*\.(\d+)/)
+    let nanoseconds = parsedDateTime.milliseconds() * 1000000;
+    if (matchNano) {
+      nanoseconds = matchNano[1];
+    }
+
+    const dt = new DateTime(parsedDateTime);
+    dt.setNanoseconds(nanoseconds);
+
+    return dt;
   }
 
   static isValidDateString(dateTimeString) {
@@ -85,12 +106,19 @@ class DateTime {
   constructor(dateTime) {
     if (!dateTime) {
       this.dateTime = DateTime.now();
+      this.nanoseconds = (this.dateTime.milliseconds()* 1000000).toString();
 
       return;
     }
 
     // Always use user's local time
     this.dateTime = moment.tz(dateTime, DateTime.getUserTimezone());
+    this.nanoseconds = (this.dateTime.milliseconds()* 1000000).toString();
+
+  }
+
+  setNanoseconds(nanoseconds) {
+   this.nanoseconds = nanoseconds;
   }
 
   static now() {
@@ -129,7 +157,22 @@ class DateTime {
 
   // Returns an ISO_8601 formatted string
   toISOString() {
-    return this.dateTime.toISOString();
+     function pad(number) {
+          if ( number < 10 ) {
+            return '0' + number;
+          }
+          return number;
+        }
+
+    let dateTimeUTC = this.dateTime.utc();
+    return dateTimeUTC.year() +
+      '-' + pad( dateTimeUTC.month() + 1 ) +
+      '-' + pad( dateTimeUTC.date() ) +
+      'T' + pad( dateTimeUTC.hours() ) +
+      ':' + pad( dateTimeUTC.minutes() ) +
+      ':' + pad( dateTimeUTC.seconds() ) +
+      '.' + this.nanoseconds +
+      'Z';
   }
 
   toString(format) {

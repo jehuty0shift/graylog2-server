@@ -32,6 +32,7 @@ import org.graylog2.indexer.ranges.IndexRange;
 import org.graylog2.indexer.ranges.IndexRangeService;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.indexer.searches.Sorting;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.streams.StreamService;
@@ -95,7 +96,7 @@ public class MoreSearch {
     }
 
     private Set<String> getAffectedIndices(Set<String> streamIds, TimeRange timeRange) {
-        final SortedSet<IndexRange> indexRanges = indexRangeService.find(timeRange.getFrom(), timeRange.getTo());
+        final SortedSet<IndexRange> indexRanges = indexRangeService.find(Tools.instantToDt(timeRange.getFrom()),Tools.instantToDt(timeRange.getTo()));
 
         // We support an empty streams list and return all affected indices in that case.
         if (streamIds.isEmpty()) {

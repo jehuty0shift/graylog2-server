@@ -45,6 +45,7 @@ import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.MessageSummary;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.database.Persisted;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
@@ -108,11 +109,11 @@ public class AggregationEventProcessor implements EventProcessor {
         final AggregationEventProcessorParameters parameters = (AggregationEventProcessorParameters) processorParameters;
 
         // TODO: We have to take the Elasticsearch index.refresh_interval into account here!
-//        if (dependencyCheck.hasMessagesIndexedUpTo(parameters.timerange().getTo())) {
-//            final String msg = String.format(Locale.ROOT, "Couldn't run aggregation <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
-//                    eventDefinition.title(), eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
-//            throw new EventProcessorPreconditionException(msg, eventDefinition);
-//        }
+        if (!dependencyCheck.hasMessagesIndexedUpTo(Tools.instantToDt(parameters.timerange().getTo()))) {
+            final String msg = String.format(Locale.ROOT, "Couldn't run aggregation <%s/%s> for timerange <%s to %s> because required messages haven't been indexed, yet.",
+                    eventDefinition.title(), eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
+            throw new EventProcessorPreconditionException(msg, eventDefinition);
+        }
 
         LOG.debug("Creating events for config={} parameters={}", config, parameters);
 
@@ -134,7 +135,7 @@ public class AggregationEventProcessor implements EventProcessor {
         }
 
         // Update the state for this processor! This state will be used for dependency checks between event processors.
-        stateService.setState(eventDefinition.id(), parameters.timerange().getFrom(), parameters.timerange().getTo());
+        stateService.setState(eventDefinition.id(), Tools.instantToDt(parameters.timerange().getFrom()), Tools.instantToDt(parameters.timerange().getTo()));
     }
 
     @Override
@@ -169,7 +170,7 @@ public class AggregationEventProcessor implements EventProcessor {
                 }
                 messageConsumer.accept(summaries);
             };
-            final TimeRange timeRange = AbsoluteRange.create(event.getTimerangeStart(), event.getTimerangeEnd());
+            final TimeRange timeRange = AbsoluteRange.create(Instant.ofEpochMilli(event.getTimerangeStart().getMillis()), Instant.ofEpochMilli(event.getTimerangeEnd().getMillis()));
             moreSearch.scrollQuery(config.query(), config.streams(), config.queryParameters(), timeRange, Math.min(500, Ints.saturatedCast(limit)), callback);
         }
 
@@ -195,7 +196,7 @@ public class AggregationEventProcessor implements EventProcessor {
 
             for (final ResultMessage resultMessage : messages) {
                 final Message msg = resultMessage.getMessage();
-                final Event event = eventFactory.createEvent(eventDefinition, new DateTime(msg.getTimestamp().toEpochMilli(), DateTimeZone.UTC), eventDefinition.title());
+                final Event event = eventFactory.createEvent(eventDefinition, Tools.instantToDt(msg.getTimestamp()), eventDefinition.title());
                 event.setOriginContext(EventOriginContext.elasticsearchMessage(resultMessage.getIndex(), msg.getId()));
 
                 // We don't want source streams in the event which are unrelated to the event definition
@@ -284,12 +285,12 @@ public class AggregationEventProcessor implements EventProcessor {
             final String eventMessage = createEventMessageString(keyString, keyResult);
 
             // Extract eventTime from the key result or use query time range as fallback
-            final DateTime eventTime = keyResult.timestamp().orElse(result.effectiveTimerange().to());
+            final DateTime eventTime = keyResult.timestamp().orElse(Tools.instantToDt(result.effectiveTimerange().to()));
             final Event event = eventFactory.createEvent(eventDefinition, eventTime, eventMessage);
 
             // TODO: Do we have to set any other event fields here?
-            event.setTimerangeStart(parameters.timerange().getFrom());
-            event.setTimerangeEnd(parameters.timerange().getTo());
+            event.setTimerangeStart(Tools.instantToDt(parameters.timerange().getFrom()));
+            event.setTimerangeEnd(Tools.instantToDt(parameters.timerange().getTo()));
             sourceStreams.forEach(event::addSourceStream);
 
             final Map<String, Object> fields = new HashMap<>();
@@ -334,8 +335,8 @@ public class AggregationEventProcessor implements EventProcessor {
             fields.put("aggregation_key", keyString);
 
             // TODO: Can we find a useful source value?
-            final Message message = new Message(eventMessage, "", Instant.ofEpochMilli(result.effectiveTimerange().to().getMillis()));
-            message.addFields(fields);
+            final Message message = new Message(eventMessage, "", result.effectiveTimerange().to());
+             message.addFields(fields);
 
             LOG.debug("Creating event {}/{} - {} {} ({})", eventDefinition.title(), eventDefinition.id(), keyResult.key(), seriesString(keyResult), fields);
             eventsWithContext.add(EventWithContext.create(event, message));

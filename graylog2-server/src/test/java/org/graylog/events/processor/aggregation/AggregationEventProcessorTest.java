@@ -32,6 +32,7 @@ import org.graylog.events.processor.EventProcessorPreconditionException;
 import org.graylog.events.search.MoreSearch;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.plugin.Message;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.streams.StreamImpl;
 import org.graylog2.streams.StreamMock;
@@ -44,10 +45,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.time.Instant;
 import java.util.Collections;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -82,8 +83,8 @@ public class AggregationEventProcessorTest {
         final AbsoluteRange timerange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
 
         // We expect to get the end of the aggregation timerange as event time
-        final TestEvent event1 = new TestEvent(timerange.to());
-        final TestEvent event2 = new TestEvent(timerange.to());
+        final TestEvent event1 = new TestEvent(Tools.instantToDt(timerange.to()));
+        final TestEvent event2 = new TestEvent(Tools.instantToDt(timerange.to()));
         when(eventFactory.createEvent(any(EventDefinition.class), eq(now), anyString()))
                 .thenReturn(event1)  // first invocation return value
                 .thenReturn(event2); // second invocation return value
@@ -161,9 +162,9 @@ public class AggregationEventProcessorTest {
 
             assertThat(event.getId()).isEqualTo(event1.getId());
             assertThat(event.getMessage()).isEqualTo(event1.getMessage());
-            assertThat(event.getEventTimestamp()).isEqualTo(timerange.to());
-            assertThat(event.getTimerangeStart()).isEqualTo(timerange.from());
-            assertThat(event.getTimerangeEnd()).isEqualTo(timerange.to());
+            assertThat(event.getEventTimestamp()).isEqualTo(Tools.instantToDt(timerange.to()));
+            assertThat(event.getTimerangeStart()).isEqualTo(Tools.instantToDt(timerange.from()));
+            assertThat(event.getTimerangeEnd()).isEqualTo(Tools.instantToDt(timerange.to()));
             // Should only contain the streams that have been configured in event definition
             assertThat(event.getSourceStreams()).containsOnly("stream-2");
 
@@ -186,8 +187,8 @@ public class AggregationEventProcessorTest {
         final AbsoluteRange timerange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
 
         // We expect to get the end of the aggregation timerange as event time
-        final TestEvent event1 = new TestEvent(timerange.to());
-        final TestEvent event2 = new TestEvent(timerange.to());
+        final TestEvent event1 = new TestEvent(Tools.instantToDt(timerange.to()));
+        final TestEvent event2 = new TestEvent(Tools.instantToDt(timerange.to()));
         when(eventFactory.createEvent(any(EventDefinition.class), eq(now), anyString()))
                 .thenReturn(event1)  // first invocation return value
                 .thenReturn(event2); // second invocation return value
@@ -289,9 +290,9 @@ public class AggregationEventProcessorTest {
 
             assertThat(event.getId()).isEqualTo(event1.getId());
             assertThat(event.getMessage()).isEqualTo(event1.getMessage());
-            assertThat(event.getEventTimestamp()).isEqualTo(timerange.to());
-            assertThat(event.getTimerangeStart()).isEqualTo(timerange.from());
-            assertThat(event.getTimerangeEnd()).isEqualTo(timerange.to());
+            assertThat(event.getEventTimestamp()).isEqualTo(Tools.instantToDt(timerange.to()));
+            assertThat(event.getTimerangeStart()).isEqualTo(Tools.instantToDt(timerange.from()));
+            assertThat(event.getTimerangeEnd()).isEqualTo(Tools.instantToDt(timerange.to()));
             // Should contain all streams because when config.streams is empty, we search in all streams
             assertThat(event.getSourceStreams()).containsOnly("stream-1", "stream-2", "stream-3");
 
@@ -382,11 +383,11 @@ public class AggregationEventProcessorTest {
         final AggregationEventProcessor eventProcessor = new AggregationEventProcessor(eventDefinitionDto, searchFactory, eventProcessorDependencyCheck, stateService, moreSearch, streamService, messages);
 
         // If the dependency check returns true, there should be no exception raised and the state service should be called
-        when(eventProcessorDependencyCheck.hasMessagesIndexedUpTo(timerange.to())).thenReturn(true);
+        when(eventProcessorDependencyCheck.hasMessagesIndexedUpTo(Tools.instantToDt(timerange.to()))).thenReturn(true);
 
         assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {})).doesNotThrowAnyException();
 
-        verify(stateService, times(1)).setState("dto-id-1", timerange.from(), timerange.to());
+        verify(stateService, times(1)).setState("dto-id-1", Tools.instantToDt(timerange.from()),Tools.instantToDt(timerange.to()));
         verify(moreSearch, times(1)).scrollQuery(
                 eq(config.query()),
                 eq(config.streams()),
@@ -399,14 +400,14 @@ public class AggregationEventProcessorTest {
         reset(stateService, moreSearch, searchFactory); // Rest mocks so we can verify it again
 
         // If the dependency check returns false, a precondition exception should be raised and the state service not be called
-        when(eventProcessorDependencyCheck.hasMessagesIndexedUpTo(timerange.to())).thenReturn(false);
+        when(eventProcessorDependencyCheck.hasMessagesIndexedUpTo(Tools.instantToDt(timerange.to()))).thenReturn(false);
 
-        assertThatCode(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {}))
+        assertThatThrownBy(() -> eventProcessor.createEvents(eventFactory, parameters, (events) -> {}))
+                .isInstanceOf(EventProcessorPreconditionException.class)
                 .hasMessageContaining(eventDefinitionDto.title())
                 .hasMessageContaining(eventDefinitionDto.id())
                 .hasMessageContaining(timerange.from().toString())
-                .hasMessageContaining(timerange.to().toString())
-                .isInstanceOf(EventProcessorPreconditionException.class);
+                .hasMessageContaining(timerange.to().toString());
 
         verify(stateService, never()).setState(any(String.class), any(DateTime.class), any(DateTime.class));
         verify(searchFactory, never()).create(any(), any(), any(), any());
@@ -426,8 +427,8 @@ public class AggregationEventProcessorTest {
         final AbsoluteRange timerange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
 
         // We expect to get the end of the aggregation timerange as event time
-        final TestEvent event1 = new TestEvent(timerange.to());
-        final TestEvent event2 = new TestEvent(timerange.to());
+        final TestEvent event1 = new TestEvent(Tools.instantToDt(timerange.to()));
+        final TestEvent event2 = new TestEvent(Tools.instantToDt(timerange.to()));
         when(eventFactory.createEvent(any(EventDefinition.class), eq(now), anyString()))
                 .thenReturn(event1)  // first invocation return value
                 .thenReturn(event2); // second invocation return value
@@ -487,9 +488,9 @@ public class AggregationEventProcessorTest {
 
             assertThat(event.getId()).isEqualTo(event1.getId());
             assertThat(event.getMessage()).isEqualTo(event1.getMessage());
-            assertThat(event.getEventTimestamp()).isEqualTo(timerange.to());
-            assertThat(event.getTimerangeStart()).isEqualTo(timerange.from());
-            assertThat(event.getTimerangeEnd()).isEqualTo(timerange.to());
+            assertThat(event.getEventTimestamp()).isEqualTo(Tools.instantToDt(timerange.to()));
+            assertThat(event.getTimerangeStart()).isEqualTo(Tools.instantToDt(timerange.from()));
+            assertThat(event.getTimerangeEnd()).isEqualTo(Tools.instantToDt(timerange.to()));
             // Must contain the stream from the event definition because there is none in the result
             assertThat(event.getSourceStreams()).containsOnly("stream-2");
 
@@ -509,8 +510,8 @@ public class AggregationEventProcessorTest {
         final AbsoluteRange timerange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
 
         // We expect to get the end of the aggregation timerange as event time
-        final TestEvent event1 = new TestEvent(timerange.to());
-        final TestEvent event2 = new TestEvent(timerange.to());
+        final TestEvent event1 = new TestEvent(Tools.instantToDt(timerange.to()));
+        final TestEvent event2 = new TestEvent(Tools.instantToDt(timerange.to()));
         when(eventFactory.createEvent(any(EventDefinition.class), eq(now), anyString()))
                 .thenReturn(event1)  // first invocation return value
                 .thenReturn(event2); // second invocation return value
@@ -579,9 +580,9 @@ public class AggregationEventProcessorTest {
 
             assertThat(event.getId()).isEqualTo(event1.getId());
             assertThat(event.getMessage()).isEqualTo(event1.getMessage());
-            assertThat(event.getEventTimestamp()).isEqualTo(timerange.to());
-            assertThat(event.getTimerangeStart()).isEqualTo(timerange.from());
-            assertThat(event.getTimerangeEnd()).isEqualTo(timerange.to());
+            assertThat(event.getEventTimestamp()).isEqualTo(Tools.instantToDt(timerange.to()));
+            assertThat(event.getTimerangeStart()).isEqualTo(Tools.instantToDt(timerange.from()));
+            assertThat(event.getTimerangeEnd()).isEqualTo(Tools.instantToDt(timerange.to()));
             // Must contain all existing streams but the default event streams!
             assertThat(event.getSourceStreams()).containsOnly(
                     "stream-1",

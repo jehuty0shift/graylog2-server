@@ -39,7 +39,7 @@ const _isValidDateString = (dateString: string) => {
 
   return DateTime.isValidDateString(dateString)
     ? undefined
-    : 'Format must be: YYYY-MM-DD [HH:mm:ss[.SSS]]';
+    : 'Format must be: YYYY-MM-DD [HH:mm:ss[.SSS][SSS][SSS]]';
 };
 
 const AbsoluteTimeRangeSelector = ({ disabled }: Props) => {

@@ -20,6 +20,8 @@ import org.graylog.plugins.views.search.Query;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
+
 /**
  * Dummy class to allow constructing an empty {@link Query query instance}.
  */
@@ -33,12 +35,12 @@ public class EmptyTimeRange extends TimeRange {
     }
 
     @Override
-    public DateTime getFrom() {
+    public Instant getFrom() {
         return null;
     }
 
     @Override
-    public DateTime getTo() {
+    public Instant getTo() {
         return null;
     }
 
