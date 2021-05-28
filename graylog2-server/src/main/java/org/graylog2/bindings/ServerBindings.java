@@ -26,6 +26,7 @@ import org.graylog2.Configuration;
 import org.graylog2.alerts.AlertSender;
 import org.graylog2.alerts.EmailRecipients;
 import org.graylog2.alerts.FormattedEmailAlertSender;
+import org.graylog2.audit.KafkaAuditEventFeature;
 import org.graylog2.bindings.providers.ClusterEventBusProvider;
 import org.graylog2.bindings.providers.DefaultSecurityManagerProvider;
 import org.graylog2.bindings.providers.DefaultStreamProvider;
@@ -182,6 +183,7 @@ public class ServerBindings extends Graylog2Module {
         final Multibinder<Class<? extends DynamicFeature>> dynamicFeatures = jerseyDynamicFeatureBinder();
         dynamicFeatures.addBinding().toInstance(MetricsDynamicBinding.class);
         dynamicFeatures.addBinding().toInstance(RestrictToMasterFeature.class);
+        dynamicFeatures.addBinding().toInstance(KafkaAuditEventFeature.class);
     }
 
     private void bindExceptionMappers() {
