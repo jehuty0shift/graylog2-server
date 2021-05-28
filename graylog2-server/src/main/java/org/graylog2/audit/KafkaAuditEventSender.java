@@ -3,11 +3,15 @@ package org.graylog2.audit;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.graylog.plugins.views.search.events.SearchJobExecutionEvent;
 import org.graylog2.Configuration;
+import org.graylog2.streams.events.StreamsChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +36,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
     private String XOvhToken;
 
     @Inject
-    public KafkaAuditEventSender(Configuration configuration) {
+    public KafkaAuditEventSender(Configuration configuration, EventBus serverEventBus) {
 
         this.enabled = configuration.isKafkaAuditEnabled();
         LOG.info("Kafka audit is {}enabled", enabled ? "" : "not ");
@@ -58,10 +62,10 @@ public class KafkaAuditEventSender implements AuditEventSender {
 
         kProp.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         kProp.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
-        if(!"".equals(compression)) {
-           kProp.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, compression);
+        if (!"".equals(compression)) {
+            kProp.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, compression);
         }
-        if("".equals(acksConfig)) {
+        if ("".equals(acksConfig)) {
             kProp.put(ProducerConfig.ACKS_CONFIG, acksConfig);
         }
 
@@ -86,12 +90,21 @@ public class KafkaAuditEventSender implements AuditEventSender {
         this.kProducer = new KafkaProducer<String, String>(kProp);
         this.objMapper = new ObjectMapper();
 
+        serverEventBus.register(this);
     }
 
 
     @Override
     public void success(AuditActor actor, AuditEventType type) {
         success(actor, type, Collections.emptyMap());
+
+    }
+
+
+    @Subscribe
+    @SuppressWarnings("unused")
+    public void handleSearchAuditEvent(SearchJobExecutionEvent event) {
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double)event.executionStart().getMillis()/1000.0d);
 
     }
 
@@ -118,7 +131,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
 
         Instant timestamp = Instant.now();
 
-        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double)timestamp.toEpochMilli() / 1000.0f);
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double) timestamp.toEpochMilli() / 1000.0f);
 
         auditNode.put("_status", status);
         auditNode.put("_actor", actor.urn());
@@ -146,7 +159,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
         objNode.put("_type", "audit_graylog");
         objNode.put("_client_id", clientId);
         objNode.put("_node_name", nodeName);
-        if (!XOvhToken.equals("")) {
+        if (!"".equals(XOvhToken)) {
             objNode.put("_X-OVH-TOKEN", XOvhToken);
         }
         return objNode;
