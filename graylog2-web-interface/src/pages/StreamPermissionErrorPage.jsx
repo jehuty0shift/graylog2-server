@@ -15,7 +15,7 @@ const StreamPermissionErrorPage = ({ error = {}, missingStreamIds = [] }: Props)
   const description = (
     <>
       <p>This resource includes streams you do not have permissions for.</p>
-      <p>Please contact your administrator and provide the error details which include a list of streams you need access to.</p>
+      <p>Please contact the owner of theses streams and ask him to grant you access on them with a <a href="https://docs.ovh.com/gb/en/logs-data-platform/roles/" target="_blank" rel="noopener noreferrer">role</a>.</p>
     </>
   );
   const streamIds = missingStreamIds.length > 0

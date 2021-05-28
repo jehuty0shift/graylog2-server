@@ -73,6 +73,7 @@ public class ClusterSystemResource extends ProxiedResource {
     @GET
     @Timed
     @ApiOperation(value = "Get system overview of all Graylog nodes")
+    @RequiresPermissions(RestPermissions.BUFFERS_READ)
     public Map<String, Optional<SystemOverviewResponse>> get() {
         return getForAllNodes(RemoteSystemResource::system, createRemoteInterfaceProvider(RemoteSystemResource.class));
     }
