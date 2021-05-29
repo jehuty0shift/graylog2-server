@@ -2,6 +2,7 @@ package org.graylog2.audit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -9,6 +10,10 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.graylog.plugins.views.audit.ViewsAuditEventTypes;
+import org.graylog.plugins.views.search.Query;
+import org.graylog.plugins.views.search.SearchJob;
+import org.graylog.plugins.views.search.elasticsearch.ElasticsearchQueryString;
 import org.graylog.plugins.views.search.events.SearchJobExecutionEvent;
 import org.graylog2.Configuration;
 import org.graylog2.streams.events.StreamsChangedEvent;
@@ -104,7 +109,37 @@ public class KafkaAuditEventSender implements AuditEventSender {
     @Subscribe
     @SuppressWarnings("unused")
     public void handleSearchAuditEvent(SearchJobExecutionEvent event) {
-        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double)event.executionStart().getMillis()/1000.0d);
+        long timestampMillis = event.executionStart().getMillis();
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double) timestampMillis / 1000.0d);
+
+        auditNode.put("_action", ViewsAuditEventTypes.SEARCH_EXECUTE);
+        auditNode.put("_actor", AuditActor.user(event.user().getName()).urn());
+        auditNode.put("short_message", ViewsAuditEventTypes.SEARCH_EXECUTE+":inner_method");
+        auditNode.put("_is_admin_bool", event.user().isLocalAdmin());
+        SearchJob sJob = event.searchJob();
+        auditNode.put("_search_id", sJob.getSearchId());
+        int queryIndex = 0;
+        for (Query query : sJob.getSearch().queries()) {
+            if (query.query() instanceof ElasticsearchQueryString) {
+                ElasticsearchQueryString esQStr = (ElasticsearchQueryString) query.query();
+                auditNode.put("_query_id_" + queryIndex, query.id());
+                auditNode.put("_query_str_" + queryIndex, esQStr.queryString());
+                queryIndex += 1;
+            }
+        }
+
+        auditNode.put("_target_all_streams_bool",sJob.getSearch().usedStreamIds().isEmpty());
+        ArrayNode streamNode = auditNode.putArray("_search_stream_ids");
+        sJob.getSearch().usedStreamIds().stream().forEach(sid -> streamNode.add(sid));
+
+        try {
+            final String auditString = objMapper.writeValueAsString(auditNode);
+            kProducer.send(new ProducerRecord(topic, null, timestampMillis, null, auditString));
+            LOG.debug("sent audit event {}", auditString);
+        } catch (JsonProcessingException ex) {
+            LOG.error("fatal error on JSON Processing, shouldn't happen", ex);
+            throw new IllegalStateException(ex);
+        }
 
     }
 
