@@ -1,12 +1,12 @@
 package org.graylog2.audit;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.jersey.server.ExtendedUriInfo;
+import org.graylog.plugins.views.search.export.AuditContext;
 import org.graylog2.audit.jersey.AuditEvent;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.rest.RestTools;
@@ -18,8 +18,8 @@ import javax.inject.Inject;
 import javax.ws.rs.container.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,10 +59,12 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
                 && containerRequestContext.hasEntity()) {
             //Assumes content is json.
             try {
-                byte[] outputBuffer = ByteStreams.toByteArray(containerRequestContext.getEntityStream());
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ByteStreams.copy(containerRequestContext.getEntityStream(), baos);
+                byte[] outputBuffer = baos.toByteArray();
+                requestObj = objMapper.reader().readTree(outputBuffer);
                 ByteArrayInputStream bais = new ByteArrayInputStream(outputBuffer);
                 containerRequestContext.setEntityStream(bais);
-                requestObj = objMapper.reader().readTree(bais);
             } catch (IOException ex) {
                 LOG.warn("couldn't serialize request content from {}:{}", containerRequestContext.getUriInfo().getAbsolutePath().toString(), containerRequestContext.getMethod());
             }
@@ -75,10 +77,11 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
             try {
                 LOG.debug("auditing request {}", requestContext.getUriInfo().getAbsolutePath().toString());
                 AuditEvent auditEvent = resourceInfo.getResourceMethod().getAnnotation(AuditEvent.class);
-                AuditActor auditActor = (auditEvent.actor() != null && !auditEvent.actor().equals("")) ? AuditActor.user(auditEvent.actor()) : resolveActor(requestContext);
+                Map<String, Object> auditContext = new HashMap<>();
+
+                AuditActor auditActor = (auditEvent.actor() != null && !auditEvent.actor().equals("")) ? AuditActor.user(auditEvent.actor()) : resolveActorAndAddContext(requestContext, auditContext);
 
                 String remoteAddress = extractRemoteFromHeader(response.getRequest());
-                Map<String, Object> auditContext = new HashMap<>();
                 auditContext.put("remote_address", remoteAddress);
                 if (!extendedUriInfo.getPathParameters().isEmpty()) {
                     auditContext.put("path_params", extendedUriInfo.getPathParameters());
@@ -121,7 +124,7 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
 
     }
 
-    private AuditActor resolveActor(ContainerRequestContext requestContext) {
+    private AuditActor resolveActorAndAddContext(ContainerRequestContext requestContext, Map<String, Object> auditContext) {
 
         String userId = RestTools.getUserIdFromRequest(requestContext);
         if (userId == null || userId.equals("")) {
@@ -131,6 +134,8 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
         if (user == null) {
             return AuditActor.user(userId);
         }
+        //add admin info
+        auditContext.put("_is_admin_bool",user.isLocalAdmin());
         return AuditActor.user(user.getName());
     }
 
