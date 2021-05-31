@@ -227,10 +227,11 @@ public class StreamResource extends RestResource {
     @Produces(MediaType.APPLICATION_JSON)
     public StreamListResponse get() {
         final List<Stream> allStreams = streamService.loadAll();
-        final List<Stream> streams = new ArrayList<>(allStreams.size());
+        boolean isAdmin = isPermitted(RestPermissions.STREAMS_CREATE);
+        final List<Stream> streams = new ArrayList<>(isAdmin?allStreams.size():16);
         for (Stream stream : allStreams) {
             if (isPermitted(RestPermissions.STREAMS_READ, stream.getId())) {
-                if (!isPermitted(RestPermissions.STREAMS_EDIT, stream.getId())) {
+                if (!isAdmin) {
                     stream.getStreamRules().clear();
                 }
                 streams.add(stream);
