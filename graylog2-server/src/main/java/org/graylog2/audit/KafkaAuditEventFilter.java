@@ -135,7 +135,7 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
             return AuditActor.user(userId);
         }
         //add admin info
-        auditContext.put("_is_admin_bool",user.isLocalAdmin());
+        auditContext.put("is_admin_bool",user.isLocalAdmin());
         return AuditActor.user(user.getName());
     }
 
