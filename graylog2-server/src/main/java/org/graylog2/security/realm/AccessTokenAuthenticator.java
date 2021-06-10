@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,6 +22,9 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
 import org.apache.shiro.realm.AuthenticatingRealm;
+import org.graylog2.audit.AuditActor;
+import org.graylog2.audit.AuditEventSender;
+import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.plugin.database.ValidationException;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.security.AccessToken;
@@ -33,6 +36,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AccessTokenAuthenticator extends AuthenticatingRealm {
     private static final Logger LOG = LoggerFactory.getLogger(AccessTokenAuthenticator.class);
@@ -40,12 +45,15 @@ public class AccessTokenAuthenticator extends AuthenticatingRealm {
 
     private final AccessTokenService accessTokenService;
     private final UserService userService;
+    private final AuditEventSender auditEventSender;
 
     @Inject
     AccessTokenAuthenticator(AccessTokenService accessTokenService,
-                             UserService userService) {
+                             UserService userService,
+                             AuditEventSender auditEventSender) {
         this.accessTokenService = accessTokenService;
         this.userService = userService;
+        this.auditEventSender = auditEventSender;
         setAuthenticationTokenClass(AccessTokenAuthToken.class);
         setCachingEnabled(false);
         // the presence of a valid access token is enough, we don't have any other credentials
@@ -58,6 +66,9 @@ public class AccessTokenAuthenticator extends AuthenticatingRealm {
         final AccessToken accessToken = accessTokenService.load(String.valueOf(authToken.getToken()));
 
         if (accessToken == null) {
+            Map<String, Object> details = new HashMap<>();
+            details.put("auth_realm",this.getClass().toString());
+            auditEventSender.failure(AuditActor.user("unknown"), AuditEventTypes.AUTHENTICATION_FAILED,details);
             return null;
         }
         // TODO should be using IDs

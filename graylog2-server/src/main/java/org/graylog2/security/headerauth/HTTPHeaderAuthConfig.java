@@ -29,7 +29,7 @@ public abstract class HTTPHeaderAuthConfig {
     private static final String FIELD_ENABLED = "enabled";
     private static final String FIELD_USERNAME_HEADER = "username_header";
 
-    private static final String DEFAULT_USERNAME_HEADER = "Remote-User";
+    private static final String DEFAULT_USERNAME_HEADER = "X-Remote-User";
 
     @JsonProperty(FIELD_ENABLED)
     public abstract boolean enabled();
