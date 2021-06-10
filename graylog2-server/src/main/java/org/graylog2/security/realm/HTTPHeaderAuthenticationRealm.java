@@ -27,6 +27,10 @@ import org.graylog.security.authservice.AuthServiceAuthenticator;
 import org.graylog.security.authservice.AuthServiceCredentials;
 import org.graylog.security.authservice.AuthServiceException;
 import org.graylog.security.authservice.AuthServiceResult;
+import org.graylog2.audit.AuditActor;
+import org.graylog2.audit.AuditEventSender;
+import org.graylog2.audit.AuditEventTypes;
+import org.graylog2.audit.jersey.AuditEvent;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.security.headerauth.HTTPHeaderAuthConfig;
 import org.graylog2.shared.security.HttpHeadersToken;
@@ -40,9 +44,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.MultivaluedMap;
 import java.net.UnknownHostException;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -55,14 +57,17 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
     private final ClusterConfigService clusterConfigService;
     private final AuthServiceAuthenticator authServiceAuthenticator;
     private final Set<IpSubnet> trustedProxies;
+    private final AuditEventSender auditEventSender;
 
     @Inject
     public HTTPHeaderAuthenticationRealm(ClusterConfigService clusterConfigService,
                                          AuthServiceAuthenticator authServiceAuthenticator,
+                                         AuditEventSender auditEventSender,
                                          @Named("trusted_proxies") Set<IpSubnet> trustedProxies) {
         this.clusterConfigService = clusterConfigService;
         this.authServiceAuthenticator = authServiceAuthenticator;
         this.trustedProxies = trustedProxies;
+        this.auditEventSender = auditEventSender;
 
         setAuthenticationTokenClass(HttpHeadersToken.class);
         setCachingEnabled(false);
@@ -95,7 +100,11 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
             if (inTrustedSubnets(remoteAddr)) {
                 return doAuthenticate(username, config, remoteAddr);
             }
-
+            Map<String, Object> details = new HashMap<>();
+            details.put("auth_realm",this.getClass().toString());
+            details.put("remote_address",remoteAddr);
+            details.put("trusted_proxies",JOINER.join(trustedProxies));
+            auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_PROXIES_UNKNOWN,details);
             LOG.warn("Request with trusted HTTP header <{}={}> received from <{}> which is not in the trusted proxies: <{}>",
                     config.usernameHeader(),
                     username,
@@ -123,6 +132,9 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
                 ShiroSecurityContext.requestSessionCreation(true);
                 return toAuthenticationInfo(result);
             } else {
+                Map<String, Object> details = new HashMap<>();
+                details.put("auth_realm",this.getClass().toString());
+                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_FAILED, details);
                 LOG.warn("Failed to authenticate username <{}> from trusted HTTP header <{}> via proxy <{}>",
                         result.username(), config.usernameHeader(), remoteAddr);
                 return null;

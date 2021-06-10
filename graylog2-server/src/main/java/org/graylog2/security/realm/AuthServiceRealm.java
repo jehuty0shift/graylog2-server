@@ -16,11 +16,8 @@
  */
 package org.graylog2.security.realm;
 
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.SimpleAccount;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import io.netty.channel.socket.ChannelOutputShutdownException;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.realm.AuthenticatingRealm;
@@ -28,6 +25,9 @@ import org.graylog.security.authservice.AuthServiceAuthenticator;
 import org.graylog.security.authservice.AuthServiceCredentials;
 import org.graylog.security.authservice.AuthServiceException;
 import org.graylog.security.authservice.AuthServiceResult;
+import org.graylog2.audit.AuditActor;
+import org.graylog2.audit.AuditEventSender;
+import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.security.encryption.EncryptedValue;
 import org.graylog2.security.encryption.EncryptedValueService;
 import org.slf4j.Logger;
@@ -35,6 +35,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -47,16 +50,19 @@ public class AuthServiceRealm extends AuthenticatingRealm {
     private final AuthServiceAuthenticator authenticator;
     private final EncryptedValueService encryptedValueService;
     private final String rootUsername;
+    private final AuditEventSender auditEventSender;
 
     @Inject
     public AuthServiceRealm(AuthServiceAuthenticator authenticator,
                             EncryptedValueService encryptedValueService,
-                            @Named("root_username") String rootUsername) {
+                            @Named("root_username") String rootUsername,
+                            AuditEventSender auditEventSender) {
         checkArgument(!isBlank(rootUsername), "root_username cannot be null or blank");
 
         this.authenticator = authenticator;
         this.encryptedValueService = encryptedValueService;
         this.rootUsername = rootUsername;
+        this.auditEventSender = auditEventSender;
 
         setAuthenticationTokenClass(UsernamePasswordToken.class);
         setCachingEnabled(false);
@@ -98,6 +104,10 @@ public class AuthServiceRealm extends AuthenticatingRealm {
             } else {
                 LOG.warn("Failed to authenticate username <{}> with backend <{}/{}/{}>",
                         result.username(), result.backendTitle(), result.backendType(), result.backendId());
+                Map<String, Object> details = new HashMap<>();
+                details.put("auth_realm",authenticator.getClass().toString());
+                details.put("backend_type", result.backendType());
+                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_FAILED, details);
                 return null;
             }
         } catch (AuthServiceException e) {

@@ -33,6 +33,8 @@ public class AuditEventTypes implements PluginAuditEventTypes {
     public static final String ALERT_RECEIVER_CREATE = PREFIX + "alert_receiver:create";
     public static final String ALERT_RECEIVER_DELETE = PREFIX + "alert_receiver:delete";
     public static final String ALERT_RECEIVER_UPDATE = PREFIX + "alert_receiver:update";
+    public static final String AUTHENTICATION_FAILED = PREFIX + "authentication:fail";
+    public static final String AUTHENTICATION_PROXIES_UNKNOWN = PREFIX + "authentication_proxies_unknown:fail";
     public static final String AUTHENTICATION_HTTP_HEADER_CONFIG_UPDATE = PREFIX + "authentication_http_header_config:update";
     public static final String AUTHENTICATION_PROVIDER_CONFIGURATION_UPDATE = PREFIX + "authentication_provider_configuration:update";
     public static final String CLUSTER_CONFIGURATION_CREATE = PREFIX + "cluster_configuration:create";
@@ -53,6 +55,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
     public static final String ES_INDEX_CLOSE = PREFIX + "es_index:close";
     public static final String ES_INDEX_CREATE = PREFIX + "es_index:create";
     public static final String ES_INDEX_DELETE = PREFIX + "es_index:delete";
+    public static final String ES_INDEX_FLUSH = PREFIX + "es_index_flush:complete";
     public static final String ES_INDEX_OPEN = PREFIX + "es_index:open";
     public static final String ES_INDEX_RANGE_CREATE = PREFIX + "es_index_range:create";
     public static final String ES_INDEX_RANGE_DELETE = PREFIX + "es_index_range:delete";
@@ -62,6 +65,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
     public static final String ES_INDEX_RETENTION_STRATEGY_UPDATE = PREFIX + "es_index_retention_strategy:update";
     public static final String ES_INDEX_ROTATION_COMPLETE = PREFIX + "es_index_rotation:complete";
     public static final String ES_INDEX_ROTATION_STRATEGY_UPDATE = PREFIX + "es_index_rotation_strategy:update";
+    public static final String ES_INDEX_SET_READ_ONLY = PREFIX + "es_index_set_read_only:complete";
     public static final String ES_INDEX_TEMPLATE_UPDATE = PREFIX + "es_index_template:update";
     public static final String ES_WRITE_INDEX_UPDATE = PREFIX + "es_write_index:update";
     public static final String ES_WRITE_INDEX_UPDATE_JOB_START = PREFIX + "es_write_index_update_job:start";
@@ -178,6 +182,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
             .add(ES_INDEX_CLOSE)
             .add(ES_INDEX_CREATE)
             .add(ES_INDEX_DELETE)
+            .add(ES_INDEX_FLUSH)
             .add(ES_INDEX_OPEN)
             .add(ES_INDEX_RANGE_CREATE)
             .add(ES_INDEX_RANGE_DELETE)
@@ -187,6 +192,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
             .add(ES_INDEX_RETENTION_STRATEGY_UPDATE)
             .add(ES_INDEX_ROTATION_COMPLETE)
             .add(ES_INDEX_ROTATION_STRATEGY_UPDATE)
+            .add(ES_INDEX_SET_READ_ONLY)
             .add(ES_INDEX_TEMPLATE_UPDATE)
             .add(ES_WRITE_INDEX_UPDATE)
             .add(ES_WRITE_INDEX_UPDATE_JOB_START)
