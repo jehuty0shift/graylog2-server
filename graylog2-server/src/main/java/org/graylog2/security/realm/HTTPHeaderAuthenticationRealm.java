@@ -29,8 +29,8 @@ import org.graylog.security.authservice.AuthServiceException;
 import org.graylog.security.authservice.AuthServiceResult;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditEventSender;
+import org.graylog2.audit.AuditEventType;
 import org.graylog2.audit.AuditEventTypes;
-import org.graylog2.audit.jersey.AuditEvent;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.security.headerauth.HTTPHeaderAuthConfig;
 import org.graylog2.shared.security.HttpHeadersToken;
@@ -57,16 +57,19 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
     private final ClusterConfigService clusterConfigService;
     private final AuthServiceAuthenticator authServiceAuthenticator;
     private final Set<IpSubnet> trustedProxies;
+    private final Set<IpSubnet> trustedOrigins;
     private final AuditEventSender auditEventSender;
 
     @Inject
     public HTTPHeaderAuthenticationRealm(ClusterConfigService clusterConfigService,
                                          AuthServiceAuthenticator authServiceAuthenticator,
                                          AuditEventSender auditEventSender,
-                                         @Named("trusted_proxies") Set<IpSubnet> trustedProxies) {
+                                         @Named("trusted_proxies") Set<IpSubnet> trustedProxies,
+                                         @Named("trusted_origins") Set<IpSubnet> trustedOrigins) {
         this.clusterConfigService = clusterConfigService;
         this.authServiceAuthenticator = authServiceAuthenticator;
         this.trustedProxies = trustedProxies;
+        this.trustedOrigins = trustedOrigins;
         this.auditEventSender = auditEventSender;
 
         setAuthenticationTokenClass(HttpHeadersToken.class);
@@ -96,20 +99,25 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
                 return null;
             }
 
-            final String remoteAddr = headersToken.getRemoteAddr();
-            if (inTrustedSubnets(remoteAddr)) {
-                return doAuthenticate(username, config, remoteAddr);
+            final String remoteProxy = headersToken.getRemoteAddr();
+            final String remoteOrigin = headersToken.getHeaders().getFirst("X-Forwarded-For"); //check origin of request.
+            if (inTrustedSubnets(trustedProxies, remoteProxy) && remoteOrigin != null && inTrustedSubnets(trustedOrigins, remoteOrigin)) {
+                return doAuthenticate(username, config, remoteProxy);
             }
             Map<String, Object> details = new HashMap<>();
             details.put("auth_realm",this.getClass().toString());
-            details.put("remote_address",remoteAddr);
+            details.put("remote_address",remoteOrigin);
+            details.put("proxy",remoteProxy);
             details.put("trusted_proxies",JOINER.join(trustedProxies));
+            details.put("trusted_origin", JOINER.join(trustedOrigins));
             auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_PROXIES_UNKNOWN,details);
-            LOG.warn("Request with trusted HTTP header <{}={}> received from <{}> which is not in the trusted proxies: <{}>",
+            LOG.warn("Request with trusted HTTP header <{}={}> received from proxy <{}>, origin <{}> which is not in the trusted proxies: <{}> or trusted origin <{}>",
                     config.usernameHeader(),
                     username,
-                    remoteAddr,
-                    JOINER.join(trustedProxies));
+                    remoteProxy,
+                    remoteOrigin,
+                    JOINER.join(trustedProxies),
+                    JOINER.join(trustedOrigins));
             return null;
         }
 
@@ -127,6 +135,9 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
             if (result.isSuccess()) {
                 LOG.debug("Successfully authenticated username <{}> for user profile <{}> with backend <{}/{}/{}>",
                         result.username(), result.userProfileId(), result.backendTitle(), result.backendType(), result.backendId());
+                Map<String, Object> details = new HashMap<>();
+                details.put("auth_realm",this.getClass().toString());
+                auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_SUCCESS, details);
                 // Setting this, will let the SessionResource know, that when a non-existing session is validated, it
                 // should in fact create a session.
                 ShiroSecurityContext.requestSessionCreation(true);
@@ -163,8 +174,8 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
         return Optional.ofNullable(headers.getFirst(headerName.toLowerCase(Locale.US)));
     }
 
-    private boolean inTrustedSubnets(String remoteAddr) {
-        return trustedProxies.stream().anyMatch(ipSubnet -> ipSubnetContains(ipSubnet, remoteAddr));
+    private boolean inTrustedSubnets(Set<IpSubnet> trustedSubnet, String remoteAddr) {
+        return trustedSubnet.stream().anyMatch(ipSubnet -> ipSubnetContains(ipSubnet, remoteAddr));
     }
 
     private boolean ipSubnetContains(IpSubnet ipSubnet, String ipAddr) {
