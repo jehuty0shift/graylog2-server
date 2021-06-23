@@ -159,8 +159,14 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "index_ranges_cleanup_interval", validator = PositiveDurationValidator.class)
     private Duration indexRangesCleanupInterval = Duration.hours(1L);
 
+    @Parameter(value = "trusted_origins", converter = IPSubnetConverter.class)
+    private Set<IpSubnet> trustedOrigins = Collections.emptySet();
+
     @Parameter(value = "trusted_proxies", converter = IPSubnetConverter.class)
     private Set<IpSubnet> trustedProxies = Collections.emptySet();
+
+    @Parameter(value = "force_sso_users", converter = StringSetConverter.class)
+    private Set<String> forceSSOUsers = Collections.emptySet();
 
     @Parameter(value = "deactivated_builtin_authentication_providers", converter = StringSetConverter.class)
     private Set<String> deactivatedBuiltinAuthenticationProviders = Collections.emptySet();
@@ -358,8 +364,16 @@ public class Configuration extends BaseConfiguration {
         return indexRangesCleanupInterval;
     }
 
+    public Set<IpSubnet> getTrustedOrigins() {
+        return trustedOrigins;
+    }
+
     public Set<IpSubnet> getTrustedProxies() {
         return trustedProxies;
+    }
+
+    public Set<String> getForceSSOUsers() {
+        return forceSSOUsers;
     }
 
     public int getLoadBalancerRequestThrottleJournalUsage() {
