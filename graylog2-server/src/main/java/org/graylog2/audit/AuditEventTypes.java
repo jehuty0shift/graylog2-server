@@ -33,6 +33,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
     public static final String ALERT_RECEIVER_CREATE = PREFIX + "alert_receiver:create";
     public static final String ALERT_RECEIVER_DELETE = PREFIX + "alert_receiver:delete";
     public static final String ALERT_RECEIVER_UPDATE = PREFIX + "alert_receiver:update";
+    public static final String AUTHENTICATION_SUCCESS = PREFIX + "authentication:success";
     public static final String AUTHENTICATION_FAILED = PREFIX + "authentication:fail";
     public static final String AUTHENTICATION_PROXIES_UNKNOWN = PREFIX + "authentication_proxies_unknown:fail";
     public static final String AUTHENTICATION_HTTP_HEADER_CONFIG_UPDATE = PREFIX + "authentication_http_header_config:update";

@@ -20,6 +20,8 @@ import com.google.common.base.Strings;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.jersey.server.model.Resource;
 import org.graylog2.configuration.HttpConfiguration;
+import org.graylog2.security.headerauth.HTTPHeaderAuthConfig;
+import org.graylog2.security.realm.HTTPHeaderAuthenticationRealm;
 import org.graylog2.shared.security.ShiroPrincipal;
 import org.graylog2.shared.security.ShiroSecurityContext;
 import org.graylog2.utilities.IpSubnet;
@@ -110,6 +112,17 @@ public class RestTools {
                     .map(URI::create)
                     .findFirst();
         }
+
+        //Override headers for admin.
+        final List<String> remoteUserHeaders = httpHeaders.get(HTTPHeaderAuthConfig.createDisabled().usernameHeader()); //X-Remote-User
+        if (remoteUserHeaders != null && !remoteUserHeaders.isEmpty()) {
+            try {
+                externalUri = Optional.of(new URI(defaultUri.getScheme(), "admin." + defaultUri.getHost(), defaultUri.getPath(), defaultUri.getFragment()));
+            } catch (URISyntaxException ex) {
+                throw new IllegalStateException("shouldn't happen", ex);
+            }
+        }
+
 
         final URI uri = externalUri.orElse(defaultUri);
 

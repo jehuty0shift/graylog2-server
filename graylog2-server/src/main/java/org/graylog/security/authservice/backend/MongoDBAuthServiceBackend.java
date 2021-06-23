@@ -1,28 +1,27 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.graylog.security.authservice.backend;
 
 import com.unboundid.util.Base64;
-import org.graylog.security.authservice.AuthServiceBackend;
-import org.graylog.security.authservice.AuthServiceBackendDTO;
-import org.graylog.security.authservice.AuthServiceCredentials;
-import org.graylog.security.authservice.ProvisionerService;
-import org.graylog.security.authservice.UserDetails;
+import org.graylog.security.authservice.*;
 import org.graylog.security.authservice.test.AuthServiceBackendTestResult;
+import org.graylog2.audit.AuditActor;
+import org.graylog2.audit.AuditEventSender;
+import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.plugin.security.PasswordAlgorithm;
 import org.graylog2.security.PasswordAlgorithmFactory;
@@ -34,8 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.Collections;
-import java.util.Optional;
+import javax.inject.Named;
+import java.util.*;
 
 public class MongoDBAuthServiceBackend implements AuthServiceBackend {
     public static final String NAME = "internal-mongodb";
@@ -44,14 +43,20 @@ public class MongoDBAuthServiceBackend implements AuthServiceBackend {
     private final UserService userService;
     private final EncryptedValueService encryptedValueService;
     private final PasswordAlgorithmFactory passwordAlgorithmFactory;
+    private final Set<String> forceSSOUsers;
+    private final AuditEventSender auditEventSender;
 
     @Inject
     public MongoDBAuthServiceBackend(UserService userService,
                                      EncryptedValueService encryptedValueService,
-                                     PasswordAlgorithmFactory passwordAlgorithmFactory) {
+                                     PasswordAlgorithmFactory passwordAlgorithmFactory,
+                                     @Named("force_sso_users") Set<String> forceSSOUsers,
+                                     AuditEventSender auditEventSender) {
         this.userService = userService;
         this.encryptedValueService = encryptedValueService;
         this.passwordAlgorithmFactory = passwordAlgorithmFactory;
+        this.forceSSOUsers = forceSSOUsers;
+        this.auditEventSender = auditEventSender;
     }
 
     @Override
@@ -78,13 +83,25 @@ public class MongoDBAuthServiceBackend implements AuthServiceBackend {
             return Optional.empty();
         }
 
+        LOG.debug("fSU: {}, username: {}/{}", forceSSOUsers, username, user.getName());
+
         if (!authCredentials.isAuthenticated()) {
+            if (forceSSOUsers.contains(user.getName())) {
+                LOG.warn("trying to authenticate user <{}>, present in force_sso_users list, denying", username);
+                return Optional.empty();
+            }
             if (!isValidPassword(user, authCredentials.password())) {
                 LOG.warn("Failed to validate password for user <{}>", username);
+                Map<String, Object> details = new HashMap<>();
+                details.put("auth_realm", this.getClass().toString());
+                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_FAILED, details);
                 return Optional.empty();
             }
         }
 
+        Map<String, Object> details = new HashMap<>();
+        details.put("auth_realm", this.getClass().toString());
+        auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_SUCCESS, details);
         LOG.debug("Successfully validated password for user <{}>", username);
 
         final UserDetails userDetails = provisionerService.provision(provisionerService.newDetails(this)
