@@ -25,9 +25,12 @@ import org.graylog2.plugin.Tools;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
+import java.util.Locale;
 
 @AutoValue
 @JsonTypeName(value = AbsoluteRange.ABSOLUTE)
@@ -53,7 +56,7 @@ public abstract class AbsoluteRange extends TimeRange {
     public static AbsoluteRange create(@JsonProperty("type") String type,
                                        @JsonProperty("from") String from,
                                        @JsonProperty("to") String to) {
-        return builder().type(type).from(Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(from))).to(Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(to))).build();
+        return builder().type(type).from(Builder.parseDateTime(from)).to(Builder.parseDateTime(to)).build();
     }
 
     public static AbsoluteRange create(String type, Instant from, Instant to) {
@@ -111,13 +114,16 @@ public abstract class AbsoluteRange extends TimeRange {
             }
         }
 
-        private Instant parseDateTime(String s) {
+        public static Instant parseDateTime(String s) {
             if (Strings.isNullOrEmpty(s)) {
                 throw new IllegalArgumentException("Null or empty string");
             }
 
             Instant instant;
-            if (s.contains("T")) {
+            if (s.contains("UTC")) {
+                //format Wed Apr 21 10:43:25 UTC 2021
+                instant = Instant.from(DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss z yyyy", Locale.ENGLISH).parse(s));
+            } else if (s.contains("T")) {
                 instant = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(s));
             } else {
                 instant = Instant.from(Tools.ES_DATE_FORMAT_FORMATTER.parse(s)); //the formatter retains the time zone parsed
