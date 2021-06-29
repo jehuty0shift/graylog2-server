@@ -43,7 +43,7 @@ public abstract class PathConfiguration {
         return dataDir;
     }
     public Path getNativeLibDir() {
-        return dataDir.resolve("libnative");
+        return binDir.resolve("libnative");
     }
 
     public Path getPluginDir() {
