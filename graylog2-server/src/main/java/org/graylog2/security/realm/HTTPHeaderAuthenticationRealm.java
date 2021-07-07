@@ -29,7 +29,6 @@ import org.graylog.security.authservice.AuthServiceException;
 import org.graylog.security.authservice.AuthServiceResult;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditEventSender;
-import org.graylog2.audit.AuditEventType;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.security.headerauth.HTTPHeaderAuthConfig;
@@ -137,7 +136,7 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
                         result.username(), result.userProfileId(), result.backendTitle(), result.backendType(), result.backendId());
                 Map<String, Object> details = new HashMap<>();
                 details.put("auth_realm",this.getClass().toString());
-                auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_SUCCESS, details);
+                auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
                 // Setting this, will let the SessionResource know, that when a non-existing session is validated, it
                 // should in fact create a session.
                 ShiroSecurityContext.requestSessionCreation(true);
@@ -145,7 +144,7 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
             } else {
                 Map<String, Object> details = new HashMap<>();
                 details.put("auth_realm",this.getClass().toString());
-                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_FAILED, details);
+                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
                 LOG.warn("Failed to authenticate username <{}> from trusted HTTP header <{}> via proxy <{}>",
                         result.username(), config.usernameHeader(), remoteAddr);
                 return null;

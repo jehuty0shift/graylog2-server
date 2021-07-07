@@ -85,6 +85,9 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "root_email")
     private String rootEmail = "";
 
+    @Parameter(value = "root_login_allowed_ips", converter = IPSubnetConverter.class)
+    private Set<IpSubnet> rootLoginAllowedIps = Collections.emptySet();
+
     @Parameter(value = "custom_username")
     private String customUsername = "Username";
 
@@ -269,6 +272,8 @@ public class Configuration extends BaseConfiguration {
     public String getRootEmail() {
         return rootEmail;
     }
+
+    public Set<IpSubnet> getRootLoginAllowedIps() { return rootLoginAllowedIps;}
 
     public String getCustomUsername() {
         return customUsername;
