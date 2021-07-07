@@ -112,9 +112,11 @@ public class SessionCreator {
             auditEventSender.failure(authToken.getActor(), SESSION_CREATE, auditEventContext);
             throw e;
         } catch (AuthenticationException e) {
+            log.info("Failure Session Creator",e);
             log.info("Invalid credentials in session create request. Actor: \"{}\"", authToken.getActor().urn());
             final Map<String, Object> auditEventContext = ImmutableMap.of(
-                    "remote_address", host
+                    "remote_address", host,
+                    "exception_message", e.getMessage()
             );
             auditEventSender.failure(authToken.getActor(), SESSION_CREATE, auditEventContext);
             return Optional.empty();

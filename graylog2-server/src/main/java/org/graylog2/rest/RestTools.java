@@ -21,7 +21,6 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.jersey.server.model.Resource;
 import org.graylog2.configuration.HttpConfiguration;
 import org.graylog2.security.headerauth.HTTPHeaderAuthConfig;
-import org.graylog2.security.realm.HTTPHeaderAuthenticationRealm;
 import org.graylog2.shared.security.ShiroPrincipal;
 import org.graylog2.shared.security.ShiroSecurityContext;
 import org.graylog2.utilities.IpSubnet;
