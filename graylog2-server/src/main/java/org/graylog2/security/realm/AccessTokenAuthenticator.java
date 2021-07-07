@@ -16,6 +16,7 @@
  */
 package org.graylog2.security.realm;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -66,9 +67,9 @@ public class AccessTokenAuthenticator extends AuthenticatingRealm {
         final AccessToken accessToken = accessTokenService.load(String.valueOf(authToken.getToken()));
 
         if (accessToken == null) {
-            Map<String, Object> details = new HashMap<>();
-            details.put("auth_realm",this.getClass().toString());
-            auditEventSender.failure(AuditActor.user("unknown"), AuditEventTypes.AUTHENTICATION_FAILED,details);
+            Map<String, Object> details = ImmutableMap.of(
+                    "auth_realm", this.getClass().toString());
+            auditEventSender.failure(AuditActor.user("unknown"), AuditEventTypes.AUTHENTICATION_CHECK, details);
             return null;
         }
         // TODO should be using IDs
@@ -83,6 +84,9 @@ public class AccessTokenAuthenticator extends AuthenticatingRealm {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found user {} for access token.", user);
         }
+        Map<String, Object> details = ImmutableMap.of(
+                "auth_realm", this.getClass().toString());
+        auditEventSender.success(AuditActor.user(user.getName()), AuditEventTypes.AUTHENTICATION_CHECK, details);
         try {
             accessTokenService.touch(accessToken);
         } catch (ValidationException e) {

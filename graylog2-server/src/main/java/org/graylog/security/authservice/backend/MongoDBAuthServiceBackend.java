@@ -16,6 +16,7 @@
  */
 package org.graylog.security.authservice.backend;
 
+import com.google.common.collect.ImmutableMap;
 import com.unboundid.util.Base64;
 import org.graylog.security.authservice.*;
 import org.graylog.security.authservice.test.AuthServiceBackendTestResult;
@@ -92,16 +93,16 @@ public class MongoDBAuthServiceBackend implements AuthServiceBackend {
             }
             if (!isValidPassword(user, authCredentials.password())) {
                 LOG.warn("Failed to validate password for user <{}>", username);
-                Map<String, Object> details = new HashMap<>();
-                details.put("auth_realm", this.getClass().toString());
-                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_FAILED, details);
+                Map<String, Object> details = ImmutableMap.of(
+                        "auth_realm", this.getClass().toString());
+                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
                 return Optional.empty();
             }
         }
 
-        Map<String, Object> details = new HashMap<>();
-        details.put("auth_realm", this.getClass().toString());
-        auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_SUCCESS, details);
+        Map<String, Object> details = ImmutableMap.of(
+                "auth_realm", this.getClass().toString());
+        auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
         LOG.debug("Successfully validated password for user <{}>", username);
 
         final UserDetails userDetails = provisionerService.provision(provisionerService.newDetails(this)
