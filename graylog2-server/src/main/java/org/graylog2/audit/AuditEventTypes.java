@@ -37,6 +37,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
     public static final String AUTHENTICATION_PROXIES_UNKNOWN = PREFIX + "authentication_proxies_unknown:fail";
     public static final String AUTHENTICATION_HTTP_HEADER_CONFIG_UPDATE = PREFIX + "authentication_http_header_config:update";
     public static final String AUTHENTICATION_PROVIDER_CONFIGURATION_UPDATE = PREFIX + "authentication_provider_configuration:update";
+    public static final String AUTHORIZATION_CHECK = PREFIX + "authorization:check";
     public static final String CLUSTER_CONFIGURATION_CREATE = PREFIX + "cluster_configuration:create";
     public static final String CLUSTER_CONFIGURATION_DELETE = PREFIX + "cluster_configuration:delete";
     public static final String CLUSTER_CONFIGURATION_UPDATE = PREFIX + "cluster_configuration:update";
@@ -165,6 +166,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
             .add(AUTHENTICATION_CHECK)
             .add(AUTHENTICATION_HTTP_HEADER_CONFIG_UPDATE)
             .add(AUTHENTICATION_PROVIDER_CONFIGURATION_UPDATE)
+            .add(AUTHORIZATION_CHECK)
             .add(CLUSTER_CONFIGURATION_CREATE)
             .add(CLUSTER_CONFIGURATION_DELETE)
             .add(CLUSTER_CONFIGURATION_UPDATE)
