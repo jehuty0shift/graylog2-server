@@ -3,6 +3,7 @@ const fs = require('fs');
 const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CspHtmlWebpackPlugin = require('csp-html-webpack-plugin');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -147,6 +148,21 @@ const webpackConfig = {
       template: path.resolve(ROOT_PATH, 'templates/index.html.template'),
       vendorModule: () => JSON.parse(fs.readFileSync(path.resolve(BUILD_PATH, 'vendor-module.json'), 'utf8')),
       chunksSortMode,
+      cspPlugin: {
+          enabled: true,
+          policy: {
+            'script-src': ["'self'"],
+            'style-src': [ "'self'"]
+          },
+          hashEnabled: {
+            'script-src': true,
+            'style-src': true
+          },
+          nonceEnabled: {
+            'script-src': true,
+            'style-src': true
+          }
+      }
     }),
     new HtmlWebpackPlugin({
       filename: 'module.json',
@@ -154,6 +170,25 @@ const webpackConfig = {
       template: path.resolve(ROOT_PATH, 'templates/module.json.template'),
       excludeChunks: ['config'],
       chunksSortMode,
+      cspPlugin: {
+                enabled: true,
+                policy: {
+                  'script-src': ["'self'"],
+                  'style-src': ["'self'"]
+                },
+                hashEnabled: {
+                  'script-src': true,
+                  'style-src': true
+                },
+                nonceEnabled: {
+                  'script-src': true,
+                  'style-src': true
+                }
+      }
+    }),
+    new CspHtmlWebpackPlugin({
+      'script-src': ["'self'"],
+      'style-src': ["'self'"]
     }),
     new webpack.DefinePlugin({
       FEATURES: JSON.stringify(process.env.FEATURES),
