@@ -20,9 +20,12 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.util.ThreadContext;
+import org.graylog2.audit.AuditEventSender;
+import org.graylog2.audit.AuditEventTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.DynamicFeature;
 import javax.ws.rs.container.ResourceInfo;
@@ -35,6 +38,12 @@ import java.lang.reflect.Method;
 // Each ServiceLocator will have its own Guice/HK2 Bridge, which is very very inefficient!
 public class ShiroSecurityBinding implements DynamicFeature {
     private static final Logger LOG = LoggerFactory.getLogger(ShiroSecurityBinding.class);
+    private final AuditEventSender auditEventSender;
+
+    @Inject
+    public ShiroSecurityBinding(AuditEventSender auditEventSender) {
+        this.auditEventSender = auditEventSender;
+    }
 
     @Override
     public void configure(ResourceInfo resourceInfo, FeatureContext context) {
@@ -57,7 +66,7 @@ public class ShiroSecurityBinding implements DynamicFeature {
             }
 
             LOG.debug("Resource method {}#{} requires an authorization checks.", resourceClass.getCanonicalName(), resourceMethod.getName());
-            context.register(new ShiroAuthorizationFilter(requiresPermissions));
+            context.register(new ShiroAuthorizationFilter(requiresPermissions, auditEventSender));
         }
 
         // TODO this is the wrong approach, we should have an Environment and proper request wrapping
