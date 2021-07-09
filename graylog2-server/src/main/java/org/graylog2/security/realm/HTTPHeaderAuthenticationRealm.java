@@ -1,27 +1,32 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.graylog2.security.realm;
 
-import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import edu.emory.mathcs.backport.java.util.Arrays;
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
+import org.apache.shiro.authz.permission.AllPermission;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.graylog.security.authservice.AuthServiceAuthenticator;
 import org.graylog.security.authservice.AuthServiceCredentials;
@@ -31,10 +36,17 @@ import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditEventSender;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.plugin.cluster.ClusterConfigService;
+import org.graylog2.plugin.database.users.User;
 import org.graylog2.security.headerauth.HTTPHeaderAuthConfig;
 import org.graylog2.shared.security.HttpHeadersToken;
+import org.graylog2.shared.security.Permissions;
+import org.graylog2.shared.security.RestPermissions;
 import org.graylog2.shared.security.ShiroSecurityContext;
-import org.graylog2.utilities.IpSubnet;
+import org.graylog2.shared.users.UserService;
+import org.graylog2.users.RoleService;
+import org.graylog2.users.RoleServiceImpl;
+import org.graylog2.users.UserImpl;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +54,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.MultivaluedMap;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
@@ -49,27 +62,28 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
     private static final Logger LOG = LoggerFactory.getLogger(HTTPHeaderAuthenticationRealm.class);
-    private static final Joiner JOINER = Joiner.on(", ");
-
     public static final String NAME = "http-header-authentication";
 
     private final ClusterConfigService clusterConfigService;
     private final AuthServiceAuthenticator authServiceAuthenticator;
-    private final Set<IpSubnet> trustedProxies;
-    private final Set<IpSubnet> trustedOrigins;
     private final AuditEventSender auditEventSender;
+    private final UserService userService;
+    private final RoleService roleService;
+    private final Set<String> forceSSOUsers;
 
     @Inject
     public HTTPHeaderAuthenticationRealm(ClusterConfigService clusterConfigService,
                                          AuthServiceAuthenticator authServiceAuthenticator,
                                          AuditEventSender auditEventSender,
-                                         @Named("trusted_proxies") Set<IpSubnet> trustedProxies,
-                                         @Named("trusted_origins") Set<IpSubnet> trustedOrigins) {
+                                         UserService userService,
+                                         RoleService roleService,
+                                         @Named("force_sso_users") Set<String> forceSSOUsers) {
         this.clusterConfigService = clusterConfigService;
         this.authServiceAuthenticator = authServiceAuthenticator;
-        this.trustedProxies = trustedProxies;
-        this.trustedOrigins = trustedOrigins;
         this.auditEventSender = auditEventSender;
+        this.userService = userService;
+        this.roleService = roleService;
+        this.forceSSOUsers = forceSSOUsers;
 
         setAuthenticationTokenClass(HttpHeadersToken.class);
         setCachingEnabled(false);
@@ -98,25 +112,23 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
                 return null;
             }
 
-            final String remoteProxy = headersToken.getRemoteAddr();
-            final String remoteOrigin = headersToken.getHeaders().getFirst("X-Forwarded-For"); //check origin of request.
-            if (inTrustedSubnets(trustedProxies, remoteProxy) && remoteOrigin != null && inTrustedSubnets(trustedOrigins, remoteOrigin)) {
-                return doAuthenticate(username, config, remoteProxy);
+            final String origin = headersToken.getRemoteAddr();
+            try {
+                InetAddress originAddress = InetAddress.getByName(origin);
+                if (origin != null && origin.length() > 0 && originAddress.isLoopbackAddress()) {
+                    return doAuthenticate(username, config, origin);
+                }
+            } catch (UnknownHostException ex) {
+                LOG.warn("Request for SSO Login received from unknown origin, denying", ex);
             }
             Map<String, Object> details = new HashMap<>();
-            details.put("auth_realm",this.getClass().toString());
-            details.put("remote_address",remoteOrigin);
-            details.put("proxy",remoteProxy);
-            details.put("trusted_proxies",JOINER.join(trustedProxies));
-            details.put("trusted_origin", JOINER.join(trustedOrigins));
-            auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_PROXIES_UNKNOWN,details);
-            LOG.warn("Request with trusted HTTP header <{}={}> received from proxy <{}>, origin <{}> which is not in the trusted proxies: <{}> or trusted origin <{}>",
+            details.put("auth_realm", this.getClass().toString());
+            details.put("remote_address", origin);
+            auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_PROXIES_UNKNOWN, details);
+            LOG.warn("Request with trusted HTTP header <{}={}> received from origin <{}> which is not a loopback address",
                     config.usernameHeader(),
                     username,
-                    remoteProxy,
-                    remoteOrigin,
-                    JOINER.join(trustedProxies),
-                    JOINER.join(trustedOrigins));
+                    origin);
             return null;
         }
 
@@ -128,22 +140,54 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
         try {
             // Create already authenticated credentials to make sure the auth service backend doesn't try to
             // authenticate the user again
+            if (!forceSSOUsers.contains(username)) {
+                Map<String, Object> details = ImmutableMap.of(
+                        "auth_realm", this.getClass().toString(),
+                        "remote_address", remoteAddr,
+                        "user_not_in_force_sso_users", username);
+                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
+                LOG.error("user {} asked in not in force_sso_users configuration", username);
+                return null;
+            }
+
+            if (userService.load(username) == null) {
+                User newUser = userService.create();
+                newUser.setFullName(username.replace(".", " "));
+                newUser.setName(username);
+                newUser.setRoleIds(ImmutableSet.of(roleService.getAdminRoleObjectId()));
+                newUser.setPermissions(Collections.emptyList());
+                newUser.setEmail(username + "@ovhcloud.com");
+                newUser.setExternal(false);
+                final Random random = new Random();
+                byte[] password = new byte[32];
+                random.nextBytes(password);
+                newUser.setPassword(Base64.getEncoder().encodeToString(password));
+                for (int i = 0; i < 32; i++) {
+                    password[i] = '0';
+                }
+                newUser.setTimeZone(DateTimeZone.UTC);
+
+                userService.save(newUser);
+            }
+
             final AuthServiceCredentials credentials = AuthServiceCredentials.createAuthenticated(username);
             final AuthServiceResult result = authServiceAuthenticator.authenticate(credentials);
 
             if (result.isSuccess()) {
                 LOG.debug("Successfully authenticated username <{}> for user profile <{}> with backend <{}/{}/{}>",
                         result.username(), result.userProfileId(), result.backendTitle(), result.backendType(), result.backendId());
-                Map<String, Object> details = new HashMap<>();
-                details.put("auth_realm",this.getClass().toString());
+                Map<String, Object> details = ImmutableMap.of(
+                        "auth_realm", this.getClass().toString(),
+                        "remote_address", remoteAddr);
                 auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
                 // Setting this, will let the SessionResource know, that when a non-existing session is validated, it
                 // should in fact create a session.
                 ShiroSecurityContext.requestSessionCreation(true);
                 return toAuthenticationInfo(result);
             } else {
-                Map<String, Object> details = new HashMap<>();
-                details.put("auth_realm",this.getClass().toString());
+                Map<String, Object> details = ImmutableMap.of(
+                        "auth_realm", this.getClass().toString(),
+                        "remote_address", remoteAddr);
                 auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
                 LOG.warn("Failed to authenticate username <{}> from trusted HTTP header <{}> via proxy <{}>",
                         result.username(), config.usernameHeader(), remoteAddr);
@@ -151,9 +195,17 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
             }
         } catch (AuthServiceException e) {
             LOG.error("Authentication service error", e);
+            Map<String, Object> details = ImmutableMap.of(
+                    "auth_realm", this.getClass().toString(),
+                    "remote_address", remoteAddr);
+            auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
             return null;
         } catch (Exception e) {
             LOG.error("Unhandled authentication error", e);
+            Map<String, Object> details = ImmutableMap.of(
+                    "auth_realm", this.getClass().toString(),
+                    "remote_address", remoteAddr);
+            auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
             return null;
         }
     }
@@ -171,18 +223,5 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
             return Optional.empty();
         }
         return Optional.ofNullable(headers.getFirst(headerName.toLowerCase(Locale.US)));
-    }
-
-    private boolean inTrustedSubnets(Set<IpSubnet> trustedSubnet, String remoteAddr) {
-        return trustedSubnet.stream().anyMatch(ipSubnet -> ipSubnetContains(ipSubnet, remoteAddr));
-    }
-
-    private boolean ipSubnetContains(IpSubnet ipSubnet, String ipAddr) {
-        try {
-            return ipSubnet.contains(ipAddr);
-        } catch (UnknownHostException ignored) {
-            LOG.debug("Looking up remote address <{}> failed.", ipAddr);
-            return false;
-        }
     }
 }
