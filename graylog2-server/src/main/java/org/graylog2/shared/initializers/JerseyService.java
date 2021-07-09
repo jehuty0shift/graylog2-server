@@ -44,14 +44,7 @@ import org.graylog2.jersey.PrefixAddingModelProcessor;
 import org.graylog2.plugin.inject.RestControllerPackage;
 import org.graylog2.plugin.rest.PluginRestResource;
 import org.graylog2.rest.filter.WebAppNotFoundResponseFilter;
-import org.graylog2.shared.rest.CORSFilter;
-import org.graylog2.shared.rest.NodeIdResponseFilter;
-import org.graylog2.shared.rest.NotAuthorizedResponseFilter;
-import org.graylog2.shared.rest.PrintModelProcessor;
-import org.graylog2.shared.rest.RequestIdFilter;
-import org.graylog2.shared.rest.RestAccessLogFilter;
-import org.graylog2.shared.rest.VerboseCsrfProtectionFilter;
-import org.graylog2.shared.rest.XHRFilter;
+import org.graylog2.shared.rest.*;
 import org.graylog2.shared.rest.exceptionmappers.AnyExceptionClassMapper;
 import org.graylog2.shared.rest.exceptionmappers.BadRequestExceptionMapper;
 import org.graylog2.shared.rest.exceptionmappers.JacksonPropertyExceptionMapper;
@@ -264,6 +257,7 @@ public class JerseyService extends AbstractIdleService {
                         NodeIdResponseFilter.class,
                         RequestIdFilter.class,
                         XHRFilter.class,
+                        CSPHeaderFilter.class,
                         NotAuthorizedResponseFilter.class,
                         WebAppNotFoundResponseFilter.class)
                 .register(new ContextResolver<ObjectMapper>() {
