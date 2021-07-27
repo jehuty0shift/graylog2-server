@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,6 +25,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.primitives.Doubles;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.shared.SuppressForbidden;
+import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -39,6 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -48,6 +50,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,14 +73,22 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  * Utility class for various tool/helper functions.
  */
 public final class Tools {
-    private static final byte[] EMPTY_BYTE_ARRAY_4 = {0,0,0,0};
-    private static final byte[] EMPTY_BYTE_ARRAY_16 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    private static final byte[] EMPTY_BYTE_ARRAY_4 = {0, 0, 0, 0};
+    private static final byte[] EMPTY_BYTE_ARRAY_16 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    public static final String ES_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ES_DATE_FORMAT_NANO = "yyyy-MM-dd HH:mm:ss.n";
+    public static final String ES_DATE_FORMAT_MS = "yyyy-MM-dd HH:mm:ss.SSS";
     public static final String ES_DATE_FORMAT_NO_MS = "yyyy-MM-dd HH:mm:ss";
 
-    public static final DateTimeFormatter ES_DATE_FORMAT_FORMATTER = DateTimeFormat.forPattern(Tools.ES_DATE_FORMAT).withZoneUTC();
-    public static final DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = ISODateTimeFormat.dateTime().withZoneUTC();
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER = new java.time.format.DateTimeFormatterBuilder().append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
+            .appendLiteral(' ')
+            .append(java.time.format.DateTimeFormatter.ISO_TIME)
+            .toFormatter(Locale.ENGLISH)
+            .withZone(ZoneOffset.UTC);
+
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO, Locale.ENGLISH).withZone(ZoneOffset.UTC);
+
+    public static final java.time.format.DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = java.time.format.DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneOffset.UTC);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private Tools() {
@@ -317,8 +331,8 @@ public final class Tools {
         return ImmutableSortedSet.copyOf(c);
     }
 
-    public static String buildElasticSearchTimeFormat(DateTime timestamp) {
-        return timestamp.toString(ES_DATE_FORMAT_FORMATTER);
+    public static String buildElasticSearchTimeFormat(Instant timestamp) {
+        return ES_DATE_FORMAT_FORMATTER_TO_ES.format(timestamp);
     }
 
     /**
@@ -331,10 +345,20 @@ public final class Tools {
     }
 
     /**
+     * The BigDecimal representation of a UNIX timestamp with milliseconds is a strange, human readable format.
+     * <p/>
+     * This sucks and no format should use the double representation. Change GELF to use long. (zomg)
+     */
+    public static Instant InstantFromBigDecimal(BigDecimal x) {
+        long seconds = x.longValue();
+        return Instant.ofEpochSecond(seconds, x.subtract(BigDecimal.valueOf(seconds)).multiply(BigDecimal.valueOf(1000000000)).longValue());
+    }
+
+    /**
      * Parse the string representation of an ISO 8601 date/timestamp with milliseconds and timezone.
      */
-    public static DateTime dateTimeFromString(String s) {
-        return ISO_DATE_FORMAT_FORMATTER.parseDateTime(s);
+    public static ZonedDateTime dateTimeFromString(String s) {
+        return ZonedDateTime.parse(s);
     }
 
     /**
@@ -360,14 +384,10 @@ public final class Tools {
         return new DateTime(DateTimeZone.UTC);
     }
 
-    /**
-     * @return The current date with timezone UTC.
-     * @deprecated Use {@link #nowUTC()} instead.
-     */
-    @Deprecated
-    public static DateTime iso8601() {
-        return nowUTC();
+    public static ZonedDateTime nowUTC8() {
+        return ZonedDateTime.now(ZoneOffset.UTC);
     }
+
 
     public static String getISO8601String(DateTime time) {
         return ISODateTimeFormat.dateTime().print(time);
@@ -379,8 +399,7 @@ public final class Tools {
      */
     public static String elasticSearchTimeFormatToISO8601(String time) {
         try {
-            DateTime dt = DateTime.parse(time, ES_DATE_FORMAT_FORMATTER);
-            return getISO8601String(dt);
+            return Instant.from(ES_DATE_FORMAT_FORMATTER.parse(time)).toString();
         } catch (IllegalArgumentException e) {
             return time;
         }
@@ -442,7 +461,7 @@ public final class Tools {
 
     public static Number getNumber(Object o, Number defaultValue) {
         if (o instanceof Number) {
-            return (Number)o;
+            return (Number) o;
         }
 
         try {
@@ -569,7 +588,7 @@ public final class Tools {
         }
 
         final String path = firstNonNull(uri.getPath(), "/");
-        if(path.endsWith("/")) {
+        if (path.endsWith("/")) {
             return uri;
         } else {
             try {
@@ -656,4 +675,10 @@ public final class Tools {
             return Optional.empty();
         }
     }
+
+
+    public static DateTime instantToDt(Instant x) {
+        return new DateTime(x.toEpochMilli(), DateTimeZone.UTC);
+    }
+
 }

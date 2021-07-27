@@ -16,10 +16,13 @@
  */
 package org.graylog2.utilities.date;
 
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.utilities.date.NaturalDateParser;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.jodatime.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -70,12 +73,12 @@ public class NaturalDateParserTest {
     @Test
     public void issue1226() throws Exception {
         NaturalDateParser.Result result99days = naturalDateParser.parse("last 99 days");
-        assertThat(result99days.getFrom()).isEqualToIgnoringMillis(result99days.getTo().minusDays(99));
+        assertThat(Tools.instantToDt(result99days.getFrom())).isEqualToIgnoringMillis(Tools.instantToDt(result99days.getTo().minus(99, ChronoUnit.DAYS)));
 
         NaturalDateParser.Result result100days = naturalDateParser.parse("last 100 days");
-        assertThat(result100days.getFrom()).isEqualToIgnoringMillis(result100days.getTo().minusDays(100));
+        assertThat(Tools.instantToDt(result100days.getFrom())).isEqualToIgnoringMillis(Tools.instantToDt(result100days.getTo().minus(100, ChronoUnit.DAYS)));
 
         NaturalDateParser.Result result101days = naturalDateParser.parse("last 101 days");
-        assertThat(result101days.getFrom()).isEqualToIgnoringMillis(result101days.getTo().minusDays(101));
+        assertThat(Tools.instantToDt(result101days.getFrom())).isEqualToIgnoringMillis(Tools.instantToDt(result101days.getTo().minus(101, ChronoUnit.DAYS)));
     }
 }

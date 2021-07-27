@@ -22,6 +22,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class MessageSummary {
     }
 
     @JsonProperty
-    public DateTime getTimestamp() {
+    public Instant getTimestamp() {
         return message.getTimestamp();
     }
 

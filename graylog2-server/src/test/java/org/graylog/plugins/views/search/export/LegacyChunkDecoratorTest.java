@@ -19,6 +19,7 @@ package org.graylog.plugins.views.search.export;
 import org.assertj.core.groups.Tuple;
 import org.graylog.plugins.views.search.LegacyDecoratorProcessor;
 import org.graylog.plugins.views.search.elasticsearch.ElasticsearchQueryString;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.rest.models.messages.responses.ResultMessageSummary;
 import org.graylog2.rest.resources.search.responses.SearchResponse;
@@ -27,6 +28,9 @@ import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.graylog.plugins.views.search.export.LinkedHashSetUtil.linkedHashSetOf;
@@ -71,8 +75,8 @@ class LegacyChunkDecoratorTest {
 
         SearchResponse builtLegacyResponse = captureLegacyResponse(undecoratedChunk, command);
 
-        assertThat(builtLegacyResponse.from()).isEqualTo(command.timeRange().getFrom());
-        assertThat(builtLegacyResponse.to()).isEqualTo(command.timeRange().getTo());
+        assertThat(builtLegacyResponse.from()).isEqualTo(Tools.instantToDt(command.timeRange().getFrom()));
+        assertThat(builtLegacyResponse.to()).isEqualTo(Tools.instantToDt(command.timeRange().getTo()));
         assertThat(builtLegacyResponse.query()).isEqualTo("hase");
         assertThat(builtLegacyResponse.builtQuery()).isEqualTo("hase");
         assertThat(builtLegacyResponse.fields()).containsExactlyElementsOf(undecoratedChunk.fieldsInOrder());
@@ -115,6 +119,6 @@ class LegacyChunkDecoratorTest {
     }
 
     private AbsoluteRange someTimeRange() {
-        return AbsoluteRange.create(DateTime.now(DateTimeZone.UTC), DateTime.now(DateTimeZone.UTC).plus(300));
+        return AbsoluteRange.create(Instant.now(), Instant.now().plus(300, ChronoUnit.SECONDS));
     }
 }

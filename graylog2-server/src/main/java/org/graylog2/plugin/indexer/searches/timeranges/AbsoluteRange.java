@@ -23,8 +23,14 @@ import com.google.auto.value.AutoValue;
 import com.google.common.base.Strings;
 import org.graylog2.plugin.Tools;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Date;
+import java.util.Locale;
 
 @AutoValue
 @JsonTypeName(value = AbsoluteRange.ABSOLUTE)
@@ -37,10 +43,10 @@ public abstract class AbsoluteRange extends TimeRange {
     public abstract String type();
 
     @JsonProperty
-    public abstract DateTime from();
+    public abstract Instant from();
 
     @JsonProperty
-    public abstract DateTime to();
+    public abstract Instant to();
 
     public static Builder builder() {
         return new AutoValue_AbsoluteRange.Builder();
@@ -48,26 +54,35 @@ public abstract class AbsoluteRange extends TimeRange {
 
     @JsonCreator
     public static AbsoluteRange create(@JsonProperty("type") String type,
-                                       @JsonProperty("from") DateTime from,
-                                       @JsonProperty("to") DateTime to) {
+                                       @JsonProperty("from") String from,
+                                       @JsonProperty("to") String to) {
+        return builder().type(type).from(Builder.parseDateTime(from)).to(Builder.parseDateTime(to)).build();
+    }
+
+    public static AbsoluteRange create(String type, Instant from, Instant to) {
         return builder().type(type).from(from).to(to).build();
     }
 
-    public static AbsoluteRange create(DateTime from, DateTime to) {
+    public static AbsoluteRange create(Instant from, Instant to) {
         return builder().type(ABSOLUTE).from(from).to(to).build();
     }
+
+    public static AbsoluteRange create(DateTime from, DateTime to) {
+        return builder().type(ABSOLUTE).from(Instant.ofEpochMilli(from.getMillis())).to(Instant.ofEpochMilli(to.getMillis())).build();
+    }
+
 
     public static AbsoluteRange create(String from, String to) throws InvalidRangeParametersException {
         return builder().type(ABSOLUTE).from(from).to(to).build();
     }
 
     @Override
-    public DateTime getFrom() {
+    public Instant getFrom() {
         return from();
     }
 
     @Override
-    public DateTime getTo() {
+    public Instant getTo() {
         return to();
     }
 
@@ -77,9 +92,9 @@ public abstract class AbsoluteRange extends TimeRange {
 
         public abstract Builder type(String type);
 
-        public abstract Builder to(DateTime to);
+        public abstract Builder to(Instant to);
 
-        public abstract Builder from(DateTime to);
+        public abstract Builder from(Instant to);
 
         // TODO replace with custom build()
         public Builder to(String to) throws InvalidRangeParametersException {
@@ -99,19 +114,22 @@ public abstract class AbsoluteRange extends TimeRange {
             }
         }
 
-        private DateTime parseDateTime(String s) {
+        public static Instant parseDateTime(String s) {
             if (Strings.isNullOrEmpty(s)) {
                 throw new IllegalArgumentException("Null or empty string");
             }
 
-            final DateTimeFormatter formatter;
-            if (s.contains("T")) {
-                formatter = ISODateTimeFormat.dateTime();
+            Instant instant;
+            if (s.contains("UTC")) {
+                //format Wed Apr 21 10:43:25 UTC 2021
+                instant = Instant.from(DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss z yyyy", Locale.ENGLISH).parse(s));
+            } else if (s.contains("T")) {
+                instant = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(s));
             } else {
-                formatter = Tools.timeFormatterWithOptionalMilliseconds();
+                instant = Instant.from(Tools.ES_DATE_FORMAT_FORMATTER.parse(s)); //the formatter retains the time zone parsed
             }
             // Use withOffsetParsed() to keep the timezone!
-            return formatter.withOffsetParsed().parseDateTime(s);
+            return instant;
         }
     }
 }

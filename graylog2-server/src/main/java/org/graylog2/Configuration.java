@@ -85,6 +85,9 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "root_email")
     private String rootEmail = "";
 
+    @Parameter(value = "root_login_allowed_ips", converter = IPSubnetConverter.class)
+    private Set<IpSubnet> rootLoginAllowedIps = Collections.emptySet();
+
     @Parameter(value = "custom_username")
     private String customUsername = "Username";
 
@@ -159,8 +162,14 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "index_ranges_cleanup_interval", validator = PositiveDurationValidator.class)
     private Duration indexRangesCleanupInterval = Duration.hours(1L);
 
+    @Parameter(value = "trusted_origins", converter = IPSubnetConverter.class)
+    private Set<IpSubnet> trustedOrigins = Collections.emptySet();
+
     @Parameter(value = "trusted_proxies", converter = IPSubnetConverter.class)
     private Set<IpSubnet> trustedProxies = Collections.emptySet();
+
+    @Parameter(value = "force_sso_users", converter = StringSetConverter.class)
+    private Set<String> forceSSOUsers = Collections.emptySet();
 
     @Parameter(value = "deactivated_builtin_authentication_providers", converter = StringSetConverter.class)
     private Set<String> deactivatedBuiltinAuthenticationProviders = Collections.emptySet();
@@ -264,6 +273,8 @@ public class Configuration extends BaseConfiguration {
         return rootEmail;
     }
 
+    public Set<IpSubnet> getRootLoginAllowedIps() { return rootLoginAllowedIps;}
+
     public String getCustomUsername() {
         return customUsername;
     }
@@ -358,8 +369,16 @@ public class Configuration extends BaseConfiguration {
         return indexRangesCleanupInterval;
     }
 
+    public Set<IpSubnet> getTrustedOrigins() {
+        return trustedOrigins;
+    }
+
     public Set<IpSubnet> getTrustedProxies() {
         return trustedProxies;
+    }
+
+    public Set<String> getForceSSOUsers() {
+        return forceSSOUsers;
     }
 
     public int getLoadBalancerRequestThrottleJournalUsage() {

@@ -24,6 +24,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -37,12 +39,12 @@ public class TimeRangesTest {
             }
 
             @Override
-            public DateTime getFrom() {
-                return DateTime.now(DateTimeZone.UTC);
+            public Instant getFrom() {
+                return Instant.now();
             }
 
             @Override
-            public DateTime getTo() {
+            public Instant getTo() {
                 return null;
             }
         })).isEqualTo(0);
@@ -53,13 +55,13 @@ public class TimeRangesTest {
             }
 
             @Override
-            public DateTime getFrom() {
+            public Instant getFrom() {
                 return null;
             }
 
             @Override
-            public DateTime getTo() {
-                return DateTime.now(DateTimeZone.UTC);
+            public Instant getTo() {
+                return Instant.now();
             }
         })).isEqualTo(0);
     }

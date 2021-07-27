@@ -23,8 +23,13 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import org.graylog.autovalue.WithBeanGetter;
+import org.graylog.plugins.pipelineprocessor.functions.dates.ParseDate;
+import org.graylog2.plugin.Tools;
+import scala.reflect.internal.transform.Erasure;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.temporal.TemporalAccessor;
 import java.util.Map;
 
 @AutoValue

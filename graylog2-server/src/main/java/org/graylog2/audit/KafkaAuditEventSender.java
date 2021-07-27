@@ -1,13 +1,25 @@
 package org.graylog2.audit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.graylog.plugins.views.audit.ViewsAuditEventTypes;
+import org.graylog.plugins.views.search.Query;
+import org.graylog.plugins.views.search.SearchJob;
+import org.graylog.plugins.views.search.elasticsearch.ElasticsearchQueryString;
+import org.graylog.plugins.views.search.events.SearchJobExecutionEvent;
 import org.graylog2.Configuration;
+import org.graylog2.indexer.indices.events.IndicesClosedEvent;
+import org.graylog2.indexer.indices.events.IndicesDeletedEvent;
+import org.graylog2.plugin.system.NodeId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,15 +38,17 @@ public class KafkaAuditEventSender implements AuditEventSender {
     private final boolean enabled;
     private String clientId;
     private String nodeName;
+    private NodeId nodeId;
     private String topic;
     private KafkaProducer kProducer;
     private ObjectMapper objMapper;
     private String XOvhToken;
 
     @Inject
-    public KafkaAuditEventSender(Configuration configuration) {
+    public KafkaAuditEventSender(Configuration configuration, EventBus serverEventBus, NodeId nodeId) {
 
         this.enabled = configuration.isKafkaAuditEnabled();
+        this.nodeId = nodeId;
         LOG.info("Kafka audit is {}enabled", enabled ? "" : "not ");
         if (!enabled) {
             return;
@@ -58,10 +72,10 @@ public class KafkaAuditEventSender implements AuditEventSender {
 
         kProp.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         kProp.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
-        if(!"".equals(compression)) {
-           kProp.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, compression);
+        if (!"".equals(compression)) {
+            kProp.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, compression);
         }
-        if("".equals(acksConfig)) {
+        if ("".equals(acksConfig)) {
             kProp.put(ProducerConfig.ACKS_CONFIG, acksConfig);
         }
 
@@ -86,12 +100,84 @@ public class KafkaAuditEventSender implements AuditEventSender {
         this.kProducer = new KafkaProducer<String, String>(kProp);
         this.objMapper = new ObjectMapper();
 
+        serverEventBus.register(this);
     }
 
 
     @Override
     public void success(AuditActor actor, AuditEventType type) {
         success(actor, type, Collections.emptyMap());
+
+    }
+
+    @Subscribe
+    @SuppressWarnings("unused")
+    public void handleSearchAuditEvent(SearchJobExecutionEvent event) {
+        long timestampMillis = event.executionStart().getMillis();
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double) timestampMillis / 1000.0d);
+
+        auditNode.put("_action", ViewsAuditEventTypes.SEARCH_EXECUTE);
+        auditNode.put("_actor", AuditActor.user(event.user().getName()).urn());
+        auditNode.put("short_message", ViewsAuditEventTypes.SEARCH_EXECUTE + ":inner_method");
+        auditNode.put("_is_admin_bool", event.user().isLocalAdmin());
+        SearchJob sJob = event.searchJob();
+        auditNode.put("_search_id", sJob.getSearchId());
+        int queryIndex = 0;
+        for (Query query : sJob.getSearch().queries()) {
+            if (query.query() instanceof ElasticsearchQueryString) {
+                ElasticsearchQueryString esQStr = (ElasticsearchQueryString) query.query();
+                auditNode.put("_query_id_" + queryIndex, query.id());
+                auditNode.put("_query_str_" + queryIndex, esQStr.queryString());
+                queryIndex += 1;
+            }
+        }
+
+        auditNode.put("_target_all_streams_bool", sJob.getSearch().usedStreamIds().isEmpty());
+        ArrayNode streamNode = auditNode.putArray("_search_stream_ids");
+        sJob.getSearch().usedStreamIds().stream().forEach(sid -> streamNode.add(sid));
+
+        sendAuditNode(auditNode, timestampMillis);
+
+    }
+
+
+    @Subscribe
+    public void handleIndicesDeletedEvent(IndicesDeletedEvent event) {
+
+        long timestampMillis = Instant.now().toEpochMilli();
+
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double) timestampMillis / 1000.0d);
+
+        auditNode.put("_action", AuditEventTypes.ES_INDEX_DELETE);
+        auditNode.put("_actor", AuditActor.system(nodeId).urn());
+        auditNode.put("short_message", AuditEventTypes.ES_INDEX_DELETE);
+
+        ArrayNode aNode = auditNode.putArray("indexName");
+        for (String indexName : event.indices()) {
+            aNode.add(indexName);
+        }
+
+        sendAuditNode(auditNode, timestampMillis);
+
+    }
+
+    @Subscribe
+    public void handleIndicesClosedEvent(IndicesClosedEvent event) {
+
+        long timestampMillis = Instant.now().toEpochMilli();
+
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double) timestampMillis / 1000.0d);
+
+        auditNode.put("_action", AuditEventTypes.ES_INDEX_CLOSE);
+        auditNode.put("_actor", AuditActor.system(nodeId).urn());
+        auditNode.put("short_message", AuditEventTypes.ES_INDEX_CLOSE);
+
+        ArrayNode aNode = auditNode.putArray("indexName");
+        for (String indexName : event.indices()) {
+            aNode.add(indexName);
+        }
+
+        sendAuditNode(auditNode, timestampMillis);
 
     }
 
@@ -111,6 +197,17 @@ public class KafkaAuditEventSender implements AuditEventSender {
         sendAuditMessage("failure", actor, type, context);
     }
 
+    private void sendAuditNode(final JsonNode auditNode, long timestampMillis) {
+        try {
+            final String auditString = objMapper.writeValueAsString(auditNode);
+            kProducer.send(new ProducerRecord(topic, null, timestampMillis, null, auditString));
+            LOG.info("{}", auditString);
+        } catch (JsonProcessingException ex) {
+            LOG.error("fatal error on JSON Processing, shouldn't happen", ex);
+            throw new IllegalStateException(ex);
+        }
+    }
+
     private void sendAuditMessage(final String status, AuditActor actor, AuditEventType type, Map<String, Object> context) {
         if (!enabled) {
             return;
@@ -118,7 +215,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
 
         Instant timestamp = Instant.now();
 
-        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double)timestamp.toEpochMilli() / 1000.0f);
+        ObjectNode auditNode = buildGelf(objMapper.createObjectNode(), (double) timestamp.toEpochMilli() / 1000.0f);
 
         auditNode.put("_status", status);
         auditNode.put("_actor", actor.urn());
@@ -132,7 +229,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
         try {
             final String auditString = objMapper.writeValueAsString(auditNode);
             kProducer.send(new ProducerRecord(topic, null, timestamp.toEpochMilli(), null, auditString));
-            LOG.debug("sent audit event {}", auditString);
+            LOG.info("{}", auditString);
         } catch (JsonProcessingException ex) {
             LOG.error("fatal error on JSON Processing, shouldn't happen", ex);
             throw new IllegalStateException(ex);
@@ -146,7 +243,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
         objNode.put("_type", "audit_graylog");
         objNode.put("_client_id", clientId);
         objNode.put("_node_name", nodeName);
-        if (!XOvhToken.equals("")) {
+        if (!"".equals(XOvhToken)) {
             objNode.put("_X-OVH-TOKEN", XOvhToken);
         }
         return objNode;

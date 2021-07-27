@@ -55,6 +55,7 @@ import org.graylog2.shared.SuppressForbidden;
 import org.graylog2.shared.journal.Journal;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -378,7 +379,7 @@ public class PipelineInterpreterTest {
     }
 
     private Message messageInDefaultStream(String message, String source) {
-        final Message msg = new Message(message, source, Tools.nowUTC());
+        final Message msg = new Message(message, source, Instant.now());
 
         final Stream mockedStream = mock(Stream.class);
         when(mockedStream.getId()).thenReturn(DEFAULT_STREAM_ID);

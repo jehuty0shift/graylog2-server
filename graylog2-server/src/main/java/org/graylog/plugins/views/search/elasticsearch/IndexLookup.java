@@ -19,6 +19,7 @@ package org.graylog.plugins.views.search.elasticsearch;
 import org.graylog.plugins.views.search.IndexRangeContainsOneOfStreams;
 import org.graylog2.indexer.ranges.IndexRange;
 import org.graylog2.indexer.ranges.IndexRangeService;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.streams.StreamService;
@@ -48,7 +49,7 @@ public class IndexLookup {
             return Collections.emptySet();
 
         Set<Stream> usedStreams = streamService.loadByIds(streamIds);
-        SortedSet<IndexRange> candidateIndices = indexRangeService.find(timeRange.getFrom(), timeRange.getTo());
+        SortedSet<IndexRange> candidateIndices = indexRangeService.find(Tools.instantToDt(timeRange.getFrom()),Tools.instantToDt(timeRange.getTo()));
 
         return candidateIndices.stream()
                 .filter(i -> indexRangeContainsOneOfStreams.apply(i, usedStreams))

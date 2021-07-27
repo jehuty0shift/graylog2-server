@@ -53,7 +53,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.graylog2.audit.AuditEventTypes.ES_INDEX_CREATE;
+import static org.graylog2.audit.AuditEventTypes.*;
 
 @Singleton
 public class Indices {
@@ -228,10 +228,12 @@ public class Indices {
 
     public void setReadOnly(String index) {
         indicesAdapter.setReadOnly(index);
+        auditEventSender.success(AuditActor.system(nodeId), ES_INDEX_SET_READ_ONLY, ImmutableMap.of("indexName", index));
     }
 
     public void flush(String index) {
         indicesAdapter.flush(index);
+        auditEventSender.success(AuditActor.system(nodeId), ES_INDEX_FLUSH, ImmutableMap.of("indexName", index));
     }
 
     public void reopenIndex(String index) {

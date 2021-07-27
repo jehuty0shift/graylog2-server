@@ -34,6 +34,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class ESEventListTest {
                 .id(id)
                 .message("message")
                 .streams(streams)
-                .timestamp(DateTime.parse(timestamp.toString(Tools.ES_DATE_FORMAT_FORMATTER), Tools.ES_DATE_FORMAT_FORMATTER))
+                .timestamp(Instant.ofEpochMilli(timestamp.getMillis()))
                 .alert(false)
                 .build();
     }
@@ -86,7 +87,7 @@ public class ESEventListTest {
                     EventDto.FIELD_ID, id,
                     EventDto.FIELD_MESSAGE, "message",
                     EventDto.FIELD_SOURCE_STREAMS, streams,
-                    EventDto.FIELD_EVENT_TIMESTAMP, timestamp.toString(Tools.ES_DATE_FORMAT_FORMATTER),
+                    EventDto.FIELD_EVENT_TIMESTAMP, timestamp.toString(DateTimeFormat.forPattern(Tools.ES_DATE_FORMAT_MS).withZoneUTC()),
                     EventDto.FIELD_ALERT, false
             );
         }

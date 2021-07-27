@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -196,10 +197,10 @@ public class ESPivot implements ESSearchTypeHandler<Pivot> {
         final TimeRange pivotRange = query.effectiveTimeRange(pivot);
         return AbsoluteRange.create(
                 isAllMessagesTimeRange(pivotRange) && from != 0
-                        ? new DateTime(from.longValue(), DateTimeZone.UTC)
+                        ? Instant.ofEpochMilli(from.longValue())
                         : query.effectiveTimeRange(pivot).getFrom(),
                 isAllMessagesTimeRange(pivotRange) && to != 0
-                        ? new DateTime(to.longValue(), DateTimeZone.UTC)
+                        ? Instant.ofEpochMilli(to.longValue())
                         : query.effectiveTimeRange(pivot).getTo()
         );
     }

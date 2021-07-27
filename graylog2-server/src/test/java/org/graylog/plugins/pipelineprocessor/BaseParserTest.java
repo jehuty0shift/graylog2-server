@@ -44,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -143,7 +144,7 @@ public class BaseParserTest {
 
     @Nullable
     protected Message evaluateRule(Rule rule, Consumer<Message> messageModifier) {
-        final Message message = new Message("hello test", "source", DateTime.now(DateTimeZone.UTC));
+        final Message message = new Message("hello test", "source", Instant.now());
         message.addStream(defaultStream);
         messageModifier.accept(message);
         return evaluateRule(rule, message);

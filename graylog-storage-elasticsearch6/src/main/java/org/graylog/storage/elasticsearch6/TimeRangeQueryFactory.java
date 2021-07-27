@@ -23,6 +23,7 @@ import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 public class TimeRangeQueryFactory {
     @Nullable
@@ -32,6 +33,7 @@ public class TimeRangeQueryFactory {
         }
 
         return QueryBuilders.rangeQuery(Message.FIELD_TIMESTAMP)
+                .format(Tools.ES_DATE_FORMAT_NANO)
                 .gte(Tools.buildElasticSearchTimeFormat(range.getFrom()))
                 .lte(Tools.buildElasticSearchTimeFormat(range.getTo()));
     }

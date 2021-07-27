@@ -29,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.Executors;
 
@@ -48,7 +49,7 @@ public class StaticFieldFilterTest {
     @Test
     @SuppressForbidden("Executors#newSingleThreadExecutor() is okay for tests")
     public void testFilter() throws Exception {
-        Message msg = new Message("hello", "junit", Tools.nowUTC());
+        Message msg = new Message("hello", "junit", Instant.now());
         msg.setSourceInputId("someid");
 
         when(input.getId()).thenReturn("someid");
@@ -68,7 +69,7 @@ public class StaticFieldFilterTest {
     @Test
     @SuppressForbidden("Executors#newSingleThreadExecutor() is okay for tests")
     public void testFilterIsNotOverwritingExistingKeys() throws Exception {
-        Message msg = new Message("hello", "junit", Tools.nowUTC());
+        Message msg = new Message("hello", "junit", Instant.now());
         msg.addField("foo", "IWILLSURVIVE");
 
         final StaticFieldFilter filter = new StaticFieldFilter(inputService, new EventBus(), Executors.newSingleThreadScheduledExecutor());
