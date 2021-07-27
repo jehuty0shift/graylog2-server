@@ -116,7 +116,7 @@ public class RestTools {
         final List<String> remoteUserHeaders = httpHeaders.get(HTTPHeaderAuthConfig.createDisabled().usernameHeader()); //X-Remote-User
         if (remoteUserHeaders != null && !remoteUserHeaders.isEmpty()) {
             try {
-                externalUri = Optional.of(new URI(defaultUri.getScheme(), "admin." + defaultUri.getHost(), defaultUri.getPath(), defaultUri.getFragment()));
+                externalUri = Optional.of(new URI(defaultUri.getScheme(), "sso." + defaultUri.getHost(), defaultUri.getPath(), defaultUri.getFragment()));
             } catch (URISyntaxException ex) {
                 throw new IllegalStateException("shouldn't happen", ex);
             }
