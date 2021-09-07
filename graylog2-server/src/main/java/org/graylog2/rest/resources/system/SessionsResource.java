@@ -171,7 +171,7 @@ public class SessionsResource extends RestResource {
 
             session.setAttribute("username", user.getName());
 
-            LOG.debug("Session created {}", session.getId());
+            LOG.debug("Session created for user: {}", user.getName());
             session.touch();
             // save subject in session, otherwise we can't get the username back in subsequent requests.
             ((DefaultSecurityManager) SecurityUtils.getSecurityManager()).getSubjectDAO().save(subject);
