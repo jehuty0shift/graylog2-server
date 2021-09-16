@@ -160,7 +160,7 @@ public class IndicesAdapterES6 implements IndicesAdapter {
         // TODO: This is basically getting all indices and later we filter out the alias we want to check for.
         //       This can be done in a more efficient way by either using the /_cat/aliases/<alias-name> API or
         //       the regular /_alias/<alias-name> API.
-        final GetAliases request = new GetAliases.Builder().build();
+        final GetAliases request = new GetAliases.Builder().addIndex(alias).build();
         final JestResult jestResult = JestUtils.execute(jestClient, request, () -> "Couldn't collect indices for alias " + alias);
 
         // The ES return value of this has an awkward format: The first key of the hash is the target index. Thanks.
