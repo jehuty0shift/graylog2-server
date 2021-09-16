@@ -122,13 +122,11 @@ public class MongoIndexSet implements IndexSet {
 
     @Override
     public String[] getManagedIndices() {
-        final Set<String> indexNames = indices.getIndexNamesAndAliases(getIndexWildcard()).keySet();
         // also allow restore archives to be returned
-        final List<String> result = indexNames.stream()
-                .filter(this::isManagedIndex)
-                .collect(Collectors.toList());
+        final Set<String> indexNames = indices.getIndices(this, "open","closed");
+        indexNames.remove(getWriteIndexAlias());
 
-        return result.toArray(new String[result.size()]);
+        return indexNames.toArray(new String[indexNames.size()]);
     }
 
     @Override
