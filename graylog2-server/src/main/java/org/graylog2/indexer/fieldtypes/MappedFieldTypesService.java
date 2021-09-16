@@ -49,7 +49,7 @@ public class MappedFieldTypesService {
 
     private static final FieldTypes.Type UNKNOWN_TYPE = createType("unknown", of());
     private static final String PROP_COMPOUND_TYPE = "compound";
-    private static final List<String> reservedFields = Arrays.asList("source","message","full_message");
+    private static final List<String> reservedFields = Arrays.asList("source", "message", "full_message");
     private static final Logger LOG = LoggerFactory.getLogger(MappedFieldTypesService.class);
 
     @Inject
@@ -87,7 +87,7 @@ public class MappedFieldTypesService {
         dt = DateTime.now(DateTimeZone.UTC);
         //rewrite this to take indexSet ids into accounts
         final java.util.stream.Stream<MappedFieldTypeDTO> types = indexSetMap.values().stream().flatMap(iSet -> Arrays.asList(iSet.getManagedIndices()).stream())
-                .flatMap(i -> indexFieldTypesMap.get(i)==null? Stream.empty():indexFieldTypesMap.get(i).fields().stream().filter(f -> fieldsByStream.contains(f.fieldName())))
+                .flatMap(i -> indexFieldTypesMap.get(i) == null ? Stream.empty() : indexFieldTypesMap.get(i).fields().stream().filter(f -> fieldsByStream.contains(f.fieldName())))
                 .map(this::mapPhysicalFieldType);
         LOG.debug("filtering streams took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
@@ -107,14 +107,15 @@ public class MappedFieldTypesService {
     private Set<MappedFieldTypeDTO> mergeCompoundFieldTypes(java.util.stream.Stream<MappedFieldTypeDTO> stream) {
         return stream.collect(Collectors.groupingBy(MappedFieldTypeDTO::name, Collectors.toSet()))
                 .entrySet()
-                .stream()
+                .stream().parallel()
                 .map(entry -> {
                     final Set<MappedFieldTypeDTO> fieldTypes = entry.getValue();
                     final String fieldName = entry.getKey();
                     if (fieldTypes.size() == 1) {
+                        LOG.debug("Merging DTO field {} with 1 type", fieldName);
                         return fieldTypes.iterator().next();
                     }
-
+                    LOG.debug("Merging DTO field {}, with fieldTypes size {}", fieldName, fieldTypes.size());
                     if (reservedFields.contains(fieldName)) {
                         return MappedFieldTypeDTO.create(fieldName, FieldTypeMapper.mapType("text").get());
                     }
