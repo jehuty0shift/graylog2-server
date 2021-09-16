@@ -15,7 +15,8 @@ export type ExportPayload = {
 };
 
 const downloadCSV = (fileContent: string, filename: string = 'search-result') => {
-  download(fileContent, `${filename}.csv`, 'text/csv');
+  const data = new Blob([fileContent], { type: 'text/csv'}); //fix CSV encoding export
+  download(data, `${filename}.csv`, 'text/csv');
 };
 
 export const exportSearchMessages = (exportPayload: ExportPayload, searchId: string, filename?: string) => {
