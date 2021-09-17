@@ -89,6 +89,12 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
         setCachingEnabled(false);
         // Credentials will be matched via the authentication service itself so we don't need Shiro to do it
         setCredentialsMatcher(new AllowAllCredentialsMatcher());
+        //Enforce the realm to be enabled
+
+        HTTPHeaderAuthConfig firstConfig = clusterConfigService.get(HTTPHeaderAuthConfig.class);
+        if (firstConfig == null) {
+            clusterConfigService.write(HTTPHeaderAuthConfig.createEnabled());
+        }
     }
 
     @Override
@@ -215,7 +221,7 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
     }
 
     private HTTPHeaderAuthConfig loadConfig() {
-        return clusterConfigService.getOrDefault(HTTPHeaderAuthConfig.class, HTTPHeaderAuthConfig.createDisabled());
+        return clusterConfigService.getOrDefault(HTTPHeaderAuthConfig.class, HTTPHeaderAuthConfig.createEnabled());
     }
 
     private Optional<String> headerValue(MultivaluedMap<String, String> headers, @Nullable String headerName) {

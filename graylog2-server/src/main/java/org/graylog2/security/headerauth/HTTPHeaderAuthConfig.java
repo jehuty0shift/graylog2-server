@@ -42,6 +42,10 @@ public abstract class HTTPHeaderAuthConfig {
         return builder().enabled(false).build();
     }
 
+    public static HTTPHeaderAuthConfig createEnabled() {
+        return builder().enabled(true).build();
+    }
+
     public static Builder builder() {
         return Builder.create();
     }
