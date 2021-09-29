@@ -28,6 +28,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import org.graylog2.indexer.ElasticsearchException;
 import org.graylog2.indexer.IndexFailure;
 import org.graylog2.indexer.IndexFailureImpl;
 import org.graylog2.indexer.IndexSet;
@@ -70,7 +71,9 @@ public class Messages {
 
     @SuppressWarnings("UnstableApiUsage")
     private static final Retryer<List<IndexingError>> BULK_REQUEST_RETRYER = RetryerBuilder.<List<IndexingError>>newBuilder()
-            .retryIfException(t -> t instanceof IOException)
+            .retryIfException(t -> t instanceof IOException
+                    || (t instanceof ElasticsearchException && ((ElasticsearchException)t).getErrorDetails().stream().anyMatch( s -> s.startsWith("no write index is defined")))
+                    || (t.getCause() != null && t.getCause().getCause() instanceof IOException ))
             .withWaitStrategy(WaitStrategies.exponentialWait(MAX_WAIT_TIME.getQuantity(), MAX_WAIT_TIME.getUnit()))
             .withRetryListener(new RetryListener() {
                 @Override
