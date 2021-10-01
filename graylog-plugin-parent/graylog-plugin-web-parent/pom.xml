@@ -23,6 +23,7 @@
         <groupId>org.graylog.plugins</groupId>
         <artifactId>graylog-plugin-parent</artifactId>
         <version>4.0.0-rc.2</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>graylog-plugin-web-parent</artifactId>
