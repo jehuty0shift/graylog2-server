@@ -124,22 +124,23 @@ public abstract class StreamDTO {
                                    @JsonProperty(FIELD_DEFAULT_STREAM) @Nullable Boolean isDefault,
                                    @JsonProperty(FIELD_REMOVE_MATCHES_FROM_DEFAULT_STREAM) @Nullable Boolean removeMatchesFromDefaultStream,
                                    @JsonProperty(FIELD_INDEX_SET_ID) String indexSetId) {
-        return new AutoValue_StreamDTO(
-                id,
-                creatorUserId,
-                outputs,
-                matchingType,
-                description,
-                createdAt,
-                rules,
-                disabled,
-                alertConditions,
-                alertReceivers,
-                title,
-                contentPack,
-                firstNonNull(isDefault, false),
-                firstNonNull(removeMatchesFromDefaultStream, false),
-                indexSetId);
+        return new AutoValue_StreamDTO.Builder()
+                .id(id)
+                .creatorUserId(creatorUserId)
+                .outputs(outputs)
+                .matchingType(matchingType)
+                .description(description)
+                .createdAt(createdAt)
+                .rules(rules)
+                .disabled(disabled)
+                .alertConditions(alertConditions)
+                .alertReceivers(alertReceivers)
+                .title(title)
+                .contentPack(contentPack)
+                .isDefault(firstNonNull(isDefault, false))
+                .removeMatchesFromDefaultStream(firstNonNull(removeMatchesFromDefaultStream, false))
+                .indexSetId(indexSetId)
+                .build();
     }
 
     @AutoValue.Builder
