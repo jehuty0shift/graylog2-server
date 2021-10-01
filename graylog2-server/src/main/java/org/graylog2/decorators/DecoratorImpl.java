@@ -34,7 +34,7 @@ import java.util.Optional;
 @WithBeanGetter
 @JsonAutoDetect
 @CollectionName("decorators")
-public abstract class DecoratorImpl implements Decorator, Comparable {
+public abstract class DecoratorImpl implements Decorator, Comparable<Decorator> {
     static final String FIELD_ID = "id";
     static final String FIELD_TYPE = "type";
     static final String FIELD_CONFIG = "config";
@@ -42,12 +42,8 @@ public abstract class DecoratorImpl implements Decorator, Comparable {
     static final String FIELD_ORDER = "order";
 
     @Override
-    public int compareTo(Object o) {
-        if (o instanceof Decorator) {
-            Decorator decorator = (Decorator)o;
-            return order() - decorator.order();
-        }
-        return 0;
+    public int compareTo(Decorator o) {
+            return order() - o.order();
     }
 
     @JsonProperty(FIELD_ID)

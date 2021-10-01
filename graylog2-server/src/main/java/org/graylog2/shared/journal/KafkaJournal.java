@@ -561,14 +561,14 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
 
             LOG.debug("fdInfo message Offset is {}, last kafkaLog offset is {}, last segment OffsetIndex is {}, offset requested was {}, num Of segments Is {}, startOffset is {}", fdInfo.fetchOffsetMetadata().messageOffset(), kafkaLog.logEndOffset(), kafkaLog.activeSegment().offsetIndex().lastOffset(), readOffset, kafkaLog.numberOfSegments(), kafkaLog.logStartOffset());
 
-            final Iterator<Record> iterator1 = fdInfo.records().records().iterator();
+            final Iterator<org.apache.kafka.common.record.Record> iterator1 = fdInfo.records().records().iterator();
 
             long firstOffset = Long.MIN_VALUE;
             long lastOffset = Long.MIN_VALUE;
             long totalBytes = 0;
 
             while (iterator1.hasNext() && messages.size() < maximumCount) {
-                final Record record = iterator1.next();
+                final org.apache.kafka.common.record.Record record = iterator1.next();
                 if (record.offset() < readOffset) { //the batch starts before the log we asked
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("record offset is inferior to readOffset asked", record.offset(), readOffset);

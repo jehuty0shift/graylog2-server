@@ -40,13 +40,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.net.InetAddress;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
@@ -385,7 +379,7 @@ public class Message implements Messages, Indexable {
                 DateTimeFormatter instantFormatter = ES_DATE_FORMAT_FORMATTER;
                 instant = Instant.from(LocalDate.parse((String) timestampValue, instantFormatter));
 
-            } catch (DateTimeParseException e) {
+            } catch (DateTimeException e) {
                 LOG.trace("Invalid format for field timestamp '{}' in message {}, forcing to current time.", timestampValue, getId());
                 invalidTimestampMeter.mark();
                 instant = Instant.now();
