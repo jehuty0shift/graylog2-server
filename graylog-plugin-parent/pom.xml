@@ -27,6 +27,7 @@
         <groupId>org.graylog</groupId>
         <artifactId>graylog-parent</artifactId>
         <version>4.0.0-rc.2</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.graylog.plugins</groupId>
