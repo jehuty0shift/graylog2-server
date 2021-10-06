@@ -30,6 +30,7 @@ import org.junit.jupiter.api.extension.ParameterResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -72,8 +73,8 @@ public class GraylogBackendExtension implements AfterEachCallback, BeforeAllCall
 
     private ElasticsearchInstanceFactory instantiateFactory(Class<? extends ElasticsearchInstanceFactory> factoryClass) {
         try {
-            return factoryClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return factoryClass.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException("Unable to construct Elasticsearch factory: ", e);
         }
     }

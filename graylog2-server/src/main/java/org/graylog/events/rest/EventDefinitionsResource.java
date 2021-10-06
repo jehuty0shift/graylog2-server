@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -166,8 +166,9 @@ public class EventDefinitionsResource extends RestResource implements PluginRest
                            @ApiParam(name = "JSON Body") EventDefinitionDto dto) {
         checkPermission(RestPermissions.EVENT_DEFINITIONS_EDIT, definitionId);
         checkEventDefinitionPermissions(dto, "update");
-        dbService.get(definitionId)
-                .orElseThrow(() -> new NotFoundException("Event definition <" + definitionId + "> doesn't exist"));
+        if (!dbService.get(definitionId).isPresent()) {
+            throw new NotFoundException("Event definition <" + definitionId + "> doesn't exist");
+        }
 
         final ValidationResult result = dto.validate();
         if (!definitionId.equals(dto.id())) {

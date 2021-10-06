@@ -127,7 +127,7 @@ public class KafkaAuditEventReader {
             }
         } else {
             LOG.debug("num of message of topic is more than {}, consuming {} message per partition", numMessages, numByPart);
-            Map<TopicPartition, Long> offsetsForTime = kConsumer.offsetsForTimes(topicPartitions.stream().collect(Collectors.toMap(Function.identity(), tP -> new Long(from.toEpochMilli()))));
+            Map<TopicPartition, Long> offsetsForTime = kConsumer.offsetsForTimes(topicPartitions.stream().collect(Collectors.toMap(Function.identity(), tP -> from.toEpochMilli())));
             for (Map.Entry<TopicPartition, Long> offset : offsetsForTime.entrySet()) {
                 TopicPartition tPart = offset.getKey();
                 kConsumer.assign(Collections.singletonList(offset.getKey()));
