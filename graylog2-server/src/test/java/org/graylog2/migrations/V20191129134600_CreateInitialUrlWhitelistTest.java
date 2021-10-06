@@ -16,6 +16,7 @@
  */
 package org.graylog2.migrations;
 
+import com.google.common.eventbus.EventBus;
 import org.graylog.events.notifications.DBNotificationService;
 import org.graylog2.lookup.adapters.HTTPJSONPathDataAdapter;
 import org.graylog2.lookup.db.DBDataAdapterService;
@@ -33,6 +34,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -42,8 +45,15 @@ import static org.mockito.Mockito.when;
 public class V20191129134600_CreateInitialUrlWhitelistTest {
     @Mock
     private ClusterConfigService configService;
+
+    private TestUrlWhitelistService whitelistService;
+
     @Mock
-    private UrlWhitelistService whitelistService;
+    private EventBus eventBus;
+
+    @Mock
+    private ClusterConfigService clusterConfigService;
+
     @Mock
     private DBDataAdapterService dataAdapterService;
     @Mock
@@ -56,7 +66,8 @@ public class V20191129134600_CreateInitialUrlWhitelistTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this).close();
+        whitelistService = new TestUrlWhitelistService(eventBus, clusterConfigService);
     }
 
     @Test
@@ -70,7 +81,7 @@ public class V20191129134600_CreateInitialUrlWhitelistTest {
         migration.upgrade();
 
         final ArgumentCaptor<UrlWhitelist> captor = ArgumentCaptor.forClass(UrlWhitelist.class);
-        verify(whitelistService).saveWhitelist(captor.capture());
+        assertThat(whitelistService.containsWhiteList(captor.capture())).isTrue();
 
         final UrlWhitelist whitelist = captor.getValue();
 
@@ -88,5 +99,26 @@ public class V20191129134600_CreateInitialUrlWhitelistTest {
         assertThat(whitelist.entries()
                 .get(0)
                 .value()).isEqualTo("^\\Qhttps://www.graylog.com/\\E.*?\\Q/test.json/\\E.*?$");
+    }
+
+
+    public class TestUrlWhitelistService extends UrlWhitelistService {
+
+        private Set<UrlWhitelist> savedWhiteLists;
+
+        public TestUrlWhitelistService(EventBus eventBus, ClusterConfigService clusterConfigService) {
+            super(eventBus,clusterConfigService);
+            savedWhiteLists = new HashSet<>();
+        }
+
+        @Override
+        public void saveWhitelist(UrlWhitelist whitelist) {
+            savedWhiteLists.add(whitelist);
+            super.saveWhitelist(whitelist);
+        }
+
+        public boolean containsWhiteList(final UrlWhitelist whl) {
+            return savedWhiteLists.contains(whl);
+        }
     }
 }

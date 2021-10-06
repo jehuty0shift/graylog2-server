@@ -17,6 +17,7 @@
 package org.graylog2.security;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.inject.assistedinject.Assisted;
 import org.bouncycastle.est.jcajce.JsseDefaultHostnameAuthorizer;
 
@@ -100,10 +101,11 @@ public class DefaultX509TrustManager extends X509ExtendedTrustManager {
     }
 
     private void validateHostnames(X509Certificate[] x509Certificates, String s) throws CertificateException {
-        Arrays.stream(x509Certificates)
+        if (!(Arrays.stream(x509Certificates)
                 .filter(this::certificateMatchesHostname)
-                .findFirst()
-                .orElseThrow(() -> new CertificateException("Presented certificate does not match configured hostname!"));
+                .findFirst().isPresent())) {
+            throw new CertificateException("Presented certificate does not match configured hostname!");
+        }
     }
 
     private boolean certificateMatchesHostname(X509Certificate x509Certificate) {
