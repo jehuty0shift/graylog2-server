@@ -177,7 +177,7 @@
         <testcontainers.version>1.15.1</testcontainers.version>
 
         <!-- Nodejs dependencies -->
-        <nodejs.version>v14.17.6</nodejs.version>
+        <nodejs.version>v14.18.0</nodejs.version>
         <yarn.version>v1.22.10</yarn.version>
 
         <!-- Plugin versions -->
