@@ -322,6 +322,7 @@ public class Message implements Messages, Indexable {
     }
 
     @Override
+    @SuppressWarnings("FromTemporalAccessor")
     public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull final Meter invalidTimestampMeter) {
         final Map<String, Object> obj = Maps.newHashMapWithExpectedSize(REQUIRED_FIELDS.size() + fields.size());
 
