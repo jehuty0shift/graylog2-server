@@ -323,7 +323,7 @@ public class Message implements Messages, Indexable {
 
     @Override
     @SuppressWarnings("FromTemporalAccessor")
-    public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull final Meter invalidTimestampMeter) {
+    public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull final Meter invalidTimestampMeter, Version version) {
         final Map<String, Object> obj = Maps.newHashMapWithExpectedSize(REQUIRED_FIELDS.size() + fields.size());
 
         for (Map.Entry<String, Object> entry : fields.entrySet()) {
@@ -392,7 +392,7 @@ public class Message implements Messages, Indexable {
             instant = Instant.now();
         }
         if (instant != null) {
-            obj.put(FIELD_TIMESTAMP, buildElasticSearchTimeFormat(instant));
+            obj.put(FIELD_TIMESTAMP, buildElasticSearchTimeFormat(instant, version));
         }
 
         return obj;

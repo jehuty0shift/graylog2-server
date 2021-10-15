@@ -19,6 +19,7 @@ package org.graylog.storage.elasticsearch6;
 import org.assertj.core.api.Assertions;
 import org.graylog.shaded.elasticsearch5.org.elasticsearch.index.query.RangeQueryBuilder;
 import org.graylog2.plugin.Tools;
+import org.graylog2.plugin.Version;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
@@ -62,7 +63,7 @@ public class TimeRangeQueryFactoryTest {
         final RangeQueryBuilder queryBuilder = (RangeQueryBuilder) TimeRangeQueryFactory.create(timeRange);
         assertThat(queryBuilder).isNotNull();
         assertThat(queryBuilder.fieldName()).isEqualTo("timestamp");
-        assertThat(queryBuilder.from()).isEqualTo(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(from.getMillis())));
-        assertThat(queryBuilder.to()).isEqualTo(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(to.getMillis())));
+        assertThat(queryBuilder.from()).isEqualTo(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(from.getMillis()), Version.from(6,0,0)));
+        assertThat(queryBuilder.to()).isEqualTo(Tools.buildElasticSearchTimeFormat(Instant.ofEpochMilli(to.getMillis()),Version.from(6,0,0)));
     }
 }

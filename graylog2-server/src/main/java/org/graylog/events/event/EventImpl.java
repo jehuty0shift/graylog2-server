@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.logging.log4j.util.Strings;
 import org.graylog.events.fields.FieldValue;
 import org.graylog2.jackson.TypeReferences;
+import org.graylog2.plugin.Version;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -292,19 +293,19 @@ public class EventImpl implements Event {
     }
 
     @Override
-    public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull Meter invalidTimestampMeter) {
+    public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull Meter invalidTimestampMeter, Version version) {
 
         final Map<String, Object> source = objectMapper.convertValue(this.toDto(), TypeReferences.MAP_STRING_OBJECT);
 
         // "Fix" timestamps to be in the correct format. Our message index mapping is using this format so we have
         // to use it for our events as well to make sure we can use the search without errors.
-        source.put(EventDto.FIELD_EVENT_TIMESTAMP, buildElasticSearchTimeFormat(Instant.ofEpochMilli(requireNonNull(this.getEventTimestamp()).withZone(UTC).getMillis())));
-        source.put(EventDto.FIELD_PROCESSING_TIMESTAMP, buildElasticSearchTimeFormat(Instant.ofEpochMilli(requireNonNull(this.getProcessingTimestamp()).withZone(UTC).getMillis())));
+        source.put(EventDto.FIELD_EVENT_TIMESTAMP, buildElasticSearchTimeFormat(Instant.ofEpochMilli(requireNonNull(this.getEventTimestamp()).withZone(UTC).getMillis()),version));
+        source.put(EventDto.FIELD_PROCESSING_TIMESTAMP, buildElasticSearchTimeFormat(Instant.ofEpochMilli(requireNonNull(this.getProcessingTimestamp()).withZone(UTC).getMillis()),version));
         if (this.getTimerangeStart() != null) {
-            source.put(EventDto.FIELD_TIMERANGE_START, buildElasticSearchTimeFormat(Instant.ofEpochMilli(this.getTimerangeStart().withZone(UTC).getMillis())));
+            source.put(EventDto.FIELD_TIMERANGE_START, buildElasticSearchTimeFormat(Instant.ofEpochMilli(this.getTimerangeStart().withZone(UTC).getMillis()),version));
         }
         if (this.getTimerangeEnd() != null) {
-            source.put(EventDto.FIELD_TIMERANGE_END, buildElasticSearchTimeFormat(Instant.ofEpochMilli(this.getTimerangeEnd().withZone(UTC).getMillis())));
+            source.put(EventDto.FIELD_TIMERANGE_END, buildElasticSearchTimeFormat(Instant.ofEpochMilli(this.getTimerangeEnd().withZone(UTC).getMillis()),version));
         }
 
         // We cannot index events that don't have any stream set

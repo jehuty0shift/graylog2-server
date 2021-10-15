@@ -77,6 +77,7 @@ if (TARGET.startsWith('build')) {
     optimization: {
       minimizer: [new TerserPlugin({
         sourceMap: true,
+        parallel: true,
         terserOptions: {
           compress: {
             warnings: false,

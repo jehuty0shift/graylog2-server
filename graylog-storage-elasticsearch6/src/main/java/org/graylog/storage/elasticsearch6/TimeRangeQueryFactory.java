@@ -20,6 +20,7 @@ import org.graylog.shaded.elasticsearch5.org.elasticsearch.index.query.QueryBuil
 import org.graylog.shaded.elasticsearch5.org.elasticsearch.index.query.RangeQueryBuilder;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.Tools;
+import org.graylog2.plugin.Version;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 
 import javax.annotation.Nullable;
@@ -33,8 +34,8 @@ public class TimeRangeQueryFactory {
         }
 
         return QueryBuilders.rangeQuery(Message.FIELD_TIMESTAMP)
-                .format(Tools.ES_DATE_FORMAT_NANO)
-                .gte(Tools.buildElasticSearchTimeFormat(range.getFrom()))
-                .lte(Tools.buildElasticSearchTimeFormat(range.getTo()));
+                .format(Tools.ES_DATE_FORMAT_MS)
+                .gte(Tools.buildElasticSearchTimeFormat(range.getFrom(), Version.from(6,0,0)))
+                .lte(Tools.buildElasticSearchTimeFormat(range.getTo(),Version.from(6,0,0)));
     }
 }

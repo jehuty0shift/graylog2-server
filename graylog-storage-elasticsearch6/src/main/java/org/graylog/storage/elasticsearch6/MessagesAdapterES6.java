@@ -22,6 +22,7 @@ import org.graylog2.indexer.messages.IndexingRequest;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.messages.MessagesAdapter;
 import org.graylog2.indexer.results.ResultMessage;
+import org.graylog2.plugin.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,7 +189,7 @@ public class MessagesAdapterES6 implements MessagesAdapter {
         for (IndexingRequest entry : chunk) {
             final Indexable message = entry.message();
 
-            bulk.addAction(new Index.Builder(message.toElasticSearchObject(objectMapper, invalidTimestampMeter))
+            bulk.addAction(new Index.Builder(message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(6,0,0)))
                     .index(entry.indexSet().getWriteIndexAlias())
                     .type(IndexMapping.TYPE_MESSAGE)
                     .id(message.getId())

@@ -87,6 +87,7 @@ public final class Tools {
             .withZone(ZoneOffset.UTC);
 
     public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO, Locale.ENGLISH).withZone(ZoneOffset.UTC);
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES_6 = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_MS, Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
     public static final java.time.format.DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = java.time.format.DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneOffset.UTC);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -331,8 +332,9 @@ public final class Tools {
         return ImmutableSortedSet.copyOf(c);
     }
 
-    public static String buildElasticSearchTimeFormat(Instant timestamp) {
-        return ES_DATE_FORMAT_FORMATTER_TO_ES.format(timestamp);
+    public static String buildElasticSearchTimeFormat(Instant timestamp, Version version) {
+        return version.getVersion().getMajorVersion()==7?
+                ES_DATE_FORMAT_FORMATTER_TO_ES.format(timestamp):ES_DATE_FORMAT_FORMATTER_TO_ES_6.format(timestamp);
     }
 
     /**
