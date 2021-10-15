@@ -18,6 +18,7 @@ package org.graylog2.bootstrap;
 
 import com.github.rvesse.airline.annotations.Option;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ServiceManager;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -156,7 +157,7 @@ public abstract class ServerBootstrap extends CmdLineTool {
 
         // Start services.
         final ServiceManagerListener serviceManagerListener = injector.getInstance(ServiceManagerListener.class);
-        serviceManager.addListener(serviceManagerListener);
+        serviceManager.addListener(serviceManagerListener, MoreExecutors.directExecutor());
         try {
             serviceManager.startAsync().awaitHealthy();
         } catch (Exception e) {

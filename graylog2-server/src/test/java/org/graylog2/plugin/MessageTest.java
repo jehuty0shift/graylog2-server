@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -344,17 +344,17 @@ public class MessageTest {
 
     @Test
     public void testTimestampAsDate() {
-        final ZonedDateTime dateTime = ZonedDateTime.of(2015, 9, 8, 0, 0,0,0, ZoneOffset.UTC);
+        final ZonedDateTime dateTime = ZonedDateTime.of(2015, 9, 8, 0, 0, 0, 0, ZoneOffset.UTC);
 
 
         message.addField(Message.FIELD_TIMESTAMP,
-                         dateTime);
+                dateTime);
 
-        final Map<String, Object> elasticSearchObject = message.toElasticSearchObject(objectMapper, invalidTimestampMeter);
+        final Map<String, Object> elasticSearchObject = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
         final Object esTimestampFormatted = elasticSearchObject.get(Message.FIELD_TIMESTAMP);
 
         assertEquals("Setting message timestamp as java.util.Date results in correct format for elasticsearch",
-                     Tools.buildElasticSearchTimeFormat(dateTime.toInstant()), esTimestampFormatted);
+                Tools.buildElasticSearchTimeFormat(dateTime.toInstant(), Version.from(7, 0, 0)), esTimestampFormatted);
     }
 
     @Test
@@ -389,16 +389,15 @@ public class MessageTest {
         message.addField("field2", "that");
         message.addField(Message.FIELD_STREAMS, Collections.singletonList("test-stream"));
 
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter);
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
 
         assertEquals("foo", object.get("message"));
         assertEquals("bar", object.get("source"));
         assertEquals("wat", object.get("field1"));
         assertEquals("that", object.get("field2"));
-        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp")), object.get("timestamp"));
+        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp"), Version.from(7, 0, 0)), object.get("timestamp"));
 
-        @SuppressWarnings("unchecked")
-        final Collection<String> streams = (Collection<String>) object.get("streams");
+        @SuppressWarnings("unchecked") final Collection<String> streams = (Collection<String>) object.get("streams");
         assertThat(streams).containsOnly("test-stream");
     }
 
@@ -406,7 +405,7 @@ public class MessageTest {
     public void testToElasticSearchObjectWithInvalidKey() throws Exception {
         message.addField("field.3", "dot");
 
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter);
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
 
         // Elasticsearch >=2.0 does not allow "." in keys. Make sure we replace them before writing the message.
         assertEquals("#toElasticsearchObject() should replace \".\" in keys with a \"_\"",
@@ -414,10 +413,9 @@ public class MessageTest {
 
         assertEquals("foo", object.get("message"));
         assertEquals("bar", object.get("source"));
-        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp")), object.get("timestamp"));
+        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp"), Version.from(7, 0, 0)), object.get("timestamp"));
 
-        @SuppressWarnings("unchecked")
-        final Collection<String> streams = (Collection<String>) object.get("streams");
+        @SuppressWarnings("unchecked") final Collection<String> streams = (Collection<String>) object.get("streams");
         assertThat(streams).isEmpty();
     }
 
@@ -426,7 +424,7 @@ public class MessageTest {
         message.addField("timestamp", "time!");
 
         final Meter errorMeter = metricRegistry.meter("test-meter");
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, errorMeter);
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, errorMeter, Version.from(7, 0, 0));
 
         assertNotEquals("time!", object.get("timestamp"));
         assertEquals(1, errorMeter.getCount());
@@ -440,16 +438,15 @@ public class MessageTest {
 
         message.addStream(stream);
 
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter);
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
 
-        @SuppressWarnings("unchecked")
-        final Collection<String> streams = (Collection<String>) object.get("streams");
+        @SuppressWarnings("unchecked") final Collection<String> streams = (Collection<String>) object.get("streams");
         assertThat(streams).containsOnly("stream-id");
     }
 
     @Test
     public void testIsComplete() throws Exception {
-        Message message = new Message("message", "source",Instant.now());
+        Message message = new Message("message", "source", Instant.now());
         assertTrue(message.isComplete());
 
         message = new Message("message", "", Instant.now());
@@ -575,9 +572,9 @@ public class MessageTest {
     @SuppressForbidden("Intentionally using system default time zone")
     public void assignLocalDateTimeAsTimestamp() {
         final Message message = new Message("message", "source", Instant.now());
-        message.addField(Message.FIELD_TIMESTAMP, ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0,ZoneId.systemDefault()));
+        message.addField(Message.FIELD_TIMESTAMP, ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneId.systemDefault()));
         final DateTimeZone defaultTimeZone = DateTimeZone.getDefault();
-        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0,ZoneId.systemDefault()).toInstant());
+        assertThat(message.getTimestamp()).isEqualTo(ZonedDateTime.of(2018, 4, 19, 12, 0, 0, 0, ZoneId.systemDefault()).toInstant());
     }
 
     @Test
