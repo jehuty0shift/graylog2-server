@@ -30,10 +30,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -61,7 +58,7 @@ public class InMemoryRolePermissionResolver implements RolePermissionResolver {
 
     @Override
     public Collection<Permission> resolvePermissionsInRole(String roleId) {
-        final Set<String> permissions = resolveStringPermission(roleId);
+        final Set<String> permissions = resolveStringPermissionForARole(roleId);
 
         return permissions.stream().map(p -> {
             if (p.equals("*")) {
@@ -73,7 +70,7 @@ public class InMemoryRolePermissionResolver implements RolePermissionResolver {
     }
 
     @Nonnull
-    public Set<String> resolveStringPermission(String roleId) {
+    public Set<String> resolveStringPermissionForARole(String roleId) {
         final ImmutableMap<String, Role> index = idToRoleIndex.get();
 
         final Role role = index.get(roleId);
@@ -87,7 +84,28 @@ public class InMemoryRolePermissionResolver implements RolePermissionResolver {
             log.debug("Role {} has no permissions assigned, cannot resolve permissions.", roleId);
             return Collections.emptySet();
         }
+
         return permissions;
+    }
+
+    @Nonnull
+    public Set<String> resolveStringPermission(Set<String> roleId) {
+        final ImmutableMap<String, Role> index = idToRoleIndex.get();
+
+        final Set<String> permissionsSet = new LinkedHashSet<>();
+
+        roleId.stream().map(rId -> index.get(rId)).forEach(r-> {
+            if (r == null) {
+                log.debug("Unknown role {}, cannot resolve permissions.", roleId);
+            }
+            final Set<String> permissions = r.getPermissions();
+            if (permissions == null) {
+                log.debug("Role {} has no permissions assigned, cannot resolve permissions.", roleId);
+            }
+            permissionsSet.addAll(permissions);
+        });
+
+        return permissionsSet;
     }
 
 

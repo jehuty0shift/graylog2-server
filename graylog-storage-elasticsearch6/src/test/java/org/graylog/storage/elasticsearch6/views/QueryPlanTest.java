@@ -63,7 +63,7 @@ public class QueryPlanTest {
                 new QueryStringDecorators.Fake(),
                 (elasticsearchBackend, ssb, job, query, results) -> new ESGeneratedQueryContext(elasticsearchBackend, ssb, job, query, results, fieldTypesLookup),
                 false);
-        queryEngine = new QueryEngine(backend, Collections.emptySet());
+        queryEngine = new QueryEngine(backend, Collections.emptySet(),4);
     }
 
     private static String randomUUID() {

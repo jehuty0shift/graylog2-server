@@ -262,6 +262,14 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
     }
 
     @Override
+    public List<String> loadAllIds() {
+        final List<DBObject> results = query(StreamImpl.class, new BasicDBObject());
+        return results.stream()
+                .map(o -> o.get("_id").toString())
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Set<Stream> loadByIds(Collection<String> streamIds) {
         final Set<ObjectId> objectIds = streamIds.stream()
                 .map(ObjectId::new)

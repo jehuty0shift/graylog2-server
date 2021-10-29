@@ -47,6 +47,8 @@ public interface StreamService extends PersistedService {
 
     List<Stream> loadAll();
 
+    List<String> loadAllIds();
+
     Set<Stream> loadByIds(Collection<String> streamIds);
 
     Set<String> indexSetIdsByIds(Collection<String> streamIds);
