@@ -73,12 +73,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -192,6 +187,11 @@ public class ConfigurationStateUpdaterTest {
                     .map(store::get)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
+        }
+
+        @Override
+        public List<String> loadAllIds() {
+            return new ArrayList<>(store.keySet());
         }
 
         @Override

@@ -1,27 +1,30 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.graylog.plugins.views.search.rest;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.yammer.metrics.core.TimerContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -94,6 +97,10 @@ public class SearchResource extends RestResource implements PluginRestResource {
     private final SearchExecutionGuard executionGuard;
     private final SearchDomain searchDomain;
     private final EventBus serverEventBus;
+    private final Timer prepareSearchTimer;
+    private final Timer prepareJobTimer;
+    private final Timer executeJobTimer;
+
 
     @Inject
     public SearchResource(QueryEngine queryEngine,
@@ -103,7 +110,8 @@ public class SearchResource extends RestResource implements PluginRestResource {
                           PermittedStreams permittedStreams,
                           SearchExecutionGuard executionGuard,
                           SearchDomain searchDomain,
-                          EventBus serverEventBus) {
+                          EventBus serverEventBus,
+                          MetricRegistry metricRegistry) {
         this.queryEngine = queryEngine;
         this.searchDbService = searchDbService;
         this.searchJobService = searchJobService;
@@ -112,6 +120,10 @@ public class SearchResource extends RestResource implements PluginRestResource {
         this.executionGuard = executionGuard;
         this.searchDomain = searchDomain;
         this.serverEventBus = serverEventBus;
+        prepareSearchTimer = metricRegistry.timer(MetricRegistry.name(SearchResource.class, "prepareSearch"));
+        prepareJobTimer = metricRegistry.timer(MetricRegistry.name(SearchResource.class, "prepareJob"));
+        executeJobTimer = metricRegistry.timer(MetricRegistry.name(SearchResource.class, "executeJob"));
+
     }
 
     @VisibleForTesting
@@ -174,19 +186,29 @@ public class SearchResource extends RestResource implements PluginRestResource {
     @NoAuditEvent("Creating audit event manually in method body.")
     public Response executeQuery(@ApiParam(name = "id") @PathParam("id") String id,
                                  @ApiParam Map<String, Object> executionState) {
-        Search search = getSearch(id);
+        Search search;
+        try (Timer.Context ignored = prepareSearchTimer.time()) {
+            search = getSearch(id);
 
-        search = search.addStreamsToQueriesWithoutStreams(this::loadAllAllowedStreamsForUser);
+            search = search.addStreamsToQueriesWithoutStreams(this::loadAllAllowedStreamsForUser);
 
-        guard(search);
+            guard(search);
 
-        search = search.applyExecutionState(objectMapper, firstNonNull(executionState, Collections.emptyMap()));
+            search = search.applyExecutionState(objectMapper, firstNonNull(executionState, Collections.emptyMap()));
+        }
 
-        final SearchJob searchJob = searchJobService.create(search, username());
+        SearchJob searchJob;
 
-        postAuditEvent(searchJob);
+        try (Timer.Context ignored = prepareJobTimer.time()) {
+            searchJob = searchJobService.create(search, username());
 
-        final SearchJob runningSearchJob = queryEngine.execute(searchJob);
+            postAuditEvent(searchJob);
+        }
+
+        SearchJob runningSearchJob;
+        try (Timer.Context ignored = executeJobTimer.time()) {
+            runningSearchJob = queryEngine.execute(searchJob);
+        }
 
         return Response.created(URI.create(BASE_PATH + "/status/" + runningSearchJob.getId()))
                 .entity(runningSearchJob)

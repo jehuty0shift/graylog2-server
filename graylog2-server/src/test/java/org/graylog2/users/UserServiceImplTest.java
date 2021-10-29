@@ -314,7 +314,7 @@ public class UserServiceImplTest {
         user.setRoleIds(Collections.singleton(role.getId()));
         user.setPermissions(Collections.singletonList("hello:world"));
 
-        when(permissionResolver.resolveStringPermission(role.getId())).thenReturn(Collections.singleton("foo:bar"));
+        when(permissionResolver.resolveStringPermission(Collections.singleton(role.getId()))).thenReturn(Collections.singleton("foo:bar"));
         final GRNPermission ownerShipPermission = GRNPermission.create(RestPermissions.ENTITY_OWN, grnRegistry.newGRN(GRNTypes.DASHBOARD, "1234"));
         final GRN userGRN = grnRegistry.ofUser(user);
         when(permissionAndRoleResolver.resolvePermissionsForPrincipal(userGRN))
@@ -324,7 +324,7 @@ public class UserServiceImplTest {
 
         final String roleId = "12345";
         when(permissionAndRoleResolver.resolveRolesForPrincipal(userGRN)).thenReturn(ImmutableSet.of(roleId));
-        when(permissionResolver.resolveStringPermission(roleId)).thenReturn(ImmutableSet.of("perm:from:role"));
+        when(permissionResolver.resolveStringPermission(Collections.singleton(roleId))).thenReturn(ImmutableSet.of("perm:from:role"));
 
         assertThat(userService.getPermissionsForUser(user).stream().map(p -> p instanceof WildcardPermission ? p.toString() : p).collect(Collectors.toSet()))
                 .containsExactlyInAnyOrder("users:passwordchange:user", "users:edit:user", "foo:bar", "hello:world", "users:tokenlist:user",

@@ -95,6 +95,9 @@ public abstract class BaseConfiguration extends PathConfiguration {
     @Parameter(value = "proxied_requests_thread_pool_size", required = true, validator = PositiveIntegerValidator.class)
     private int proxiedRequestsThreadPoolSize = 32;
 
+    @Parameter(value = "query_engine_thread_pool_size", required = false, validators = PositiveIntegerValidator.class)
+    private int queryEngineThreadPoolSize = 16;
+
     public int getProcessBufferProcessors() {
         return processBufferProcessors;
     }
@@ -157,6 +160,8 @@ public abstract class BaseConfiguration extends PathConfiguration {
     public int getUdpRecvBufferSizes() {
         return udpRecvBufferSizes;
     }
+
+    public int getQueryEngineThreadPoolSize() { return queryEngineThreadPoolSize; }
 
     public boolean isMessageRecordingsEnabled() {
         return messageRecordingsEnable;

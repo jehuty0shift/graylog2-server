@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Map;
 import java.util.Objects;
@@ -50,12 +51,14 @@ public class QueryEngine {
     private final Set<QueryMetadataDecorator> queryMetadataDecorators;
 
     // TODO proper thread pool with tunable settings
-    private final Executor queryPool = Executors.newFixedThreadPool(4, new ThreadFactoryBuilder().setNameFormat("query-engine-%d").build());
+    private final Executor queryPool;
     private final QueryBackend<? extends GeneratedQueryContext> elasticsearchBackend;
 
     @Inject
     public QueryEngine(QueryBackend<? extends GeneratedQueryContext> elasticsearchBackend,
-                       Set<QueryMetadataDecorator> queryMetadataDecorators) {
+                       Set<QueryMetadataDecorator> queryMetadataDecorators,
+                       @Named("query_engine_thread_pool_size") int queryEngineThreadPoolSize) {
+        queryPool = Executors.newFixedThreadPool(queryEngineThreadPoolSize, new ThreadFactoryBuilder().setNameFormat("query-engine-%d").build());
         this.elasticsearchBackend = elasticsearchBackend;
         this.queryMetadataDecorators = queryMetadataDecorators;
     }
@@ -63,8 +66,9 @@ public class QueryEngine {
     // TODO: Backwards-compatible constructor to avoid breakage. Remove at some point.
     @Deprecated
     public QueryEngine(Map<String, QueryBackend<? extends GeneratedQueryContext>> backends,
-                       Set<QueryMetadataDecorator> queryMetadataDecorators) {
-        this(backends.get("elasticsearch"), queryMetadataDecorators);
+                       Set<QueryMetadataDecorator> queryMetadataDecorators,
+                       @Named("query_engine_thread_pool_size") int queryEngineThreadPoolSize) {
+        this(backends.get("elasticsearch"), queryMetadataDecorators, queryEngineThreadPoolSize);
     }
 
     private static Set<QueryResult> allOfResults(Set<CompletableFuture<QueryResult>> futures) {

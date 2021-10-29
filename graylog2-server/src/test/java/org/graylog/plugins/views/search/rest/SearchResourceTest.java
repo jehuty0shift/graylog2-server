@@ -16,6 +16,7 @@
  */
 package org.graylog.plugins.views.search.rest;
 
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -101,7 +102,7 @@ public class SearchResourceTest {
         private final Subject subject;
 
         SearchTestResource(Subject subject, QueryEngine queryEngine, SearchDbService searchDbService, SearchJobService searchJobService, ObjectMapper objectMapper, PermittedStreams streamLoader) {
-            super(queryEngine, searchDbService, searchJobService, objectMapper, streamLoader, executionGuard, searchDomain, eventBus);
+            super(queryEngine, searchDbService, searchJobService, objectMapper, streamLoader, executionGuard, searchDomain, eventBus, new MetricRegistry());
             this.subject = subject;
         }
 

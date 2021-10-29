@@ -17,6 +17,7 @@
 package org.graylog.plugins.views.search.rest;
 
 import com.google.common.collect.ImmutableSet;
+import org.graylog2.plugin.database.Persisted;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.shared.bindings.GuiceInjectorHolder;
 import org.graylog2.streams.StreamService;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,8 +88,7 @@ public class PermittedStreamsTest {
     }
 
     private void stubStreams(String... streamIds) {
-        List<Stream> streams = streamsWithIds(streamIds);
-        when(streamService.loadAll()).thenReturn(streams);
+        when(streamService.loadAllIds()).thenReturn(Arrays.asList(streamIds));
     }
 
     private List<Stream> streamsWithIds(String... ids) {
