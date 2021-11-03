@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,7 +21,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import org.graylog2.configuration.HttpConfiguration;
 import org.graylog2.rest.RestTools;
+import org.graylog2.shared.rest.CSPHeaderFilter;
 import org.graylog2.shared.rest.resources.RestResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
@@ -31,6 +34,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -49,6 +53,8 @@ public class DocumentationBrowserResource extends RestResource {
 
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
     private final Engine templateEngine;
+
+    private static final Logger LOG = LoggerFactory.getLogger(DocumentationBrowserResource.class);
 
     @Inject
     public DocumentationBrowserResource(MimetypesFileTypeMap mimeTypes, HttpConfiguration httpConfiguration, Engine templateEngine) {
@@ -76,7 +82,9 @@ public class DocumentationBrowserResource extends RestResource {
                 "baseUri", httpConfiguration.getHttpPublishUri().resolve(HttpConfiguration.PATH_API).toString(),
                 "globalModePath", "",
                 "globalUriMarker", "",
-                "showWarning", "");
+                "showWarning", "",
+                "nonce", httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
+        LOG.info("cspNonce {}",httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
         return templateEngine.transform(template, model);
     }
 
@@ -91,7 +99,9 @@ public class DocumentationBrowserResource extends RestResource {
                 "baseUri", RestTools.buildExternalUri(httpHeaders.getRequestHeaders(), httpConfiguration.getHttpExternalUri()).resolve(HttpConfiguration.PATH_API).toString(),
                 "globalModePath", "global/index.html",
                 "globalUriMarker", "/global",
-                "showWarning", "true");
+                "showWarning", "true",
+                "nonce", httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
+        LOG.info("cspNonce {}",httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
         return templateEngine.transform(template, model);
     }
 
