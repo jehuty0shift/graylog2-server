@@ -3,6 +3,7 @@
       window.swaggerUi = new SwaggerUi({
       url: apiTarget + "/api/api-docs/global",
       dom_id: "swagger-ui-container",
+      validatorUrl: null,
       supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
       onComplete: function(swaggerApi, swaggerUi){
 
@@ -30,18 +31,19 @@
       docExpansion: "none"
     });
 
+    window.swaggerUi.load();
+
     var updateApiAuth = function() {
         var user = $('#input_apiUser')[0].value;
         var pass = $('#input_apiPassword')[0].value;
         if(user && user.trim() != "" && pass && pass.trim() != "") {
-            window.authorizations.add("basic", new PasswordAuthorization("creds", user, pass));
+            swaggerUi.api.clientAuthorizations.add("basic", new SwaggerClient.PasswordAuthorization(user, pass));
         }
     };
     $('#input_apiUser').change(updateApiAuth);
     $('#input_apiPassword').change(updateApiAuth);
 
     // Add CSRF header
-    window.authorizations.add("csrf", new ApiKeyAuthorization("X-Requested-By", "Graylog API Browser", "header"));
+    swaggerUi.api.clientAuthorizations.add("csrf", new SwaggerClient.ApiKeyAuthorization("X-Requested-By", "Graylog API Browser", "header"));
 
-    window.swaggerUi.load();
   });
