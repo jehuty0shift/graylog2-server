@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -63,6 +64,45 @@ public class MappedFieldTypesService {
         LOG.info("loaded {} indexFieldTypes.", indexFieldTypesMap.size());
     }
 
+    public FieldTypeDTO physicalTypeByStreamIds(String fieldName) {
+        if (reservedFields.contains(fieldName)) {
+            return FieldTypeDTO.create(fieldName, "text");
+        }
+        if (fieldName.equals("timestamp")) {
+            return FieldTypeDTO.create(fieldName, "date");
+        }
+
+        switch (fieldName) {
+            case "message":
+            case "source":
+            case "full_message":
+                return FieldTypeDTO.create(fieldName, "text");
+            default:
+                break;
+        }
+
+        if (fieldName.endsWith("_date")) {
+            return FieldTypeDTO.create(fieldName, "date");
+        }
+
+        if (fieldName.endsWith("_double") || fieldName.endsWith("_float")) {
+            return FieldTypeDTO.create(fieldName, "double");
+        }
+
+        if (fieldName.endsWith("_long") || fieldName.endsWith("_int")) {
+            return FieldTypeDTO.create(fieldName, "long");
+        }
+        if (fieldName.endsWith("_bool")) {
+            return FieldTypeDTO.create(fieldName, "boolean");
+        }
+        if (fieldName.endsWith("_ip")) {
+            return FieldTypeDTO.create(fieldName, "ip");
+        }
+
+        return FieldTypeDTO.create(fieldName,"keyword");
+
+    }
+
     public Set<MappedFieldTypeDTO> fieldTypesByStreamIds(Collection<String> streamIds) {
         DateTime dt = DateTime.now(DateTimeZone.UTC);
         DateTime globalDT = dt;
@@ -81,15 +121,9 @@ public class MappedFieldTypesService {
         LOG.debug("Found {} fields in {} ms.", fieldsByStream.size(), DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
         dt = DateTime.now(DateTimeZone.UTC);
-        indexFieldTypesMap.putAll(this.indexFieldTypesService.findForIndexName(indicesToUpdate).stream().collect(Collectors.toMap(IndexFieldTypesDTO::indexName, Function.identity())));
-        LOG.debug("Index types found in {} ms.", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
-
-        dt = DateTime.now(DateTimeZone.UTC);
         //rewrite this to take indexSet ids into accounts
-        final java.util.stream.Stream<MappedFieldTypeDTO> types = indexSetMap.values().stream().flatMap(iSet -> Arrays.asList(iSet.getManagedIndices()).stream())
-                .flatMap(i -> indexFieldTypesMap.get(i) == null ? Stream.empty() : indexFieldTypesMap.get(i).fields().stream().filter(f -> fieldsByStream.contains(f.fieldName())))
+        final java.util.stream.Stream<MappedFieldTypeDTO> types = fieldsByStream.stream().map(this::physicalTypeByStreamIds)
                 .map(this::mapPhysicalFieldType);
-        LOG.debug("filtering streams took {} ms", DateTime.now(DateTimeZone.UTC).getMillis() - dt.getMillis());
 
         dt = DateTime.now(DateTimeZone.UTC);
         Set<MappedFieldTypeDTO> mappedFieldSet = mergeCompoundFieldTypes(types);
