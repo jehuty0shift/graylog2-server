@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -31,6 +31,7 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.bson.types.ObjectId;
+import org.graylog.plugins.views.search.rest.PermittedStreams;
 import org.graylog.security.UserContext;
 import org.graylog2.alarmcallbacks.AlarmCallbackConfiguration;
 import org.graylog2.alarmcallbacks.AlarmCallbackConfigurationService;
@@ -177,8 +178,8 @@ public class StreamResource extends RestResource {
 
         final Map<String, String> result = ImmutableMap.of("stream_id", id);
         final URI streamUri = getUriBuilderToSelf().path(StreamResource.class)
-            .path("{streamId}")
-            .build(id);
+                .path("{streamId}")
+                .build(id);
 
         return Response.created(streamUri).entity(result).build();
     }
@@ -189,15 +190,15 @@ public class StreamResource extends RestResource {
     @ApiOperation(value = "Get a paginated list of streams")
     @Produces(MediaType.APPLICATION_JSON)
     public StreamPageListResponse getPage(@ApiParam(name = "page") @QueryParam("page") @DefaultValue("1") int page,
-        @ApiParam(name = "per_page") @QueryParam("per_page") @DefaultValue("50") int perPage,
-        @ApiParam(name = "query") @QueryParam("query") @DefaultValue("") String query,
-        @ApiParam(name = "sort",
-                value = "The field to sort the result on",
-                required = true,
-                allowableValues = "title,description")
-        @DefaultValue(StreamImpl.FIELD_TITLE) @QueryParam("sort") String sort,
-        @ApiParam(name = "order", value = "The sort direction", allowableValues = "asc, desc")
-        @DefaultValue("asc") @QueryParam("order") String order) {
+                                          @ApiParam(name = "per_page") @QueryParam("per_page") @DefaultValue("50") int perPage,
+                                          @ApiParam(name = "query") @QueryParam("query") @DefaultValue("") String query,
+                                          @ApiParam(name = "sort",
+                                                  value = "The field to sort the result on",
+                                                  required = true,
+                                                  allowableValues = "title,description")
+                                          @DefaultValue(StreamImpl.FIELD_TITLE) @QueryParam("sort") String sort,
+                                          @ApiParam(name = "order", value = "The sort direction", allowableValues = "asc, desc")
+                                          @DefaultValue("asc") @QueryParam("order") String order) {
 
         SearchQuery searchQuery;
         try {
@@ -226,15 +227,14 @@ public class StreamResource extends RestResource {
     @Deprecated
     @Produces(MediaType.APPLICATION_JSON)
     public StreamListResponse get() {
-        final List<Stream> allStreams = streamService.loadAll();
+        final List<String> allStreamsIds = streamService.loadAllIds().stream().filter(sId -> isPermitted(RestPermissions.STREAMS_READ, sId)).collect(Collectors.toList());
+        final Set<Stream> allStreams = streamService.loadByIds(allStreamsIds);
         final List<Stream> streams = new ArrayList<>(allStreams.size());
         for (Stream stream : allStreams) {
-            if (isPermitted(RestPermissions.STREAMS_READ, stream.getId())) {
-                if (!isPermitted(RestPermissions.STREAMS_EDIT, stream.getId())) {
-                    stream.getStreamRules().clear();
-                }
-                streams.add(stream);
+            if (!isPermitted(RestPermissions.STREAMS_EDIT, stream.getId())) {
+                stream.getStreamRules().clear();
             }
+            streams.add(stream);
         }
 
         return StreamListResponse.create(streams.size(), streams.stream().map(this::streamToResponse).collect(Collectors.toSet()));
@@ -266,8 +266,8 @@ public class StreamResource extends RestResource {
     @ApiOperation(value = "Get a single stream")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "Stream not found."),
-        @ApiResponse(code = 400, message = "Invalid ObjectId.")
+            @ApiResponse(code = 404, message = "Stream not found."),
+            @ApiResponse(code = 400, message = "Invalid ObjectId.")
     })
     public StreamResponse get(@ApiParam(name = "streamId", required = true)
                               @PathParam("streamId") @NotEmpty String streamId) throws NotFoundException {
@@ -286,8 +286,8 @@ public class StreamResource extends RestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "Stream not found."),
-        @ApiResponse(code = 400, message = "Invalid ObjectId.")
+            @ApiResponse(code = 404, message = "Stream not found."),
+            @ApiResponse(code = 400, message = "Invalid ObjectId.")
     })
     @AuditEvent(type = AuditEventTypes.STREAM_UPDATE)
     public StreamResponse update(@ApiParam(name = "streamId", required = true)
@@ -312,12 +312,12 @@ public class StreamResource extends RestResource {
                 stream.setMatchingType(Stream.MatchingType.valueOf(cr.matchingType()));
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException("Invalid matching type '" + cr.matchingType()
-                    + "' specified. Should be one of: " + Arrays.toString(Stream.MatchingType.values()));
+                        + "' specified. Should be one of: " + Arrays.toString(Stream.MatchingType.values()));
             }
         }
 
         final Boolean removeMatchesFromDefaultStream = cr.removeMatchesFromDefaultStream();
-        if(removeMatchesFromDefaultStream != null) {
+        if (removeMatchesFromDefaultStream != null) {
             stream.setRemoveMatchesFromDefaultStream(removeMatchesFromDefaultStream);
         }
 
@@ -349,8 +349,8 @@ public class StreamResource extends RestResource {
     @Timed
     @ApiOperation(value = "Delete a stream")
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "Stream not found."),
-        @ApiResponse(code = 400, message = "Invalid ObjectId.")
+            @ApiResponse(code = 404, message = "Stream not found."),
+            @ApiResponse(code = 400, message = "Invalid ObjectId.")
     })
     @AuditEvent(type = AuditEventTypes.STREAM_DELETE)
     public void delete(@ApiParam(name = "streamId", required = true) @PathParam("streamId") String streamId) throws NotFoundException {
@@ -366,8 +366,8 @@ public class StreamResource extends RestResource {
     @Timed
     @ApiOperation(value = "Pause a stream")
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "Stream not found."),
-        @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
+            @ApiResponse(code = 404, message = "Stream not found."),
+            @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
     })
     @AuditEvent(type = AuditEventTypes.STREAM_STOP)
     public void pause(@ApiParam(name = "streamId", required = true)
@@ -384,8 +384,8 @@ public class StreamResource extends RestResource {
     @Timed
     @ApiOperation(value = "Resume a stream")
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "Stream not found."),
-        @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
+            @ApiResponse(code = 404, message = "Stream not found."),
+            @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
     })
     @AuditEvent(type = AuditEventTypes.STREAM_START)
     public void resume(@ApiParam(name = "streamId", required = true)
@@ -402,8 +402,8 @@ public class StreamResource extends RestResource {
     @Timed
     @ApiOperation(value = "Test matching of a stream against a supplied message")
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "Stream not found."),
-        @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
+            @ApiResponse(code = 404, message = "Stream not found."),
+            @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
     })
     @NoAuditEvent("only used for testing stream matches")
     public TestMatchResponse testMatch(@ApiParam(name = "streamId", required = true)
@@ -416,7 +416,7 @@ public class StreamResource extends RestResource {
         // This is such a hack...
         final Map<String, Object> m = new HashMap<>(serialisedMessage.get("message"));
         final String timeStamp = firstNonNull((String) m.get(Message.FIELD_TIMESTAMP),
-            DateTime.now(DateTimeZone.UTC).toString(ISODateTimeFormat.dateTime()));
+                DateTime.now(DateTimeZone.UTC).toString(ISODateTimeFormat.dateTime()));
         m.put(Message.FIELD_TIMESTAMP, Tools.dateTimeFromString(timeStamp));
         final Message message = new Message(m);
 
@@ -443,8 +443,8 @@ public class StreamResource extends RestResource {
     @Timed
     @ApiOperation(value = "Clone a stream")
     @ApiResponses(value = {
-        @ApiResponse(code = 404, message = "Stream not found."),
-        @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
+            @ApiResponse(code = 404, message = "Stream not found."),
+            @ApiResponse(code = 400, message = "Invalid or missing Stream id.")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -491,9 +491,9 @@ public class StreamResource extends RestResource {
         for (AlertCondition alertCondition : streamService.getAlertConditions(sourceStream)) {
             try {
                 final AlertCondition clonedAlertCondition = alertService.fromRequest(
-                    CreateConditionRequest.create(alertCondition.getType(), alertCondition.getTitle(), alertCondition.getParameters()),
-                    stream,
-                    creatorUser
+                        CreateConditionRequest.create(alertCondition.getType(), alertCondition.getTitle(), alertCondition.getParameters()),
+                        stream,
+                        creatorUser
                 );
                 streamService.addAlertCondition(stream, clonedAlertCondition);
             } catch (ConfigurationException e) {
@@ -515,8 +515,8 @@ public class StreamResource extends RestResource {
 
         final Map<String, String> result = ImmutableMap.of("stream_id", savedStreamId);
         final URI streamUri = getUriBuilderToSelf().path(StreamResource.class)
-            .path("{streamId}")
-            .build(savedStreamId);
+                .path("{streamId}")
+                .build(savedStreamId);
 
         return Response.created(streamUri).entity(result).build();
     }
@@ -525,42 +525,42 @@ public class StreamResource extends RestResource {
         final List<String> emailAlertReceivers = stream.getAlertReceivers().get("emails");
         final List<String> usersAlertReceivers = stream.getAlertReceivers().get("users");
         final Collection<AlertConditionSummary> alertConditions = streamService.getAlertConditions(stream)
-            .stream()
-            .map((alertCondition) -> AlertConditionSummary.createWithoutGrace(
-                alertCondition.getId(),
-                alertCondition.getType(),
-                alertCondition.getCreatorUserId(),
-                alertCondition.getCreatedAt().toDate(),
-                alertCondition.getParameters(),
-                alertCondition.getTitle()))
-            .collect(Collectors.toList());
+                .stream()
+                .map((alertCondition) -> AlertConditionSummary.createWithoutGrace(
+                        alertCondition.getId(),
+                        alertCondition.getType(),
+                        alertCondition.getCreatorUserId(),
+                        alertCondition.getCreatedAt().toDate(),
+                        alertCondition.getParameters(),
+                        alertCondition.getTitle()))
+                .collect(Collectors.toList());
         return StreamResponse.create(
-            stream.getId(),
-            (String) stream.getFields().get(StreamImpl.FIELD_CREATOR_USER_ID),
-            outputsToSummaries(stream.getOutputs()),
-            stream.getMatchingType().name(),
-            stream.getDescription(),
-            stream.getFields().get(StreamImpl.FIELD_CREATED_AT).toString(),
-            stream.getDisabled(),
-            stream.getStreamRules(),
-            alertConditions,
-            AlertReceivers.create(
-                firstNonNull(emailAlertReceivers, Collections.emptyList()),
-                firstNonNull(usersAlertReceivers, Collections.emptyList())
-            ),
-            stream.getTitle(),
-            stream.getContentPack(),
-            stream.isDefaultStream(),
-            stream.getRemoveMatchesFromDefaultStream(),
-            stream.getIndexSetId()
+                stream.getId(),
+                (String) stream.getFields().get(StreamImpl.FIELD_CREATOR_USER_ID),
+                outputsToSummaries(stream.getOutputs()),
+                stream.getMatchingType().name(),
+                stream.getDescription(),
+                stream.getFields().get(StreamImpl.FIELD_CREATED_AT).toString(),
+                stream.getDisabled(),
+                stream.getStreamRules(),
+                alertConditions,
+                AlertReceivers.create(
+                        firstNonNull(emailAlertReceivers, Collections.emptyList()),
+                        firstNonNull(usersAlertReceivers, Collections.emptyList())
+                ),
+                stream.getTitle(),
+                stream.getContentPack(),
+                stream.isDefaultStream(),
+                stream.getRemoveMatchesFromDefaultStream(),
+                stream.getIndexSetId()
         );
     }
 
     private Collection<OutputSummary> outputsToSummaries(Collection<Output> outputs) {
         return outputs.stream()
-            .map((output) -> OutputSummary.create(output.getId(),output.getTitle(), output.getType(),
-                output.getCreatorUserId(), new DateTime(output.getCreatedAt()), output.getConfiguration(), output.getContentPack()))
-            .collect(Collectors.toSet());
+                .map((output) -> OutputSummary.create(output.getId(), output.getTitle(), output.getType(),
+                        output.getCreatorUserId(), new DateTime(output.getCreatedAt()), output.getConfiguration(), output.getContentPack()))
+                .collect(Collectors.toSet());
     }
 
     private void checkNotDefaultStream(String streamId, String message) {
