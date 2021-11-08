@@ -18,11 +18,13 @@ package org.graylog2.system.processing;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.joschi.jadconfig.util.Duration;
+import com.google.common.eventbus.EventBus;
 import org.bson.types.ObjectId;
 import org.graylog.events.JobSchedulerTestClock;
 import org.graylog.testing.mongodb.MongoDBFixtures;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
+import org.graylog2.inputs.InputService;
 import org.graylog2.plugin.BaseConfiguration;
 import org.graylog2.plugin.lifecycles.Lifecycle;
 import org.graylog2.plugin.system.NodeId;
@@ -38,6 +40,7 @@ import org.mockito.junit.MockitoRule;
 import org.mongojack.DBQuery;
 import org.mongojack.JacksonDBCollection;
 
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,6 +60,12 @@ public class DBProcessingStatusServiceTest {
     private NodeId nodeId;
 
     @Mock
+    private InputService inputService;
+
+    @Mock
+    private EventBus serverEventBus;
+
+    @Mock
     private BaseConfiguration baseConfiguration;
 
     private DBProcessingStatusService dbService;
@@ -67,13 +76,14 @@ public class DBProcessingStatusServiceTest {
     @Before
     public void setUp() throws Exception {
         when(nodeId.toString()).thenReturn(NODE_ID);
+        when(inputService.all()).thenReturn(Collections.emptyList());
 
         final ObjectMapper objectMapper = new ObjectMapperProvider().get();
         final MongoJackObjectMapperProvider mapperProvider = new MongoJackObjectMapperProvider(objectMapper);
 
         clock = spy(new JobSchedulerTestClock(DateTime.parse("2019-01-01T00:00:00.000Z")));
         updateThreshold = spy(Duration.minutes(1));
-        dbService = new DBProcessingStatusService(mongodb.mongoConnection(), nodeId, clock, updateThreshold, 1, mapperProvider, baseConfiguration);
+        dbService = new DBProcessingStatusService(mongodb.mongoConnection(), nodeId, clock, updateThreshold, 1, mapperProvider, inputService, serverEventBus, baseConfiguration);
         db = JacksonDBCollection.wrap(mongodb.mongoConnection().getDatabase().getCollection(DBProcessingStatusService.COLLECTION_NAME),
                 ProcessingStatusDto.class,
                 ObjectId.class,

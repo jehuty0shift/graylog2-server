@@ -19,6 +19,8 @@ package org.graylog2.system.processing;
 import com.github.joschi.jadconfig.util.Duration;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
@@ -26,21 +28,30 @@ import org.graylog.scheduler.clock.JobSchedulerClock;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.MongoDBUpsertRetryer;
+import org.graylog2.database.NotFoundException;
+import org.graylog2.inputs.InputService;
 import org.graylog2.plugin.BaseConfiguration;
 import org.graylog2.plugin.system.NodeId;
+import org.graylog2.rest.models.system.inputs.responses.InputCreated;
+import org.graylog2.rest.models.system.inputs.responses.InputDeleted;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.mongojack.DBCursor;
 import org.mongojack.DBQuery;
 import org.mongojack.DBSort;
 import org.mongojack.JacksonDBCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static org.graylog2.system.processing.ProcessingStatusDto.FIELD_NODE_ID;
 import static org.graylog2.system.processing.ProcessingStatusDto.FIELD_UPDATED_AT;
 
 /**
@@ -58,6 +69,9 @@ public class DBProcessingStatusService {
     private final double journalWriteRateThreshold;
     private final JacksonDBCollection<ProcessingStatusDto, ObjectId> db;
     private final BaseConfiguration baseConfiguration;
+    private final InputService inputService;
+    private final Set<String> inputNodeSet;
+    private static final Logger LOG = LoggerFactory.getLogger(DBProcessingStatusService.class);
 
     @Inject
     public DBProcessingStatusService(MongoConnection mongoConnection,
@@ -66,11 +80,15 @@ public class DBProcessingStatusService {
                                      @Named(ProcessingStatusConfig.UPDATE_THRESHOLD) Duration updateThreshold,
                                      @Named(ProcessingStatusConfig.JOURNAL_WRITE_RATE_THRESHOLD) int journalWriteRateThreshold,
                                      MongoJackObjectMapperProvider mapper,
+                                     InputService inputService,
+                                     EventBus serverEventBus,
                                      BaseConfiguration baseConfiguration) {
         this.nodeId = nodeId.toString();
         this.clock = clock;
         this.updateThreshold = updateThreshold;
         this.journalWriteRateThreshold = ((Number) journalWriteRateThreshold).doubleValue();
+        this.inputService = inputService;
+        this.inputNodeSet = inputService.all().stream().map(i -> i.isGlobal()?nodeId.toString():i.getNodeId()).collect(Collectors.toSet());
         this.baseConfiguration = baseConfiguration;
         this.db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
                 ProcessingStatusDto.class,
@@ -98,8 +116,31 @@ public class DBProcessingStatusService {
         db.createIndex(new BasicDBObject(FIELD_UPDATED_AT, 1)
                 .append(FIELD_UNCOMMITTED_ENTRIES, 1)
                 .append(FIELD_WRITTEN_MESSAGES_1M, 1), new BasicDBObject("name", "compound_0"));
+
+        serverEventBus.register(this);
     }
 
+
+    @Subscribe
+    @SuppressWarnings("unused")
+    public void handleInputCreate(final InputCreated event) {
+        LOG.debug("Load input Create input <{}>", event.id());
+        String nodeId;
+        try {
+            nodeId = inputService.find(event.id()).getNodeId();
+            inputNodeSet.add(nodeId);
+        } catch (NotFoundException ex) {
+            LOG.error("couldn't found an input");
+        }
+    }
+
+    @Subscribe
+    @SuppressWarnings("unused")
+    public void handleInputDeleted(final InputDeleted event) {
+        LOG.debug("Handle deleted inpput for <{}>", event.id());
+        inputNodeSet.clear();
+        inputNodeSet.addAll(inputService.all().stream().map(i -> i.isGlobal()?nodeId:i.getNodeId()).collect(Collectors.toList()));
+    }
     /**
      * Rerturns all existing processing status entries from the database.
      *
@@ -132,20 +173,28 @@ public class DBProcessingStatusService {
         final DateTime updateThresholdTimestamp = clock.nowUTC().minus(updateThreshold.toMilliseconds());
         final DBQuery.Query queryWithoutMetrics = DBQuery.greaterThan(FIELD_UPDATED_AT, updateThresholdTimestamp);
         final DBQuery.Query queryWithMetrics = getDataSelectionQuery(clock, updateThreshold, journalWriteRateThreshold);
+        final DBQuery.Query queryWithMetricsForNodes = getDataWithNodeSelectionQuery(inputNodeSet, clock, updateThreshold, journalWriteRateThreshold);
 
+        final String queryStrWithoutMetrics = "greater than " + FIELD_UPDATED_AT + " " + updateThresholdTimestamp;
+        final String queryStrWithMetrics = "greater than " + FIELD_UPDATED_AT + " and updateThresold " + updateThreshold + " and journalThreshold " + journalWriteRateThreshold;
+        final String queryStrWithMetricsForNodes = "among nodes " + inputNodeSet.toString() + " and  greater than " + FIELD_UPDATED_AT + " and updateThresold " + updateThreshold + " and journalThreshold " + journalWriteRateThreshold;
+        LOG.debug("Will query DB with {} then {} and {}", queryStrWithMetricsForNodes, queryStrWithMetrics, queryStrWithoutMetrics);
         // First try to query processing status from nodes that are active (include journal metrics restrictions).
         // If no result is found, query the processing status again, but without weeding out nodes with a low input volume.
         // This prevents to completely stall the event processing if the ingestion volume is too low.
-        for (DBQuery.Query query: Arrays.asList(queryWithMetrics, queryWithoutMetrics)) {
+        for (DBQuery.Query query: Arrays.asList(queryWithMetricsForNodes, queryWithMetrics, queryWithoutMetrics)) {
             // Get the earliest timestamp of the post-indexing receive timestamp by sorting and returning the first one.
             // We use the earliest timestamp because some nodes can be faster than others and we need to make sure
             // to return the timestamp of the slowest one.
             try (DBCursor<ProcessingStatusDto> cursor = db.find(query).sort(DBSort.asc(sortField)).limit(1)) {
                 if (cursor.hasNext()) {
-                    return Optional.of(cursor.next().receiveTimes().postIndexing());
+                    DateTime postIndexing = cursor.next().receiveTimes().postIndexing();
+                    LOG.debug("found postIndexing time: {}",postIndexing);
+                    return Optional.of(postIndexing);
                 }
             }
         }
+        LOG.debug("Result is empty");
         return Optional.empty();
     }
 
@@ -158,6 +207,29 @@ public class DBProcessingStatusService {
                 // Only select processing status for a node ...
                 // ... that has been updated recently
                 DBQuery.greaterThan(FIELD_UPDATED_AT, updateThresholdTimestamp),
+                // ... and either ...
+                DBQuery.or(
+                        // ... received a certain amount of messages in the last minute
+                        DBQuery.greaterThanEquals(FIELD_WRITTEN_MESSAGES_1M, journalWriteRateThreshold),
+                        // ... or has messages left in the journal
+                        DBQuery.greaterThanEquals(FIELD_UNCOMMITTED_ENTRIES, 1L),
+                        // ... or has journaling disabled
+                        DBQuery.is(FIELD_JOURNAL_ENABLED, false)
+                )
+        );
+    }
+
+    // This has been put into a static method to simplify testing the processing status selection
+    @VisibleForTesting
+    static DBQuery.Query getDataWithNodeSelectionQuery(Set<String> inputNodeSet, JobSchedulerClock clock, Duration updateThreshold, double journalWriteRateThreshold) {
+        final DateTime updateThresholdTimestamp = clock.nowUTC().minus(updateThreshold.toMilliseconds());
+
+        return DBQuery.and(
+                // Only select processing status for a node ...
+                // ... that has been updated recently
+                DBQuery.greaterThan(FIELD_UPDATED_AT, updateThresholdTimestamp),
+                //....that has an input started
+                DBQuery.in(FIELD_NODE_ID, inputNodeSet),
                 // ... and either ...
                 DBQuery.or(
                         // ... received a certain amount of messages in the last minute

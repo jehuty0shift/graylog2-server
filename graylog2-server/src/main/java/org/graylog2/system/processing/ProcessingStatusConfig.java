@@ -37,7 +37,7 @@ public class ProcessingStatusConfig {
     private Duration updateThreshold = Duration.minutes(1);
 
     @Parameter(value = JOURNAL_WRITE_RATE_THRESHOLD, validators = PositiveIntegerValidator.class)
-    private int journalWriteRateThreshold = 1;
+    private int journalWriteRateThreshold = 0;
 
     public Duration getProcessingStatusPersistInterval() {
         return processingStatusPersistInterval;

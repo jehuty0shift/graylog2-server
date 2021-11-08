@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -138,7 +138,7 @@ public class EventProcessorExecutionJob implements Job {
             // we can't use the catchup mode.
             final long catchUpSize = configurationProvider.get().eventCatchupWindow();
             if (catchUpSize > 0 && catchUpSize > config.processingWindowSize() && to.plus(catchUpSize).isBefore(now) &&
-                config.processingHopSize() <= config.processingWindowSize()) {
+                    config.processingHopSize() <= config.processingWindowSize()) {
                 final long chunkCount = catchUpSize / config.processingWindowSize();
 
                 // Align to multiples of the processingWindowSize
@@ -180,8 +180,8 @@ public class EventProcessorExecutionJob implements Job {
         } catch (EventProcessorPreconditionException e) {
             // A precondition for the event processor is not ready yet. This job must be retried.
             if (e.getEventDefinition().isPresent()) {
-                LOG.debug("Event processor <{}/{}> couldn't be executed because of a failed precondition (retry in {} ms)",
-                        e.getEventDefinition().get().title(), e.getEventDefinitionId(), RETRY_INTERVAL);
+                LOG.debug("Event processor <{}/{}> couldn't be executed because of a failed precondition: cause {} (retry in {} ms)",
+                        e.getEventDefinition().get().title(), e.getEventDefinitionId(), e.getMessage(), RETRY_INTERVAL, e);
             } else {
                 LOG.debug("Event processor <{}> couldn't be executed because of a failed precondition (retry in {} ms)",
                         e.getEventDefinitionId(), RETRY_INTERVAL);
