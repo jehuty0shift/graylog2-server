@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
+import edu.emory.mathcs.backport.java.util.Collections;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.cluster.Health;
@@ -161,8 +162,15 @@ public class IndicesAdapterES6 implements IndicesAdapter {
         //       This can be done in a more efficient way by either using the /_cat/aliases/<alias-name> API or
         //       the regular /_alias/<alias-name> API.
         final GetAliases request = new GetAliases.Builder().addIndex(alias).build();
-        final JestResult jestResult = JestUtils.execute(jestClient, request, () -> "Couldn't collect indices for alias " + alias);
-
+        final JestResult jestResult;
+        try {
+            jestResult = jestClient.execute(request);
+            if (!jestResult.isSucceeded() && jestResult.getResponseCode() == 404) { //alias not found
+                return Collections.emptySet();
+            }
+        } catch (IOException ex) {
+            throw new ElasticsearchException("Couldn't collect alias" ,ex);
+        }
         // The ES return value of this has an awkward format: The first key of the hash is the target index. Thanks.
         final ImmutableSet.Builder<String> indicesBuilder = ImmutableSet.builder();
         final Iterator<Map.Entry<String, JsonNode>> it = jestResult.getJsonObject().fields();
@@ -201,7 +209,7 @@ public class IndicesAdapterES6 implements IndicesAdapter {
             throw new ElasticsearchException("Couldn't create index " + indexName, e);
         }
 
-        if (!jestResult.isSucceeded()){
+        if (!jestResult.isSucceeded()) {
             throw new ElasticsearchException(jestResult.getErrorMessage());
         }
     }
