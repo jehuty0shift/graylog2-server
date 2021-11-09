@@ -45,6 +45,7 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
         this.response = response;
         this.userService = userService;
         this.objMapper = new ObjectMapper();
+        this.requestObj = objMapper.createObjectNode();
     }
 
 
@@ -62,7 +63,10 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ByteStreams.copy(containerRequestContext.getEntityStream(), baos);
                 byte[] outputBuffer = baos.toByteArray();
-                requestObj = objMapper.reader().readTree(outputBuffer);
+                JsonNode requestObjRead = objMapper.reader().readTree(outputBuffer);
+                if (requestObjRead != null) {
+                    requestObj = requestObjRead;
+                }
                 ByteArrayInputStream bais = new ByteArrayInputStream(outputBuffer);
                 containerRequestContext.setEntityStream(bais);
             } catch (IOException ex) {
@@ -94,7 +98,7 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
                 auditContext.put("base_uri", extendedUriInfo.getBaseUri());
                 auditContext.put("uri_path", extendedUriInfo.getPath());
 
-                if (auditEvent.captureRequestContext() && !requestObj.isEmpty()) {
+                if (auditEvent.captureRequestContext() && requestObj != null && !requestObj.isEmpty()) {
                     auditContext.put("request_entity", requestObj);
                 }
 
