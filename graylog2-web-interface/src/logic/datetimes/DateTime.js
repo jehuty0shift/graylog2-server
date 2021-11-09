@@ -18,11 +18,16 @@ class DateTime {
       TIMESTAMP: 'YYYY-MM-DD HH:mm:ss.SSS', // Use to show local times when decimal second precision is important (e.g. search results)
       TIMESTAMP_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSS', // Use to show local times when decimal second precision is important (e.g. search results)
       TIMESTAMP_NANO: 'YYYY-MM-DD HH:mm:ss.SSSSSSSSS', // Use to show local times when decimal second precision is important (e.g. search results)
-      TIMESTAMP_TZ: 'YYYY-MM-DD HH:mm:ss.SSS Z', // Use to show times when decimal second precision is important, in a different TZ
-      TIMESTAMP_TZ_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
-      TIMESTAMP_TZ_NANO: 'YYYY-MM-DD HH:mm:ss.SSSSSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TSZ: 'YYYY-MM-DD HH:mm:ss.SSS Z', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TSZ_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TSZ_NANO: 'YYYY-MM-DD HH:mm:ss.SSSSSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TZ: 'YYYY-MM-DD HH:mm:ssZ', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TZ_MILLIS: 'YYYY-MM-DD HH:mm:ss.SSSZ', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TZ_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSSZ', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TZ_NANO: 'YYYY-MM-DD HH:mm:ss.SSSSSSSSSZ', // Use to show times when decimal second precision is important, in a different TZ
       COMPLETE: 'dddd D MMMM YYYY, HH:mm ZZ', // Easy to read date time, specially useful for graphs
-      ISO_8601: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Standard, but not really nice to read. Mostly used for machine communication
+      ISO_8601: 'YYYY-MM-DDTHH:mm:ssZ', // Standard, but not really nice to read. Mostly used for machine communication
+      ISO_8601_MILLIS: 'YYYY-MM-DDTHH:mm:ss.SSSZ', // Standard, but not really nice to read. Mostly used for machine communication
       ISO_8601_MICRO: 'YYYY-MM-DDTHH:mm:ss.SSSSSSZ', // Standard, but not really nice to read. Mostly used for machine communication
       ISO_8601_NANO: 'YYYY-MM-DDTHH:mm:ss.SSSSSSSSSZ', // Standard, but not really nice to read. Mostly used for machine communication
     };
@@ -50,11 +55,16 @@ class DateTime {
     // First date format matching the date wins, so we order them by strictness
     return [
       DateTime.Formats.ISO_8601,
+      DateTime.Formats.ISO_8601_MILLIS,
       DateTime.Formats.ISO_8601_MICRO,
       DateTime.Formats.ISO_8601_NANO,
       DateTime.Formats.TIMESTAMP_TZ,
+      DateTime.Formats.TIMESTAMP_TZ_MILLIS,
       DateTime.Formats.TIMESTAMP_TZ_MICRO,
       DateTime.Formats.TIMESTAMP_TZ_NANO,
+      DateTime.Formats.TIMESTAMP_TSZ,
+      DateTime.Formats.TIMESTAMP_TSZ_MICRO,
+      DateTime.Formats.TIMESTAMP_TSZ_NANO,
       DateTime.Formats.DATETIME_TZ,
       DateTime.Formats.TIMESTAMP,
       DateTime.Formats.TIMESTAMP_MICRO,
