@@ -113,10 +113,15 @@ function connect<Stores: Object, Props, ComponentType: React.ComponentType<Props
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+      let propsEqual = !isDeepEqual(this.props, nextProps);
+      if (propsEqual) {
+         return true;
+      }
+
       const thisChildProps = this._genProps(this.state);
       const nextChildProps = this._genProps(nextState);
 
-      return !(isDeepEqual(thisChildProps, nextChildProps) && isDeepEqual(this.props, nextProps));
+      return !isDeepEqual(thisChildProps, nextChildProps);
     }
 
     componentWillUnmount() {

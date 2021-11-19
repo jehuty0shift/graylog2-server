@@ -132,7 +132,6 @@ const webpackConfig = {
     },
   },
   resolveLoader: { modules: [path.join(ROOT_PATH, 'node_modules')], moduleExtensions: ['-loader'] },
-  devtool: 'source-map',
   plugins: [
     new UniqueChunkIdPlugin(),
     new webpack.HashedModuleIdsPlugin({
@@ -226,9 +225,10 @@ if (TARGET.startsWith('build')) {
 
   module.exports = merge(webpackConfig, {
     mode: 'production',
+    devtool: false,
     optimization: {
       minimizer: [new TerserPlugin({
-        sourceMap: true,
+        sourceMap: false,
         parallel: true,
         terserOptions: {
           compress: {
