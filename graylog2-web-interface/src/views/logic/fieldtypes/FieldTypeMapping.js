@@ -25,6 +25,12 @@ class FieldTypeMapping {
     return this.value.type;
   }
 
+  equals(other: any): boolean {
+      return other instanceof FieldTypeMapping
+        && this.name === other.name
+        && this.type.equals(other.type)
+  }
+
   static fromJSON(value: FieldTypeMappingJSON) {
     const { name, type } = value;
 

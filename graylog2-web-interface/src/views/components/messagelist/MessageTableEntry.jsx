@@ -174,4 +174,4 @@ MessageTableEntry.defaultProps = {
   showMessageRow: false,
 };
 
-export default MessageTableEntry;
+export default  React.memo(MessageTableEntry);

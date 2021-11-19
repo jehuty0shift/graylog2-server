@@ -1,5 +1,6 @@
 // @flow strict
 import { isEqualWith, isFunction } from 'lodash';
+import * as Immutable from 'immutable';
 
 const hasFn = (obj, fn) => (obj && obj[fn] && isFunction(obj[fn]));
 const hasEquals = (obj) => hasFn(obj, 'equals');
@@ -7,7 +8,8 @@ const isImmutable = (obj) => hasFn(obj, 'toJS');
 
 const _isEqual = (first, second) => {
   if (isImmutable(first) && isImmutable(second)) {
-    return isEqualWith(first.toJS(), second.toJS(), _isEqual);
+    //return isEqualWith(first.toJS(), second.toJS(), _isEqual);
+    return Immutable.is(first,second);
   }
 
   if (hasEquals(first)) {

@@ -1,5 +1,7 @@
 // @flow strict
 import * as Immutable from 'immutable';
+import isDeepEqual from 'stores/isDeepEqual';
+
 
 type Property = 'compound' | 'enumerable' | 'full-text-search' | 'numeric' | 'decorated';
 
@@ -54,6 +56,11 @@ class FieldType {
   isDecorated(): boolean {
     return this.properties.has(Properties.Decorated);
   }
+
+    equals(other: any): boolean {
+        return other instanceof FieldType
+          && isDeepEqual(this.value,other.value)
+    }
 
   static fromJSON(value: FieldTypeJSON) {
     // eslint-disable-next-line camelcase

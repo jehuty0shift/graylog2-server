@@ -1,5 +1,5 @@
 module.exports = {
-  presets: [['@babel/env', { modules: false }], '@babel/react', '@babel/flow'],
+	presets: [['@babel/preset-env', { modules: false, useBuiltIns : "usage", "corejs": 3  }], '@babel/react', '@babel/flow'],
   plugins: [
     '@babel/plugin-syntax-dynamic-import',
     '@babel/plugin-proposal-class-properties',
@@ -7,7 +7,7 @@ module.exports = {
   ],
   env: {
     test: {
-      presets: ['@babel/env'],
+      presets: ['@babel/preset-envenv'],
       plugins: [
         'babel-plugin-dynamic-import-node',
         '@babel/plugin-transform-runtime',
