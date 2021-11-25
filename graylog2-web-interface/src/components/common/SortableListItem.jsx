@@ -8,7 +8,7 @@ import { ListGroupItem } from 'components/graylog';
 import Icon from './Icon';
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import SortableListItemStyle from '!style!css!components/common/SortableListItem.css';
+import SortableListItemStyle from './SortableListItem.css';
 
 const ItemTypes = {
   ITEM: 'item',
