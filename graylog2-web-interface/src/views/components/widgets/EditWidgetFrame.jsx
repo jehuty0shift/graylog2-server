@@ -19,9 +19,9 @@ import WidgetOverrideElements from '../WidgetOverrideElements';
 import SearchBarForm from '../searchbar/SearchBarForm';
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import styles from '!style?insertAt=bottom!css!./EditWidgetFrame.css';
+import styles from './EditWidgetFrame.css';
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import globalStyles from '!style/useable!css!./EditWidgetFrame.global.css';
+import globalStyles from './EditWidgetFrame.global.lazy.css';
 
 type DialogProps = {
   bsClass: string,

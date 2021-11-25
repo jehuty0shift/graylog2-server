@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const AssetsPlugin = require('assets-webpack-plugin');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const ROOT_PATH = path.resolve(__dirname);
@@ -25,6 +25,7 @@ const webpackConfig = {
     vendor: vendorModules,
   },
   output: {
+    publicPath: '',
     path: BUILD_PATH,
     filename: '[name].js',
     library: '__[name]',

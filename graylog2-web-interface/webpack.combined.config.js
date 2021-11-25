@@ -1,6 +1,6 @@
 const glob = require('glob');
 const path = require('path');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 
 const TARGET = process.env.npm_lifecycle_event;
 
@@ -29,14 +29,15 @@ const webpackConfig = require(path.resolve(__dirname, './webpack.config.js'));
 const mergedPluginConfigs = pluginConfigs
   // eslint-disable-next-line global-require,import/no-dynamic-require
   .map((configFile) => require(configFile))
-  .reduce((config, pluginConfig) => merge.smart(config, pluginConfig), {});
+  .reduce((config, pluginConfig) => merge(config, pluginConfig), {});
 
-const finalConfig = merge.smart(mergedPluginConfigs, webpackConfig);
+const finalConfig = merge(mergedPluginConfigs, webpackConfig);
 
 // We need to inject webpack-hot-middleware to all entries, ensuring the app is able to reload on changes.
 if (TARGET === 'start') {
+  console.log(finalConfig);
   const hmrEntries = {};
-  const webpackHotMiddlewareEntry = 'webpack-hot-middleware/client?reload=true';
+  const webpackHotMiddlewareEntry = 'webpack-hot-middleware/client?reload=true&path=__webpack_hmr';
 
   Object.keys(finalConfig.entry).forEach((entryKey) => {
     const entryValue = finalConfig.entry[entryKey];
@@ -52,6 +53,8 @@ if (TARGET === 'start') {
   });
 
   finalConfig.entry = hmrEntries;
+	console.log("#########################");
+	console.log(finalConfig);
 }
 
 module.exports = finalConfig;

@@ -16,7 +16,7 @@ import UrlWhiteListConfig from 'components/configurations/UrlWhiteListConfig';
 import {} from 'components/maps/configurations';
 
 // eslint-disable-next-line import/no-webpack-loader-syntax
-import style from '!style/useable!css!components/configurations/ConfigurationStyles.css';
+import style from 'components/configurations/ConfigurationStyles.lazy.css';
 
 const { CurrentUserStore } = CombinedProvider.get('CurrentUser');
 const { ConfigurationsActions, ConfigurationsStore } = CombinedProvider.get('Configurations');
