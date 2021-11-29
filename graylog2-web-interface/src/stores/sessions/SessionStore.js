@@ -110,4 +110,4 @@ const SessionStore = Reflux.createStore({
   },
 });
 
-export default SessionStore;
+export { SessionStore as default };

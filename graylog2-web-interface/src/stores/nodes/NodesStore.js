@@ -97,4 +97,4 @@ const NodesStore = Reflux.createStore({
   },
 });
 
-export default NodesStore;
+export {NodesStore as default};
