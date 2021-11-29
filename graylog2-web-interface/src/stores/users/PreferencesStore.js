@@ -83,4 +83,4 @@ const PreferencesStore = Reflux.createStore({
   },
 });
 
-export default PreferencesStore;
+export {PreferencesStore as default};
