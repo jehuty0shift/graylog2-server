@@ -77,6 +77,10 @@ public class MappedFieldTypesService {
             case "source":
             case "full_message":
                 return FieldTypeDTO.create(fieldName, "text");
+            case "X-OVH-DELIVERY-DATE":
+                return FieldTypeDTO.create(fieldName, "date");
+            case "X-OVH-CONTENT-SIZE":
+                return FieldTypeDTO.create(fieldName, "long");
             default:
                 break;
         }
@@ -99,8 +103,11 @@ public class MappedFieldTypesService {
             return FieldTypeDTO.create(fieldName, "ip");
         }
 
-        return FieldTypeDTO.create(fieldName,"keyword");
+        if (fieldName.endsWith("_geolocation")) {
+            return FieldTypeDTO.create(fieldName, "geo_point");
+        }
 
+        return FieldTypeDTO.create(fieldName, "keyword");
     }
 
     public Set<MappedFieldTypeDTO> fieldTypesByStreamIds(Collection<String> streamIds) {
