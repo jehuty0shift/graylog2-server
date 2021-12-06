@@ -92,4 +92,4 @@ const RolesStore = Reflux.createStore({
   },
 });
 
-export default RolesStore;
+export { RolesStore as default };

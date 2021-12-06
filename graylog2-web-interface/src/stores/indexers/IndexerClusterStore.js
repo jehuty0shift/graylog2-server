@@ -44,4 +44,4 @@ const IndexerClusterStore = Reflux.createStore({
   },
 });
 
-export default IndexerClusterStore;
+export { IndexerClusterStore as default };

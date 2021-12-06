@@ -229,4 +229,4 @@ const MetricsStore = Reflux.createStore({
   },
 });
 
-export default MetricsStore;
+export { MetricsStore as default };

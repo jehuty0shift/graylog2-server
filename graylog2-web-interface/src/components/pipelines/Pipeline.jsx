@@ -11,6 +11,8 @@ import PipelineDetails from './PipelineDetails';
 import PipelineConnectionsForm from './PipelineConnectionsForm';
 import PipelineConnectionsList from './PipelineConnectionsList';
 
+import style from './Pipeline.lazy.css';
+
 const Pipeline = createReactClass({
   displayName: 'Pipeline',
 
@@ -24,14 +26,13 @@ const Pipeline = createReactClass({
   },
 
   componentDidMount() {
-    this.style.use();
+    style.use();
   },
 
   componentWillUnmount() {
-    this.style.unuse();
+    style.unuse();
   },
 
-  style: require('./Pipeline.lazy.css'),
 
   _connections_warning() {
     if (this.props.connections.length == 0) {

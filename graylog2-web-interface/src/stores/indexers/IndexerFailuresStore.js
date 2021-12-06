@@ -24,4 +24,4 @@ const IndexerFailuresStore = Reflux.createStore({
   },
 });
 
-export default IndexerFailuresStore;
+export { IndexerFailuresStore as default };

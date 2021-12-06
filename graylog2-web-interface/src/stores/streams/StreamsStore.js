@@ -222,4 +222,4 @@ const StreamsStore = Reflux.createStore({
   },
 });
 
-export default StreamsStore;
+export { StreamsStore as default };

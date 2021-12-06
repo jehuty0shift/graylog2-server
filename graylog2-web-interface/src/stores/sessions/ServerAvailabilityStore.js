@@ -41,4 +41,4 @@ const ServerAvailabilityStore = Reflux.createStore({
   },
 });
 
-export default ServerAvailabilityStore;
+export { ServerAvailabilityStore as default };

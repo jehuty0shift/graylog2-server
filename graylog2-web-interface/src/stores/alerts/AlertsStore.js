@@ -90,4 +90,4 @@ const AlertsStore = Reflux.createStore({
   },
 });
 
-export default AlertsStore;
+export { AlertsStore as default };

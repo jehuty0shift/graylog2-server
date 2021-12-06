@@ -10,9 +10,6 @@
     <% for (var vendorChunk in htmlWebpackPlugin.options.vendorModule().files.js) { %>
     <script src="/<%= htmlWebpackPlugin.options.vendorModule().files.js[vendorChunk] %>"></script>
     <% } %>
-        <script src="/polyfill.js"></script>
-        <script src="/builtins.js"></script>
-        <script src="/app.js"></script>
     <%= htmlWebpackPlugin.tags.bodyTags %>
   </body>
 </html>

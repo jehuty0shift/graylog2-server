@@ -256,4 +256,4 @@ const EventDefinitionsStore = Reflux.createStore({
   },
 });
 
-export default EventDefinitionsStore;
+export { EventDefinitionsStore as default };

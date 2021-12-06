@@ -218,4 +218,4 @@ const ExtractorsStore = Reflux.createStore({
   },
 });
 
-export default ExtractorsStore;
+export { ExtractorsStore as default };

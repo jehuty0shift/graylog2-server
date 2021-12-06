@@ -95,4 +95,4 @@ const InputStatesStore = Reflux.createStore({
   },
 });
 
-export default InputStatesStore;
+export { InputStatesStore as default };

@@ -112,4 +112,4 @@ const ConfigurationVariableStore = Reflux.createStore({
 
 });
 
-export default ConfigurationVariableStore;
+export { ConfigurationVariableStore as default };

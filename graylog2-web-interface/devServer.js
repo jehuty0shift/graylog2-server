@@ -31,7 +31,15 @@ app.use(webpackDevMiddleware(appCompiler, {
   publicPath: appConfig.output.publicPath,
 }));
 
-app.use(webpackHotMiddleware(appCompiler));
+//app.use(webpackHotMiddleware(appCompiler));
+
+app.use(
+    webpackHotMiddleware(appCompiler, {
+      log: console.log,
+      path: '/__webpack_hmr',
+      heartbeat: 10 * 1000,
+    })
+);
 
 const server = http.createServer(app);
 

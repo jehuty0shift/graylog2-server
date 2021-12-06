@@ -32,4 +32,4 @@ const DeflectorStore = Reflux.createStore({
   },
 });
 
-export default DeflectorStore;
+export { DeflectorStore as default };

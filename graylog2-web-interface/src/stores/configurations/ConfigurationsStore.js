@@ -163,4 +163,4 @@ const ConfigurationsStore = Reflux.createStore({
   },
 });
 
-export default ConfigurationsStore;
+export { ConfigurationsStore as default };

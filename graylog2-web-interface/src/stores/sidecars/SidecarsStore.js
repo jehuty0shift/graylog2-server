@@ -172,4 +172,4 @@ const SidecarsStore = Reflux.createStore({
   },
 });
 
-export default SidecarsStore;
+export { SidecarsStore as default };

@@ -18,4 +18,4 @@ const JournalStore = Reflux.createStore({
   },
 });
 
-export default JournalStore;
+export { JournalStore as default };

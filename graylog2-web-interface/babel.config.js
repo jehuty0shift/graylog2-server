@@ -4,6 +4,7 @@ module.exports = {
     '@babel/plugin-syntax-dynamic-import',
     '@babel/plugin-proposal-class-properties',
     'babel-plugin-styled-components',
+    'lodash',
   ],
   env: {
     test: {

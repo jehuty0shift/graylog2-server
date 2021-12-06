@@ -75,4 +75,4 @@ const AlarmCallbacksStore = Reflux.createStore({
   },
 });
 
-export default AlarmCallbacksStore;
+export { AlarmCallbacksStore as default };

@@ -99,4 +99,4 @@ const SidecarsAdministrationStore = Reflux.createStore({
   },
 });
 
-export default SidecarsAdministrationStore;
+export { SidecarsAdministrationStore as default };

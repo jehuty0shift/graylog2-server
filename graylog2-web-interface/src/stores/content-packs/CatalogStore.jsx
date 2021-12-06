@@ -39,4 +39,4 @@ const CatalogStore = Reflux.createStore({
   },
 });
 
-export default CatalogStore;
+export { CatalogStore as default };

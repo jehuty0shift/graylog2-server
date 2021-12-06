@@ -4,6 +4,8 @@ import createReactClass from 'create-react-class';
 
 import NumberUtils from 'util/NumberUtils';
 
+import style from './SimulationTrace.lazy.css';
+
 const SimulationTrace = createReactClass({
   displayName: 'SimulationTrace',
 
@@ -12,14 +14,12 @@ const SimulationTrace = createReactClass({
   },
 
   componentDidMount() {
-    this.style.use();
+    style.use();
   },
 
   componentWillUnmount() {
-    this.style.unuse();
+    style.unuse();
   },
-
-  style: require('./SimulationTrace.lazy.css'),
 
   render() {
     const simulationTrace = this.props.simulationResults.simulation_trace;

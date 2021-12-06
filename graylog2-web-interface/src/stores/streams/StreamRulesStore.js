@@ -91,4 +91,4 @@ const StreamRulesStore = Reflux.createStore({
   },
 });
 
-export default StreamRulesStore;
+export { StreamRulesStore as default };

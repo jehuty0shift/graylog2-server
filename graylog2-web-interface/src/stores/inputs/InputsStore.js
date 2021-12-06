@@ -144,4 +144,4 @@ InputsStore.inputsAsMap = (inputsList) => {
   return inputsMap;
 };
 
-export default InputsStore;
+export { InputsStore as default };

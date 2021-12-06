@@ -34,4 +34,4 @@ const IndexerOverviewStore = Reflux.createStore({
   },
 });
 
-export default IndexerOverviewStore;
+export { IndexerOverviewStore as default };

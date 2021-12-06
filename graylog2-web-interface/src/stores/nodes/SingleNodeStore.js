@@ -38,4 +38,4 @@ const SingleNodeStore = Reflux.createStore({
   },
 });
 
-export default SingleNodeStore;
+export { SingleNodeStore as default };

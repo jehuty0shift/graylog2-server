@@ -77,4 +77,4 @@ const OutputsStore = Reflux.createStore({
   },
 });
 
-export default OutputsStore;
+export { OutputsStore as default };

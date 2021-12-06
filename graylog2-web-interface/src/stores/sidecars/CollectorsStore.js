@@ -226,4 +226,4 @@ const CollectorsStore = Reflux.createStore({
   },
 });
 
-export default CollectorsStore;
+export { CollectorsStore as default };

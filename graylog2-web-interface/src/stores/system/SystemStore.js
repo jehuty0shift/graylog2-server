@@ -52,4 +52,4 @@ const SystemStore = Reflux.createStore({
   },
 });
 
-export default SystemStore;
+export { SystemStore as default };

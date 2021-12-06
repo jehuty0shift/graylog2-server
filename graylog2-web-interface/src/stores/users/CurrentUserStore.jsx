@@ -55,4 +55,4 @@ const CurrentUserStore = Reflux.createStore({
   },
 });
 
-export default CurrentUserStore;
+export { CurrentUserStore as default };

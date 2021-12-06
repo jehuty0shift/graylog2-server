@@ -36,4 +36,4 @@ const SystemProcessingStore = Reflux.createStore({
   },
 });
 
-export default SystemProcessingStore;
+export { SystemProcessingStore as default };

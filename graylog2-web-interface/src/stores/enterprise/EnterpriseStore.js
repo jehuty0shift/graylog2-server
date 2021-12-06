@@ -84,4 +84,4 @@ const EnterpriseStore = Reflux.createStore({
   },
 });
 
-export default EnterpriseStore;
+export { EnterpriseStore as default };

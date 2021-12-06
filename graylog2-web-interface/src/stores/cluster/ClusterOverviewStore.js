@@ -71,4 +71,4 @@ const ClusterOverviewStore = Reflux.createStore({
   },
 });
 
-export default ClusterOverviewStore;
+export { ClusterOverviewStore as default };

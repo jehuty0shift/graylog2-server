@@ -49,4 +49,4 @@ const GlobalThroughputStore = Reflux.createStore({
   },
 });
 
-export default GlobalThroughputStore;
+export { GlobalThroughputStore as default };

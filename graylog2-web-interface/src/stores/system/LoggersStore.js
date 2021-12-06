@@ -60,4 +60,4 @@ const LoggersStore = Reflux.createStore({
   },
 });
 
-export default LoggersStore;
+export { LoggersStore as default };

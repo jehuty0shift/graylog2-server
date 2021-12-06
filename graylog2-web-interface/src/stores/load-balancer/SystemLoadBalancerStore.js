@@ -22,4 +22,4 @@ const SystemLoadBalancerStore = Reflux.createStore({
   },
 });
 
-export default SystemLoadBalancerStore;
+export { SystemLoadBalancerStore as default };

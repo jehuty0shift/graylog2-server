@@ -256,4 +256,4 @@ const LookupTablesStore = Reflux.createStore({
   },
 });
 
-export default LookupTablesStore;
+export { LookupTablesStore as default };
