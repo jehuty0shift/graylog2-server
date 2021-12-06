@@ -211,4 +211,4 @@ const RulesStore = Reflux.createStore({
   },
 });
 
-export default RulesStore;
+export { RulesStore as default };

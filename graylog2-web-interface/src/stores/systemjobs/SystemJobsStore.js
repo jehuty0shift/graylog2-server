@@ -53,4 +53,4 @@ const SystemJobsStore = Reflux.createStore({
   },
 });
 
-export default SystemJobsStore;
+export { SystemJobsStore as default };

@@ -29,4 +29,4 @@ const AvailableEventDefinitionTypesStore = Reflux.createStore({
   },
 });
 
-export default AvailableEventDefinitionTypesStore;
+export { AvailableEventDefinitionTypesStore as default };

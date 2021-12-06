@@ -61,4 +61,4 @@ const GettingStartedStore = Reflux.createStore({
   },
 });
 
-export default GettingStartedStore;
+export { GettingStartedStore as default };

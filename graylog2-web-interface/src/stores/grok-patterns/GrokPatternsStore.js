@@ -201,4 +201,4 @@ const GrokPatternsStore = Reflux.createStore({
   },
 });
 
-export default GrokPatternsStore;
+export { GrokPatternsStore as default };

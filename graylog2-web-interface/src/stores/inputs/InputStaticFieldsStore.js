@@ -52,4 +52,4 @@ const InputStaticFieldsStore = Reflux.createStore({
   },
 });
 
-export default InputStaticFieldsStore;
+export { InputStaticFieldsStore as default };

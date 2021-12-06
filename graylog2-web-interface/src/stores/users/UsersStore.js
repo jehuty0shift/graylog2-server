@@ -145,4 +145,4 @@ const UsersStore: Store<{}> = singletonStore(
 );
 
 export { UsersActions, UsersStore };
-export default UsersStore;
+export { UsersStore as default };

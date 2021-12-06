@@ -107,4 +107,4 @@ const ContentPacksStore = Reflux.createStore({
   },
 });
 
-export default ContentPacksStore;
+export { ContentPacksStore as default };

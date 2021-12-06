@@ -85,4 +85,4 @@ const PipelineConnectionsStore = Reflux.createStore({
   },
 });
 
-export default PipelineConnectionsStore;
+export { PipelineConnectionsStore as default };

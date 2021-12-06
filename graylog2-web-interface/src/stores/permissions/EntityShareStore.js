@@ -107,4 +107,4 @@ const EntityShareStore: EntityShareStoreType = singletonStore(
 );
 
 export { EntityShareStore, EntityShareActions };
-export default EntityShareStore;
+export { EntityShareStore as default };

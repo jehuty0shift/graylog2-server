@@ -30,4 +30,4 @@ const StartpageStore = Reflux.createStore({
   },
 });
 
-export default StartpageStore;
+export { StartpageStore as default };

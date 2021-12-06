@@ -170,4 +170,4 @@ const IndexSetsStore = Reflux.createStore({
   },
 });
 
-export default IndexSetsStore;
+export { IndexSetsStore as default };

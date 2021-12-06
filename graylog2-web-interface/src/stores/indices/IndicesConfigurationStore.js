@@ -61,4 +61,4 @@ const IndicesConfigurationStore = Reflux.createStore({
   },
 });
 
-export default IndicesConfigurationStore;
+export { IndicesConfigurationStore as default };

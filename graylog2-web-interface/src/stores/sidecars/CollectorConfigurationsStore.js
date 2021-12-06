@@ -280,4 +280,4 @@ const CollectorConfigurationsStore = Reflux.createStore({
 
 });
 
-export default CollectorConfigurationsStore;
+export { CollectorConfigurationsStore as default };

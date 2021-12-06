@@ -79,4 +79,4 @@ const DecoratorsStore = Reflux.createStore({
   },
 });
 
-export default DecoratorsStore;
+export { DecoratorsStore as default };

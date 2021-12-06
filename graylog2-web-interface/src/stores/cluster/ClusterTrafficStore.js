@@ -21,4 +21,4 @@ const ClusterTrafficStore = Reflux.createStore({
 
 });
 
-export default ClusterTrafficStore;
+export { ClusterTrafficStore as default };

@@ -75,4 +75,4 @@ const MessagesStore = Reflux.createStore({
   },
 });
 
-export default MessagesStore;
+export { MessagesStore as default };

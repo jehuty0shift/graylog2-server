@@ -180,4 +180,4 @@ const LookupTableCachesStore = Reflux.createStore({
   },
 });
 
-export default LookupTableCachesStore;
+export { LookupTableCachesStore as default };

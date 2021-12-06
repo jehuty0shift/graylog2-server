@@ -36,4 +36,4 @@ const AlarmCallbackHistoryStore = Reflux.createStore({
   },
 });
 
-export default AlarmCallbackHistoryStore;
+export { AlarmCallbackHistoryStore as default };

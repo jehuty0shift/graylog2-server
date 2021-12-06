@@ -46,4 +46,4 @@ UniversalSearchStore.extractTimeRange = (type, timerange) => {
   return timerange;
 };
 
-export default UniversalSearchStore;
+export { UniversalSearchStore as default };

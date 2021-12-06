@@ -56,4 +56,4 @@ const IndexRangesStore = Reflux.createStore({
   },
 });
 
-export default IndexRangesStore;
+export { IndexRangesStore as default };

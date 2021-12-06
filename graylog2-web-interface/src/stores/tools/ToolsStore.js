@@ -192,4 +192,4 @@ const ToolsStore = Reflux.createStore({
   },
 });
 
-export default ToolsStore;
+export { ToolsStore as default };

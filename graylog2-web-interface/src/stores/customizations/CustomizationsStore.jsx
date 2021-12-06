@@ -73,4 +73,4 @@ const CustomizationStore = singletonStore('customization.store', () => Reflux.cr
   },
 }));
 
-export default CustomizationStore;
+export { CustomizationStore as default };

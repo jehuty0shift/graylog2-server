@@ -99,7 +99,7 @@ const webpackConfig = {
           {
             loader: 'style-loader',
             options: {
-              insert: 'top',
+              insert: 'head',
             },
           },
           'css-loader',
@@ -138,10 +138,10 @@ const webpackConfig = {
     modules: [APP_PATH, 'node_modules', path.resolve(ROOT_PATH, 'public')],
     alias: {
       theme: path.resolve(APP_PATH, 'theme'),
+      'lodash-es':'lodash',
     },
   },
   resolveLoader: { modules: [path.join(ROOT_PATH, 'node_modules')]},
-  optimization : { moduleIds : 'deterministic' },
   plugins: [
     new UniqueChunkIdPlugin(),
     new webpack.DllReferencePlugin({ manifest: VENDOR_MANIFEST_PATH, context: ROOT_PATH }),
@@ -230,7 +230,8 @@ if (TARGET === 'start') {
       publicPath: '/',
     },
     optimization: { 
-	    runtimeChunk : 'single' 
+	    runtimeChunk : 'single', 
+	    moduleIds: 'named',
     },
     plugins: [
       new webpack.DefinePlugin({
@@ -264,6 +265,7 @@ if (TARGET.startsWith('build')) {
           },
         },
       })],
+     moduleIds: 'deterministic',
     },
     plugins: [
       new webpack.DefinePlugin({

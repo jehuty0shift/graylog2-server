@@ -91,4 +91,4 @@ const EventsStore = Reflux.createStore({
   },
 });
 
-export default EventsStore;
+export { EventsStore as default };

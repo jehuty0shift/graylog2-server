@@ -41,12 +41,12 @@ if (TARGET === 'start') {
 
   Object.keys(finalConfig.entry).forEach((entryKey) => {
     const entryValue = finalConfig.entry[entryKey];
-    const hmrValue = [webpackHotMiddlewareEntry];
+    const hmrValue = [];
 
     if (Array.isArray(entryValue)) {
-      hmrValue.push(...entryValue);
+      hmrValue.push(...entryValue, webpackHotMiddlewareEntry);
     } else {
-      hmrValue.push(entryValue);
+      hmrValue.push(entryValue, webpackHotMiddlewareEntry);
     }
 
     hmrEntries[entryKey] = hmrValue;

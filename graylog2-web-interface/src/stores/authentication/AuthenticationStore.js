@@ -170,4 +170,4 @@ const AuthenticationStore: Store<{ authenticators: any }> = singletonStore(
 
 export { AuthenticationActions, AuthenticationStore };
 
-export default AuthenticationStore;
+export { AuthenticationStore as default };

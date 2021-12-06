@@ -88,4 +88,4 @@ const IndicesStore = Reflux.createStore({
   },
 });
 
-export default IndicesStore;
+export { IndicesStore as default };

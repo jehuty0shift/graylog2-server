@@ -34,4 +34,4 @@ const CodecTypesStore = Reflux.createStore({
   },
 });
 
-export default CodecTypesStore;
+export { CodecTypesStore as default };

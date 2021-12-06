@@ -22,4 +22,4 @@ const SystemShutdownStore = Reflux.createStore({
   },
 });
 
-export default SystemShutdownStore;
+export { SystemShutdownStore as default };

@@ -158,4 +158,4 @@ const AlertConditionsStore = Reflux.createStore({
   },
 });
 
-export default AlertConditionsStore;
+export { AlertConditionsStore as default };

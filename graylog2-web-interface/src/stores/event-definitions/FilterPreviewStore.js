@@ -124,4 +124,4 @@ const FilterPreviewStore = Reflux.createStore({
   },
 });
 
-export default FilterPreviewStore;
+export { FilterPreviewStore as default };

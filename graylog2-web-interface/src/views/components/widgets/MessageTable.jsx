@@ -236,7 +236,7 @@ class MessageTable extends React.Component<Props, State> {
     this.setState({ expandedMessages: newSet });
   };
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps, nextState) {
     const shouldUpdate = nextProps.activeQueryId !== this.props.activeQueryId ||
         !nextProps.config.equals(this.props.config) ||
         nextProps.editing !== this.props.editing ||
@@ -244,25 +244,24 @@ class MessageTable extends React.Component<Props, State> {
         !Immutable.is(nextProps.fields,this.props.fields);
 
     if (shouldUpdate) {
-    console.log("should Update");
+      return true;
+    }
+
+    if (this.state.expandedMessages != nextState.expandedMessages) {
       return true;
     }
 
     if(nextProps.messages.length != this.props.messages.length) {
-      console.log("size DIffer Update");
       return true;
     }
 
     for (var i = 0, l = this.props.messages.length; i < l; i++) {
      if (this.props.messages[i].message._id != nextProps.messages[i].message._id) {
-      console.log("id differ");
       return true;
      }
     }
 
-    console.log("no update needed");
     return false;
-
     };
 
 

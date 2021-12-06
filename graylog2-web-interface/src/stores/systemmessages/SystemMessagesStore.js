@@ -14,4 +14,4 @@ const SystemMessagesStore = Reflux.createStore({
   },
 });
 
-export default SystemMessagesStore;
+export { SystemMessagesStore as default };

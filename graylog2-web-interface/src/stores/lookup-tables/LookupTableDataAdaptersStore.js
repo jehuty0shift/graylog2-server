@@ -195,4 +195,4 @@ const LookupTableDataAdaptersStore = Reflux.createStore({
   },
 });
 
-export default LookupTableDataAdaptersStore;
+export { LookupTableDataAdaptersStore as default };

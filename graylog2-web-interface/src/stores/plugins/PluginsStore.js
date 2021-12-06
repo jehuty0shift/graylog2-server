@@ -18,4 +18,4 @@ const PluginsStore = Reflux.createStore({
   },
 });
 
-export default PluginsStore;
+export { PluginsStore as default };

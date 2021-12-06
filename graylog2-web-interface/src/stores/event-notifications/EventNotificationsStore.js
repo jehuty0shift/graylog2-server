@@ -206,4 +206,4 @@ const EventNotificationsStore = Reflux.createStore({
   },
 });
 
-export default EventNotificationsStore;
+export { EventNotificationsStore as default };

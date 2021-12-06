@@ -86,4 +86,4 @@ const InputTypesStore = Reflux.createStore({
   },
 });
 
-export default InputTypesStore;
+export { InputTypesStore as default };

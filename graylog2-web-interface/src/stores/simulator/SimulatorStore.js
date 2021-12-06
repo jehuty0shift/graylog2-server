@@ -34,4 +34,4 @@ const SimulatorStore = Reflux.createStore({
   },
 });
 
-export default SimulatorStore;
+export { SimulatorStore as default };
