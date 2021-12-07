@@ -133,8 +133,8 @@
     "uuid": "^3.2.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.4",
     "@babel/cli": "^7.0.0",
+    "@babel/core": "^7.8.4",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-transform-runtime": "^7.8.3",
@@ -151,8 +151,8 @@
     "babel-loader": "^8.0.6",
     "babel-plugin-add-module-exports": "^1.0.2",
     "babel-plugin-dynamic-import-node": "^2.3.0",
-    "babel-plugin-styled-components": "^1.10.6",
     "babel-plugin-lodash": "^3.3.4",
+    "babel-plugin-styled-components": "^1.10.6",
     "clean-webpack-plugin": "^3.0.0",
     "compression": "^1.7.2",
     "connect-history-api-fallback": "^1.4.0",
@@ -196,7 +196,7 @@
     "webpack-cli": "^4.9.1",
     "webpack-dev-middleware": "^5.2.2",
     "webpack-dev-server": "^4.5.0",
-    "webpack-hot-middleware": "^2.25.1",
+    "webpack-hot-middleware": "git+https://github.com/lukeapage/webpack-hot-middleware#2cdfe0d0111dab6432b8683112fd2d17a5e80572",
     "webpack-merge": "^5.8.0",
     "yargs": "^15.3.1"
   },

@@ -258,4 +258,4 @@ class GenericPlot extends React.Component<Props, State> {
   }
 }
 
-export default withTheme(GenericPlot);
+export default React.memo(withTheme(GenericPlot));
