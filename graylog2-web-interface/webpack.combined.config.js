@@ -35,7 +35,6 @@ const finalConfig = merge(mergedPluginConfigs, webpackConfig);
 
 // We need to inject webpack-hot-middleware to all entries, ensuring the app is able to reload on changes.
 if (TARGET === 'start') {
-  console.log(finalConfig);
   const hmrEntries = {};
   const webpackHotMiddlewareEntry = 'webpack-hot-middleware/client?reload=true&path=__webpack_hmr';
 
@@ -53,8 +52,6 @@ if (TARGET === 'start') {
   });
 
   finalConfig.entry = hmrEntries;
-	console.log("#########################");
-	console.log(finalConfig);
 }
 
 module.exports = finalConfig;
