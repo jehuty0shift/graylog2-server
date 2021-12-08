@@ -254,7 +254,6 @@ if (TARGET.startsWith('build')) {
     devtool: false,
     optimization: {
       minimizer: [new TerserPlugin({
-        sourceMap: false,
         parallel: true,
         terserOptions: {
           compress: {

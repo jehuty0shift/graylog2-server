@@ -1,5 +1,5 @@
 const webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CspHtmlWebpackPlugin = require('csp-html-webpack-plugin');
@@ -25,7 +25,7 @@ function PluginWebpackConfig(fqcn, _options, additionalConfig) {
     new CspHtmlWebpackPlugin({ 'script-src': ["'self'"], 'style-src': ["'self'"] }),
   ];
 
-  const config = merge.smart(
+  const config = merge(
     require(path.resolve(_options.web_src_path, 'webpack.config.js')),
     {
       output: {
@@ -44,7 +44,7 @@ function PluginWebpackConfig(fqcn, _options, additionalConfig) {
   config.entry = entry;
 
   if (additionalConfig) {
-    return merge.smart(config, additionalConfig);
+    return merge(config, additionalConfig);
   }
 
   return config;
