@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -56,7 +56,7 @@ public class GeoIpResolverEngine {
         try {
             final File database = new File(config.dbPath());
             if (Files.exists(database.toPath())) {
-                this.databaseReader = new DatabaseReader.Builder(database).withCache(new CHMCache()).build();
+                this.databaseReader = new DatabaseReader.Builder(database).withCache(new CHMCache(4096 * 2)).build();
                 this.enabled = config.enabled();
             } else {
                 LOG.warn("GeoIP database file does not exist: {}", config.dbPath());
@@ -75,7 +75,7 @@ public class GeoIpResolverEngine {
 
         for (Map.Entry<String, Object> field : message.getFields().entrySet()) {
             final String key = field.getKey();
-            if (!key.startsWith(Message.INTERNAL_FIELD_PREFIX)) {
+            if ((key.endsWith("_ip") || key.endsWith("address")) && !key.startsWith(Message.INTERNAL_FIELD_PREFIX)) { //using _ip fieldName convention and use address for some friends
                 final Optional<GeoLocationInformation> geoLocationInformation = extractGeoLocationInformation(field.getValue());
                 geoLocationInformation.ifPresent(locationInformation -> {
                     // We will store the coordinates as a "lat,long" string
@@ -124,13 +124,14 @@ public class GeoIpResolverEngine {
     @Nullable
     @VisibleForTesting
     InetAddress getIpFromFieldValue(String fieldValue) {
-        try {
-            return InetAddresses.forString(fieldValue.trim());
-        } catch (IllegalArgumentException e) {
-            // Do nothing, field is not an IP
-        }
-
-        return null;
+            if ((Character.digit(fieldValue.charAt(0), 16) != -1
+                    || fieldValue.charAt(0) == ':'
+                    || fieldValue.charAt(0) == '[') && fieldValue.chars().noneMatch(c -> c > 'f') &&
+                    InetAddresses.isInetAddress(fieldValue)) {
+                return InetAddresses.forString(fieldValue.trim());
+            } else {
+                return null;
+            }
     }
 
     @AutoValue
