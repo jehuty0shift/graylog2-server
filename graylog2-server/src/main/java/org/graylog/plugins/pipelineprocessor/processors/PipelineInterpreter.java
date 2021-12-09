@@ -97,6 +97,9 @@ public class PipelineInterpreter implements MessageProcessor {
     public Messages process(Messages messages) {
         try (Timer.Context ignored = executionTime.time()) {
             final State latestState = stateUpdater.getLatestState();
+            if (latestState.getStreamPipelineConnections().isEmpty()) { //no pipelines
+                return messages;
+            }
             if (latestState.enableRuleMetrics()) {
                 return process(messages, new RuleMetricsListener(metricRegistry), latestState);
             }

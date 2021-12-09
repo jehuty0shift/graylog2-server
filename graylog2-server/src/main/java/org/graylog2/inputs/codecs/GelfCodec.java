@@ -58,18 +58,16 @@ public class GelfCodec extends AbstractCodec {
     private static final int DEFAULT_DECOMPRESS_SIZE_LIMIT = 8388608;
 
     private final GelfChunkAggregator aggregator;
-    private final ObjectMapper objectMapper;
+    private static final ObjectMapper objectMapper = new ObjectMapper().enable(
+            JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
+            JsonParser.Feature.ALLOW_TRAILING_COMMA)
+            .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
     private final long decompressSizeLimit;
 
     @Inject
     public GelfCodec(@Assisted Configuration configuration, GelfChunkAggregator aggregator) {
         super(configuration);
         this.aggregator = aggregator;
-        this.objectMapper = new ObjectMapper().enable(
-
-                JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
-                JsonParser.Feature.ALLOW_TRAILING_COMMA);
-        this.objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         this.decompressSizeLimit = configuration.getInt(CK_DECOMPRESS_SIZE_LIMIT, DEFAULT_DECOMPRESS_SIZE_LIMIT);
     }
 
@@ -109,7 +107,7 @@ public class GelfCodec extends AbstractCodec {
     private static BigDecimal timestampValue(final JsonNode json) {
         final JsonNode value = json.path(Message.FIELD_TIMESTAMP);
         if (value.isNumber()) {
-            return value.isBigDecimal()?value.decimalValue():BigDecimal.valueOf(value.asDouble(-1.0));
+            return value.isBigDecimal() ? value.decimalValue() : BigDecimal.valueOf(value.asDouble(-1.0));
         } else if (value.isTextual()) {
             try {
                 return new BigDecimal(value.asText());
