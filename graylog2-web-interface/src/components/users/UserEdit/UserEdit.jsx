@@ -60,15 +60,13 @@ const UserEdit = ({ user }: Props) => {
           <ProfileSection user={user}
                           onSubmit={(data) => _updateUser(data, currentUser, user.id)} />
           ) }
-          <IfPermitted permissions="*">
-            <SettingsSection user={user}
-                             onSubmit={(data) => _updateUser(data, currentUser, user.id)} />
-          </IfPermitted>
           <IfPermitted permissions={`buffers:read`}>
             { !user.external && <PasswordSection user={user} /> }
           </IfPermitted>
         </div>
       </IfPermitted>
+      <SettingsSection user={user}
+                       onSubmit={(data) => _updateUser(data, currentUser, user.id)} />
       <PreferencesSection user={user} />
       <div>
         <IfPermitted permissions="buffers:read">
