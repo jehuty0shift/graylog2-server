@@ -500,7 +500,7 @@ public class Message implements Messages, Indexable {
             }
         } else if (value instanceof  DateTime) {
             DateTime dt = (DateTime) value;
-            fields.put(FIELD_TIMESTAMP, Instant.ofEpochMilli(dt.getMillis()));
+            fields.put(trimmedKey, Instant.ofEpochMilli(dt.getMillis()));
         } else if (value != null) {
             fields.put(trimmedKey, value);
         }
