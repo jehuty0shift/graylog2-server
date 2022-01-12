@@ -91,6 +91,7 @@
         <amqp-client.version>5.10.0</amqp-client.version>
         <antlr.version>4.8-1</antlr.version>
         <apache-directory-version>1.0.3</apache-directory-version>
+        <apache-httpclient.version>4.5.13</apache-httpclient.version>
         <auto-value.version>1.7.4</auto-value.version>
         <auto-value-javabean.version>2.5.2</auto-value-javabean.version>
         <bouncycastle.version>1.68</bouncycastle.version>
@@ -130,7 +131,7 @@
         <jool.version>0.9.14</jool.version>
         <json-path.version>2.5.0</json-path.version>
         <kafka.version>2.7.1</kafka.version>
-        <log4j.version>2.17.0</log4j.version>
+        <log4j.version>2.17.1</log4j.version>
         <metrics.version>4.1.17</metrics.version>
         <mongodb-driver.version>3.12.7</mongodb-driver.version>
         <mongojack.version>2.10.1</mongojack.version>
