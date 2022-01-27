@@ -117,9 +117,9 @@ public class V20170607164210_MigrateReopenedIndicesToAliases extends Migration {
 
     private boolean checkForReopened(@Nonnull JsonNode indexSettings, Version elasticsearchVersion) {
         final JsonNode settings;
-        if (elasticsearchVersion.satisfies(">=2.1.0 & <5.0.0")) {
+        if (elasticsearchVersion.satisfies(">=4.0.0 & <5.0.0")) {
             settings = indexSettings;
-        } else if (elasticsearchVersion.satisfies("^5.0.0 | ^6.0.0 | ^7.0.0")) {
+        } else if (elasticsearchVersion.satisfies("^5.0.0 | ^6.0.0 | ^7.0.0 | ^1.0.0 | ^2.0.0")) {
             settings = indexSettings.path("archived");
         } else {
             throw new ElasticsearchException("Unsupported Elasticsearch version: " + elasticsearchVersion);

@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,20 +36,25 @@ public class IndexMappingFactory {
         final Version elasticsearchVersion = node.getVersion().orElseThrow(() -> new ElasticsearchException("Unable to retrieve Elasticsearch version."));
 
         switch (templateType) {
-            case MESSAGES: return indexMappingFor(elasticsearchVersion);
-            case EVENTS: return eventsIndexMappingFor(elasticsearchVersion);
-            case GIM_V1: return gimMappingFor(elasticsearchVersion);
-            default: throw new IllegalStateException("Invalid index template type: " + templateType);
+            case MESSAGES:
+                return indexMappingFor(elasticsearchVersion);
+            case EVENTS:
+                return eventsIndexMappingFor(elasticsearchVersion);
+            case GIM_V1:
+                return gimMappingFor(elasticsearchVersion);
+            default:
+                throw new IllegalStateException("Invalid index template type: " + templateType);
         }
     }
 
     private IndexMapping gimMappingFor(Version elasticsearchVersion) {
         if (elasticsearchVersion.satisfies("^6.0.0")) {
             return new GIMMapping6();
-        } else if (elasticsearchVersion.satisfies("^7.0.0")) {
+        } else if (elasticsearchVersion.satisfies("^7.0.0") ||
+                elasticsearchVersion.lessThan(Version.forIntegers(5)) && elasticsearchVersion.greaterThan(Version.forIntegers(1, 0, 0))) { //for Opensearch
             return new GIMMapping7();
         } else {
-            throw new ElasticsearchException("Unsupported Elasticsearch version: " + elasticsearchVersion);
+            throw new ElasticsearchException("Unsupported Elasticsearch/Opensearch version: " + elasticsearchVersion);
         }
     }
 
@@ -58,17 +63,19 @@ public class IndexMappingFactory {
             return new IndexMapping5();
         } else if (elasticsearchVersion.satisfies("^6.0.0")) {
             return new IndexMapping6();
-        } else if (elasticsearchVersion.satisfies("^7.0.0")) {
+        } else if (elasticsearchVersion.satisfies("^7.0.0") ||
+                elasticsearchVersion.lessThan(Version.forIntegers(5)) && elasticsearchVersion.greaterThan(Version.forIntegers(1, 0, 0))) { //for Opensearch
             return new IndexMapping7();
         } else {
-            throw new ElasticsearchException("Unsupported Elasticsearch version: " + elasticsearchVersion);
+            throw new ElasticsearchException("Unsupported Elasticsearch/Opensearch version: " + elasticsearchVersion);
         }
     }
 
     public static IndexMappingTemplate eventsIndexMappingFor(Version elasticsearchVersion) {
         if (elasticsearchVersion.satisfies("^5.0.0 | ^6.0.0")) {
             return new EventsIndexMapping6();
-        } else if (elasticsearchVersion.satisfies("^7.0.0")) {
+        } else if (elasticsearchVersion.satisfies("^7.0.0") ||
+                elasticsearchVersion.lessThan(Version.forIntegers(5)) && elasticsearchVersion.greaterThan(Version.forIntegers(1, 0, 0))) { //for Opensearch
             return new EventsIndexMapping7();
         } else {
             throw new ElasticsearchException("Unsupported Elasticsearch version: " + elasticsearchVersion);
