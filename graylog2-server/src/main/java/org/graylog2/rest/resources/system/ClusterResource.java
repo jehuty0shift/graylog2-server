@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,6 +34,7 @@ import org.graylog2.plugin.system.NodeId;
 import org.graylog2.rest.models.system.cluster.responses.NodeSummary;
 import org.graylog2.rest.models.system.cluster.responses.NodeSummaryList;
 import org.graylog2.shared.rest.resources.RestResource;
+import org.graylog2.shared.security.RestPermissions;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotEmpty;
@@ -70,10 +71,12 @@ public class ClusterResource extends RestResource {
     @Path("/nodes")
     @ApiOperation(value = "List all active nodes in this cluster.")
     public NodeSummaryList nodes() {
+
         final Map<String, Node> nodes = nodeService.allActive(Node.Type.SERVER);
         final List<NodeSummary> nodeList = new ArrayList<>(nodes.size());
+        final boolean includeHostInfo = isPermitted(RestPermissions.STREAMS_CREATE);
         for (Node node : nodes.values()) {
-            nodeList.add(nodeSummary(node));
+            nodeList.add(nodeSummary(node, includeHostInfo));
         }
 
         return NodeSummaryList.create(nodeList);
@@ -86,7 +89,8 @@ public class ClusterResource extends RestResource {
             notes = "This is returning information of this node in context to its state in the cluster. " +
                     "Use the system API of the node itself to get system information.")
     public NodeSummary node() throws NodeNotFoundException {
-        return nodeSummary(nodeService.byNodeId(nodeId));
+        final boolean includeHostInfo = isPermitted(RestPermissions.STREAMS_CREATE);
+        return nodeSummary(nodeService.byNodeId(nodeId), includeHostInfo);
     }
 
     @GET
@@ -99,19 +103,20 @@ public class ClusterResource extends RestResource {
             @ApiResponse(code = 404, message = "Node not found.")
     })
     public NodeSummary node(@ApiParam(name = "nodeId", required = true) @PathParam("nodeId") @NotEmpty String nodeId) throws NodeNotFoundException {
-        return nodeSummary(nodeService.byNodeId(nodeId));
+        final boolean includeHostInfo = isPermitted(RestPermissions.STREAMS_CREATE);
+        return nodeSummary(nodeService.byNodeId(nodeId), includeHostInfo);
     }
 
-    private NodeSummary nodeSummary(Node node) {
+    private NodeSummary nodeSummary(Node node, boolean includeHostInfo) {
         return NodeSummary.create(
                 clusterId.clusterId(),
                 node.getNodeId(),
                 node.getType().toString().toLowerCase(Locale.ENGLISH),
                 node.isMaster(),
-                node.getTransportAddress(),
+                includeHostInfo ? node.getTransportAddress() : "",
                 Tools.getISO8601String(node.getLastSeen()),
                 node.getShortNodeId(),
-                node.getHostname()
+                includeHostInfo ? node.getHostname() : "hidden"
         );
     }
 }
