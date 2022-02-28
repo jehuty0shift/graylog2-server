@@ -40,6 +40,6 @@ public class CSPHeaderFilter implements ContainerRequestFilter, ContainerRespons
 
         responseContext.getHeaders().add(
                 "Content-Security-Policy",
-                "default-src 'self' ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'nonce-"+ nonce + "'; img-src https://*openstreetmap.org* 'self' data:");
+                "default-src 'self' ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'nonce-"+ nonce + "'; img-src https://*.openstreetmap.org/ https://*.tile.openstreetmap.org/ 'self' data:");
     }
 }
