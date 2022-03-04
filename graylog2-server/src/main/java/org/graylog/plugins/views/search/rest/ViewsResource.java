@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.graylog.plugins.views.audit.ViewsAuditEventTypes;
+import org.graylog.plugins.views.search.db.SearchDbService;
 import org.graylog.plugins.views.search.views.ViewDTO;
 import org.graylog.plugins.views.search.views.ViewService;
 import org.graylog.security.UserContext;
@@ -58,6 +59,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import java.util.Collection;
+
 import static java.util.Locale.ENGLISH;
 
 @Api(value = "Views")
@@ -73,12 +76,15 @@ public class ViewsResource extends RestResource implements PluginRestResource {
             .build();
 
     private final ViewService dbService;
+    private final SearchDbService searchDbService;
     private final SearchQueryParser searchQueryParser;
     private final ClusterEventBus clusterEventBus;
 
     @Inject
     public ViewsResource(ViewService dbService,
+                         SearchDbService searchDBService,
                          ClusterEventBus clusterEventBus) {
+        this.searchDbService = searchDBService;
         this.dbService = dbService;
         this.clusterEventBus = clusterEventBus;
         this.searchQueryParser = new SearchQueryParser(ViewDTO.FIELD_TITLE, SEARCH_FIELD_MAPPING);
@@ -89,9 +95,9 @@ public class ViewsResource extends RestResource implements PluginRestResource {
     public PaginatedResponse<ViewDTO> views(@ApiParam(name = "page") @QueryParam("page") @DefaultValue("1") int page,
                                             @ApiParam(name = "per_page") @QueryParam("per_page") @DefaultValue("50") int perPage,
                                             @ApiParam(name = "sort",
-                                                      value = "The field to sort the result on",
-                                                      required = true,
-                                                      allowableValues = "id,title,created_at") @DefaultValue(ViewDTO.FIELD_TITLE) @QueryParam("sort") String sortField,
+                                                    value = "The field to sort the result on",
+                                                    required = true,
+                                                    allowableValues = "id,title,created_at") @DefaultValue(ViewDTO.FIELD_TITLE) @QueryParam("sort") String sortField,
                                             @ApiParam(name = "order", value = "The sort direction", allowableValues = "asc, desc") @DefaultValue("asc") @QueryParam("order") String order,
                                             @ApiParam(name = "query") @QueryParam("query") String query,
                                             @Context UserContext userContext) {
@@ -108,7 +114,7 @@ public class ViewsResource extends RestResource implements PluginRestResource {
                     searchQuery,
                     view -> isPermitted(ViewsRestPermissions.VIEW_READ, view.id())
                             || (view.type().equals(ViewDTO.Type.SEARCH) && view.owner().equals(user.getName()))
-                            || (view.type().equals(ViewDTO.Type.DASHBOARD) && isPermitted(RestPermissions.DASHBOARDS_READ, view.id())),                    order,
+                            || (view.type().equals(ViewDTO.Type.DASHBOARD) && isPermitted(RestPermissions.DASHBOARDS_READ, view.id())), order,
                     sortField,
                     page,
                     perPage);
@@ -135,7 +141,7 @@ public class ViewsResource extends RestResource implements PluginRestResource {
         if (isPermitted(ViewsRestPermissions.VIEW_READ, id)
                 || (view.type().equals(ViewDTO.Type.SEARCH) && view.owner().equals(user.getName()))
                 || (view.type().equals(ViewDTO.Type.DASHBOARD) && isPermitted(RestPermissions.DASHBOARDS_READ, view.id()))) {
-                    return view;
+            return view;
         }
 
         throw viewNotFoundException(id);
@@ -160,19 +166,27 @@ public class ViewsResource extends RestResource implements PluginRestResource {
     public ViewDTO update(@ApiParam(name = "id") @PathParam("id") @NotEmpty String id,
                           @ApiParam @Valid ViewDTO dto) {
         ViewDTO dto2 = dto;
+        boolean needToCleanSearch = false;
+        String searchIdToClean = "";
         if (dto.type().equals(ViewDTO.Type.DASHBOARD)) {
             checkAnyPermission(new String[]{
-                ViewsRestPermissions.VIEW_EDIT,
-                RestPermissions.DASHBOARDS_EDIT
+                    ViewsRestPermissions.VIEW_EDIT,
+                    RestPermissions.DASHBOARDS_EDIT
             }, id);
             if (!isPermitted(RestPermissions.BUFFERS_READ)) {
                 final ViewDTO view = loadView(id);
+                final String formerSearchId = view.searchId();
                 dto2 = dto.toBuilder()
-                .id(id)
-                .title(view.title())
-                .summary(view.summary())
-                .description(view.description())
-                .build();
+                        .id(id)
+                        .title(view.title())
+                        .summary(view.summary())
+                        .description(view.description())
+                        .build();
+                final String newSearchId = dto2.searchId();
+                if (!newSearchId.equals(formerSearchId)) {
+                    needToCleanSearch = cleanSearch(id, formerSearchId);
+                    searchIdToClean = formerSearchId;
+                }
             } else {
                 dto2 = dto.toBuilder().id(id).build();
             }
@@ -180,6 +194,10 @@ public class ViewsResource extends RestResource implements PluginRestResource {
             checkPermission(ViewsRestPermissions.VIEW_EDIT, id);
             dto2 = dto.toBuilder().id(id).build();
         }
+        if (needToCleanSearch) {
+            searchDbService.delete(searchIdToClean);
+        }
+
         return dbService.update(dto2);
     }
 
@@ -219,6 +237,11 @@ public class ViewsResource extends RestResource implements PluginRestResource {
         } catch (IllegalArgumentException ignored) {
             throw viewNotFoundException(id);
         }
+    }
+
+    private boolean cleanSearch(String viewId, String searchId) {
+        Collection<ViewDTO> viewForSearch = dbService.forSearch(searchId);
+        return (viewForSearch.size() == 1 && viewForSearch.stream().findFirst().get().id().equals(viewId));
     }
 
     private NotFoundException viewNotFoundException(String id) {

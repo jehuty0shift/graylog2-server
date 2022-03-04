@@ -35,6 +35,7 @@ import org.graylog2.plugin.database.users.User;
 import org.graylog2.shared.bindings.GuiceInjectorHolder;
 import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
 import org.graylog2.shared.security.RestPermissions;
+import org.graylog2.streams.StreamService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -79,6 +80,9 @@ public class SearchResourceTest {
     private SearchJobService searchJobService;
 
     @Mock
+    private StreamService streamService;
+
+    @Mock
     private PermittedStreams permittedStreams;
 
     @Mock
@@ -101,8 +105,8 @@ public class SearchResourceTest {
     class SearchTestResource extends SearchResource {
         private final Subject subject;
 
-        SearchTestResource(Subject subject, QueryEngine queryEngine, SearchDbService searchDbService, SearchJobService searchJobService, ObjectMapper objectMapper, PermittedStreams streamLoader) {
-            super(queryEngine, searchDbService, searchJobService, objectMapper, streamLoader, executionGuard, searchDomain, eventBus, new MetricRegistry());
+        SearchTestResource(Subject subject, QueryEngine queryEngine, SearchDbService searchDbService, SearchJobService searchJobService, StreamService streamService, ObjectMapper objectMapper, PermittedStreams streamLoader) {
+            super(queryEngine, searchDbService, searchJobService, streamService, objectMapper, streamLoader, executionGuard, searchDomain, eventBus, new MetricRegistry());
             this.subject = subject;
         }
 
@@ -122,7 +126,7 @@ public class SearchResourceTest {
     public void setUp() throws Exception {
         GuiceInjectorHolder.createInjector(Collections.emptyList());
 
-        this.searchResource = new SearchTestResource(subject, queryEngine, searchDbService, searchJobService, objectMapperProvider.get(), permittedStreams);
+        this.searchResource = new SearchTestResource(subject, queryEngine, searchDbService, searchJobService, streamService, objectMapperProvider.get(), permittedStreams);
 
         when(currentUser.getName()).thenReturn("admin");
     }

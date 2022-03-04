@@ -49,6 +49,7 @@ import org.graylog2.audit.jersey.NoAuditEvent;
 import org.graylog2.plugin.rest.PluginRestResource;
 import org.graylog2.shared.rest.resources.RestResource;
 import org.graylog2.shared.security.RestPermissions;
+import org.graylog2.streams.StreamService;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -92,6 +93,7 @@ public class SearchResource extends RestResource implements PluginRestResource {
     private final QueryEngine queryEngine;
     private final SearchDbService searchDbService;
     private final SearchJobService searchJobService;
+    private final StreamService streamService;
     private final ObjectMapper objectMapper;
     private final PermittedStreams permittedStreams;
     private final SearchExecutionGuard executionGuard;
@@ -106,6 +108,7 @@ public class SearchResource extends RestResource implements PluginRestResource {
     public SearchResource(QueryEngine queryEngine,
                           SearchDbService searchDbService,
                           SearchJobService searchJobService,
+                          StreamService streamService,
                           ObjectMapper objectMapper,
                           PermittedStreams permittedStreams,
                           SearchExecutionGuard executionGuard,
@@ -115,6 +118,7 @@ public class SearchResource extends RestResource implements PluginRestResource {
         this.queryEngine = queryEngine;
         this.searchDbService = searchDbService;
         this.searchJobService = searchJobService;
+        this.streamService = streamService;
         this.objectMapper = objectMapper;
         this.permittedStreams = permittedStreams;
         this.executionGuard = executionGuard;
@@ -229,7 +233,7 @@ public class SearchResource extends RestResource implements PluginRestResource {
     }
 
     private void guard(Search search) {
-        this.executionGuard.check(search, this::hasStreamReadPermission);
+        this.executionGuard.check(search, streamService, this::hasStreamReadPermission);
     }
 
     @POST

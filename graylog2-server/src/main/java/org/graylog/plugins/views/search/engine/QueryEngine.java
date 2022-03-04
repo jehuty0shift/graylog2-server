@@ -28,6 +28,10 @@ import org.graylog.plugins.views.search.SearchJob;
 import org.graylog.plugins.views.search.errors.QueryError;
 import org.graylog.plugins.views.search.errors.SearchError;
 import org.graylog.plugins.views.search.errors.SearchException;
+import org.graylog.plugins.views.search.errors.SearchTypeError;
+import org.graylog2.indexer.ElasticsearchException;
+import org.graylog2.indexer.IndexNotFoundException;
+import org.graylog2.streams.StreamService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +44,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
@@ -53,36 +58,36 @@ public class QueryEngine {
     // TODO proper thread pool with tunable settings
     private final Executor queryPool;
     private final QueryBackend<? extends GeneratedQueryContext> elasticsearchBackend;
+    private final StreamService streamService;
 
     @Inject
     public QueryEngine(QueryBackend<? extends GeneratedQueryContext> elasticsearchBackend,
                        Set<QueryMetadataDecorator> queryMetadataDecorators,
-                       @Named("query_engine_thread_pool_size") int queryEngineThreadPoolSize) {
+                       @Named("query_engine_thread_pool_size") int queryEngineThreadPoolSize,
+                       StreamService streamService) {
+
         queryPool = Executors.newFixedThreadPool(queryEngineThreadPoolSize, new ThreadFactoryBuilder().setNameFormat("query-engine-%d").build());
+        this.streamService = streamService;
         this.elasticsearchBackend = elasticsearchBackend;
         this.queryMetadataDecorators = queryMetadataDecorators;
     }
 
-    // TODO: Backwards-compatible constructor to avoid breakage. Remove at some point.
-    @Deprecated
-    public QueryEngine(Map<String, QueryBackend<? extends GeneratedQueryContext>> backends,
-                       Set<QueryMetadataDecorator> queryMetadataDecorators,
-                       @Named("query_engine_thread_pool_size") int queryEngineThreadPoolSize) {
-        this(backends.get("elasticsearch"), queryMetadataDecorators, queryEngineThreadPoolSize);
-    }
-
     private static Set<QueryResult> allOfResults(Set<CompletableFuture<QueryResult>> futures) {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .handle((aVoid, throwable) -> futures.stream()
-                        .map(f -> f.handle((queryResult, throwable1) -> {
-                            if (throwable1 != null) {
-                                return QueryResult.incomplete();
-                            } else {
-                                return queryResult;
-                            }
-                        }))
-                        .map(CompletableFuture::join)
-                        .collect(ImmutableSet.toImmutableSet()))
+                .handle((aVoid, throwable) -> {
+                    return futures.stream()
+                            .map(f -> {
+                                return f.handle((queryResult, throwable1) -> {
+                                    if (throwable1 != null) {
+                                        return QueryResult.incomplete();
+                                    } else {
+                                        return queryResult;
+                                    }
+                                });
+                            })
+                            .map(CompletableFuture::join)
+                            .collect(ImmutableSet.toImmutableSet());
+                })
                 .join();
     }
 
@@ -90,34 +95,83 @@ public class QueryEngine {
         final QueryMetadata parsedMetadata = elasticsearchBackend.parse(search.parameters(), query);
 
         return this.queryMetadataDecorators.stream()
-                .reduce((decorator1, decorator2) -> (s, q, metadata) -> decorator1.decorate(s, q, decorator2.decorate(s, q, metadata)))
-                .map(decorator -> decorator.decorate(search, query, parsedMetadata))
+                .reduce((decorator1, decorator2) -> {
+                    return (s, q, metadata) -> {
+                        return decorator1.decorate(s, q, decorator2.decorate(s, q, metadata));
+                    };
+                })
+                .map(decorator -> {
+                    return decorator.decorate(search, query, parsedMetadata);
+                })
                 .orElse(parsedMetadata);
     }
 
     public SearchJob execute(SearchJob searchJob) {
         final QueryPlan plan = new QueryPlan(this, searchJob);
 
-        plan.queries().forEach(query -> searchJob.addQueryResultFuture(query.id(),
-                // generate and run each query, making sure we never let an exception escape
-                // if need be we default to an empty result with a failed state and the wrapped exception
-                CompletableFuture.supplyAsync(() -> prepareAndRun(plan, searchJob, query), queryPool)
-                        .handle((queryResult, throwable) -> {
-                            if (throwable != null) {
-                                final Throwable cause = throwable.getCause();
-                                final SearchError error;
-                                if (cause instanceof SearchException) {
-                                    error = ((SearchException) cause).error();
-                                } else {
-                                    error = new QueryError(query, cause);
+        plan.queries().forEach(query -> {
+            searchJob.addQueryResultFuture(query.id(),
+                    // generate and run each query, making sure we never let an exception escape
+                    // if need be we default to an empty result with a failed state and the wrapped exception
+                    CompletableFuture.supplyAsync(() -> {
+                                return prepareAndRun(plan, searchJob, query);
+                            }, queryPool)
+                            .handle((queryResult, throwable) -> {
+                                LOG.debug("[{}] handle query {} on streams {} ", query.id(), query.filter().toString(), query.usedStreamIds());
+                                if (throwable != null) {
+                                    LOG.debug("[{}] throwable isn't null", query.id());
+                                    final Throwable cause = throwable.getCause();
+                                    SearchError error;
+                                    if (cause instanceof SearchException) {
+                                        error = ((SearchException) cause).error();
+                                        if (error instanceof SearchTypeError) {
+                                            //This error can be caused because the attached stream to the Query doesn't exist anymore. we check that.
+                                            if (error.description().contains("index_not_found_exception")) {
+                                                LOG.debug("[{}] replacing index_not_found error", query.id());
+                                                Set<String> nonExistingStreamIds = searchJob.getSearch().usedStreamIds().stream().filter(Predicate.not(streamService::exists)).collect(Collectors.toSet());
+                                                if (!nonExistingStreamIds.isEmpty()) {
+                                                    LOG.debug("[{}] the following streams don't exist {}, replacing errors ", query.id(), nonExistingStreamIds);
+                                                    error = new QueryError(query, "the following streams don't exist " + nonExistingStreamIds + ", please fix your search");
+                                                } else {
+                                                    error = new QueryError(query, cause);
+                                                }
+                                            }
+                                        }
+                                        LOG.debug("Running query {} failed: {}", query.id(), cause);
+                                        searchJob.addError(error);
+                                        return QueryResult.failedQueryWithError(query, error);
+                                    }
                                 }
-                                LOG.debug("Running query {} failed: {}", query.id(), cause);
-                                searchJob.addError(error);
-                                return QueryResult.failedQueryWithError(query, error);
-                            }
-                            return queryResult;
-                        })
-        ));
+                                LOG.debug("[{}] query has following errors", query.id(), queryResult.errors().stream().map(s -> s.description()).collect(Collectors.joining()));
+                                if (!queryResult.errors().isEmpty() && searchJob.getSearch().usedStreamIds().stream().anyMatch(Predicate.not(streamService::exists))) {
+                                    //FIX HERE
+                                    Set<String> nonExistingStreamIds = searchJob.getSearch().usedStreamIds().stream().filter(Predicate.not(streamService::exists)).collect(Collectors.toSet());
+                                    LOG.debug("[{}] the following streams don't exist {}, replacing errors ", query.id(), nonExistingStreamIds);
+                                    final String newDescription = "the following streams don't exist " + nonExistingStreamIds + ", please fix your search";
+                                    Set<SearchError> newErrors = queryResult.errors().stream().map(r -> {
+                                                if (r instanceof SearchTypeError) {
+                                                    SearchTypeError Ste = (SearchTypeError) r;
+                                                    if (Ste.description().contains("index_not_found_exception") && Ste.description().contains("no such index")) {
+                                                        LOG.debug("[{}] replacing index_not_found error", query.id());
+                                                        return new SearchTypeError(query, Ste.searchTypeId(), newDescription);
+                                                    }
+                                                }
+                                                return r;
+                                            }
+                                    ).collect(Collectors.toSet());
+
+                                    return QueryResult.builder()
+                                            .query(query)
+                                            .errors(newErrors)
+                                            .searchTypes(queryResult.searchTypes())
+                                            .executionStats(queryResult.executionStats())
+                                            .state(queryResult.state())
+                                            .build();
+                                }
+                                return queryResult;
+                            })
+            );
+        });
         // the root is always complete
         searchJob.addQueryResultFuture("", CompletableFuture.completedFuture(QueryResult.emptyResult()));
 
@@ -164,7 +218,22 @@ public class QueryEngine {
         final QueryResult result = backend.run(searchJob, query, generatedQueryContext, results);
         LOG.debug("[{}] Query returned {}", query.id(), result);
         if (!generatedQueryContext.errors().isEmpty()) {
-            generatedQueryContext.errors().forEach(searchJob::addError);
+            Set<String> nonExistingStreamIds = searchJob.getSearch().usedStreamIds().stream().filter(Predicate.not(streamService::exists)).collect(Collectors.toSet());
+            final String newDescription = "the following streams don't exist " + nonExistingStreamIds + ", please fix your search";
+            Set<SearchError> newErrors = generatedQueryContext.errors().stream().map(r -> {
+                        if (r instanceof SearchTypeError) {
+                            SearchTypeError Ste = (SearchTypeError) r;
+                            if (Ste.description().contains("index_not_found_exception") && Ste.description().contains("no such index")) {
+
+                                LOG.debug("[{}] the following streams don't exist {}, replacing errors ", query.id(), nonExistingStreamIds);
+                                return new SearchTypeError(query, Ste.searchTypeId(), newDescription);
+                            }
+                        }
+                        return r;
+                    }
+            ).collect(Collectors.toSet());
+            LOG.debug("[{}] Generated Query has Errors {}", query.id(), newErrors.stream().map(r -> r.description()).collect(Collectors.toList()));
+            newErrors.forEach(searchJob::addError);
         }
         return result;
     }

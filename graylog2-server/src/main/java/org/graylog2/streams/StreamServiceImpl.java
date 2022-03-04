@@ -165,6 +165,11 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
     }
 
     @Override
+    public boolean exists(String id) {
+        return get(StreamImpl.class, id) != null;
+    }
+
+    @Override
     public Stream load(String id) throws NotFoundException {
         try {
             return load(new ObjectId(id));

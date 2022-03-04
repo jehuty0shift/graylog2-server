@@ -177,6 +177,11 @@ public class ConfigurationStateUpdaterTest {
         }
 
         @Override
+        public boolean exists(String id) {
+            return store.containsKey(id);
+        }
+
+        @Override
         public List<Stream> loadAll() {
             return ImmutableList.copyOf(store.values());
         }
