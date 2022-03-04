@@ -75,7 +75,7 @@ public class GeoIpResolverEngine {
 
         for (Map.Entry<String, Object> field : message.getFields().entrySet()) {
             final String key = field.getKey();
-            if ((key.endsWith("_ip") || key.endsWith("address")) && !key.startsWith(Message.INTERNAL_FIELD_PREFIX)) { //using _ip fieldName convention and use address for some friends
+            if ((key.endsWith("_ip") || key.endsWith("address")  || key.endsWith("Address")) && !key.startsWith(Message.INTERNAL_FIELD_PREFIX)) { //using _ip fieldName convention and use address for some friends
                 final Optional<GeoLocationInformation> geoLocationInformation = extractGeoLocationInformation(field.getValue());
                 geoLocationInformation.ifPresent(locationInformation -> {
                     // We will store the coordinates as a "lat,long" string
