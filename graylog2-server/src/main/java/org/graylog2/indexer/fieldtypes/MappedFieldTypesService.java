@@ -89,7 +89,7 @@ public class MappedFieldTypesService {
             return FieldTypeDTO.create(fieldName, "date");
         }
 
-        if (fieldName.endsWith("_double") || fieldName.endsWith("_float")) {
+        if (fieldName.endsWith("_double") || fieldName.endsWith("_float") || fieldName.endsWith("_num")) {
             return FieldTypeDTO.create(fieldName, "double");
         }
 
