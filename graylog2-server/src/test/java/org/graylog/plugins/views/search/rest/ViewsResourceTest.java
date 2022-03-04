@@ -19,6 +19,7 @@ package org.graylog.plugins.views.search.rest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.shiro.subject.Subject;
+import org.graylog.plugins.views.search.db.SearchDbService;
 import org.graylog.plugins.views.search.views.ViewDTO;
 import org.graylog.plugins.views.search.views.ViewService;
 import org.graylog.security.UserContext;
@@ -72,6 +73,9 @@ public class ViewsResourceTest {
     private User currentUser;
 
     @Mock
+    private SearchDbService searchDbService;
+
+    @Mock
     private ViewService viewService;
 
     @Mock
@@ -86,8 +90,8 @@ public class ViewsResourceTest {
     private ViewsResource viewsResource;
 
     class ViewsTestResource extends ViewsResource {
-        ViewsTestResource(ViewService viewService, ClusterEventBus clusterEventBus, UserService userService) {
-            super(viewService, clusterEventBus);
+        ViewsTestResource(ViewService viewService, SearchDbService searchDbService, ClusterEventBus clusterEventBus, UserService userService) {
+            super(viewService, searchDbService, clusterEventBus);
             this.userService = userService;
         }
 
@@ -105,7 +109,7 @@ public class ViewsResourceTest {
 
     @Before
     public void setUp() throws Exception {
-        this.viewsResource = new ViewsTestResource(viewService, clusterEventBus, userService);
+        this.viewsResource = new ViewsTestResource(viewService, searchDbService, clusterEventBus, userService);
         when(subject.isPermitted("dashboards:create")).thenReturn(true);
     }
 
