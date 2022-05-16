@@ -196,7 +196,7 @@
     "webpack-cli": "^4.9.1",
     "webpack-dev-middleware": "^5.2.2",
     "webpack-dev-server": "^4.5.0",
-    "webpack-hot-middleware": "git+https://github.com/lukeapage/webpack-hot-middleware#2cdfe0d0111dab6432b8683112fd2d17a5e80572",
+    "@lukeapage/webpack-hot-middleware": "2.25.2",
     "webpack-merge": "^5.8.0",
     "yargs": "^15.3.1"
   },
@@ -204,7 +204,6 @@
     "jquery": "3.6.0",
     "jsdom": "15.2.1",
     "upath": "1.0.5",
-    "ace-builds": "1.4.12",
-    "webpack-hot-middleware": "git+https://github.com/lukeapage/webpack-hot-middleware#2cdfe0d0111dab6432b8683112fd2d17a5e80572"
+    "ace-builds": "1.4.12"
   }
 }
