@@ -83,6 +83,9 @@ public class HttpConfiguration {
     @Parameter(value = "http_external_uri")
     private URI httpExternalUri;
 
+    @Parameter(value= "http_enable_csp")
+    private boolean httpEnableCSP = true;
+
     public HostAndPort getHttpBindAddress() {
         return httpBindAddress
                 .requireBracketsForIPv6()
@@ -214,6 +217,8 @@ public class HttpConfiguration {
     public URI getHttpExternalUri() {
         return httpExternalUri == null ? getHttpPublishUri() : httpExternalUri;
     }
+
+    public boolean isHttpEnableCSP(){ return httpEnableCSP;}
 
     @ValidatorMethod
     @SuppressWarnings("unused")
