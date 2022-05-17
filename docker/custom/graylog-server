@@ -1,0 +1,15 @@
+# Path to the java executable.
+JAVA="${JAVA_HOME}/bin/java"
+#
+# # Default Java options for heap and garbage collection.
+#GRAYLOG_SERVER_JAVA_OPTS="-Xms${GRAY_HEAP_SIZE} -Xmx${GRAY_HEAP_SIZE} -XX:MaxGCPauseMillis=200 -XX:NewRatio=1 -server -XX:+ResizeTLAB -XX:-OmitStackTraceInFastThrow -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=65 -XX:+UseLargePages -XX:+AlwaysPreTouch"
+#GRAYLOG_SERVER_JAVA_OPTS="-Xms${GRAY_HEAP_SIZE} -Xmx${GRAY_HEAP_SIZE} -XX:NewRatio=1 -server -XX:+ResizeTLAB -XX:+UseConcMarkSweepGC -XX:+CMSConcurrentMTEnabled -XX:+CMSClassUnloadingEnabled -XX:-OmitStackTraceInFastThrow -XX:+AlwaysPreTouch -Djavax.net.ssl.trustStore=/etc/ssl/certs/graylog/cacerts.jks"
+GRAYLOG_SERVER_JAVA_OPTS="-Xms${GRAY_HEAP_SIZE} -Xmx${GRAY_HEAP_SIZE} -XX:MaxGCPauseMillis=200 -server -XX:+ResizeTLAB -XX:+UseG1GC -XX:-OmitStackTraceInFastThrow -XX:+AlwaysPreTouch"
+#GRAYLOG_SERVER_JAVA_OPTS="-Xms${GRAY_HEAP_SIZE} -Xmx${GRAY_HEAP_SIZE} -server -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:+ClassUnloadingWithConcurrentMark -XX:+AlwaysPreTouch"
+#
+# # Pass some extra args to graylog-server. (i.e. "-d" to enable debug mode)
+GRAYLOG_SERVER_ARGS=""
+#
+# # Program that will be used to wrap the graylog-server command. Useful to
+# # support programs like authbind.
+GRAYLOG_COMMAND_WRAPPER=""
