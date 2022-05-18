@@ -88,6 +88,9 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "root_login_allowed_ips", converter = IPSubnetConverter.class)
     private Set<IpSubnet> rootLoginAllowedIps = Collections.emptySet();
 
+    @Parameter(value = "root_login_allowed_no_check")
+    private boolean rootLoginAllowedNoCheck = false;
+
     @Parameter(value = "custom_username")
     private String customUsername = "Username";
 
@@ -379,6 +382,10 @@ public class Configuration extends BaseConfiguration {
 
     public Set<String> getForceSSOUsers() {
         return forceSSOUsers;
+    }
+
+    public boolean isRootLoginAllowedNoCheck() {
+        return rootLoginAllowedNoCheck;
     }
 
     public int getLoadBalancerRequestThrottleJournalUsage() {

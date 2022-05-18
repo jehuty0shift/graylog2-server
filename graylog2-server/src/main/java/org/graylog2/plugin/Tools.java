@@ -25,7 +25,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.primitives.Doubles;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.shared.SuppressForbidden;
-import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -51,9 +50,11 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalField;
+import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,6 +79,7 @@ public final class Tools {
 
     public static final String ES_DATE_FORMAT_NANO = "yyyy-MM-dd HH:mm:ss.n";
     public static final String ES_DATE_FORMAT_MS = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ES_DATE_FORMAT_MICRO = "yyyy-MM-dd HH:mm:ss.SSSSSS";
     public static final String ES_DATE_FORMAT_NO_MS = "yyyy-MM-dd HH:mm:ss";
 
     public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER = new java.time.format.DateTimeFormatterBuilder().append(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE)
@@ -86,7 +88,10 @@ public final class Tools {
             .toFormatter(Locale.ENGLISH)
             .withZone(ZoneOffset.UTC);
 
-    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO, Locale.ENGLISH).withZone(ZoneOffset.UTC);
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES_NANO = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_NANO, Locale.ENGLISH).withZone(ZoneOffset.UTC);
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES_MICRO = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_MICRO, Locale.ENGLISH).withZone(ZoneOffset.UTC);
+    public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES_MS = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_MS, Locale.ENGLISH).withZone(ZoneOffset.UTC);
+
     public static final java.time.format.DateTimeFormatter ES_DATE_FORMAT_FORMATTER_TO_ES_6 = java.time.format.DateTimeFormatter.ofPattern(ES_DATE_FORMAT_MS, Locale.ENGLISH).withZone(ZoneOffset.UTC);
 
     public static final java.time.format.DateTimeFormatter ISO_DATE_FORMAT_FORMATTER = java.time.format.DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneOffset.UTC);
@@ -333,8 +338,18 @@ public final class Tools {
     }
 
     public static String buildElasticSearchTimeFormat(Instant timestamp, Version version) {
-        return version.getVersion().getMajorVersion()==7?
-                ES_DATE_FORMAT_FORMATTER_TO_ES.format(timestamp):ES_DATE_FORMAT_FORMATTER_TO_ES_6.format(timestamp);
+        if (version.getVersion().getMajorVersion()==7) {
+            int nanoSeconds = timestamp.get(ChronoField.NANO_OF_SECOND);
+            if (nanoSeconds % 1000000 == 0) {
+                return ES_DATE_FORMAT_FORMATTER_TO_ES_MS.format(timestamp);
+            }
+            if (nanoSeconds % 1000 == 0) {
+                return ES_DATE_FORMAT_FORMATTER_TO_ES_MICRO.format(timestamp);
+            }
+            return ES_DATE_FORMAT_FORMATTER_TO_ES_NANO.format(timestamp);
+        }else {
+            return ES_DATE_FORMAT_FORMATTER_TO_ES_6.format(timestamp);
+        }
     }
 
     /**

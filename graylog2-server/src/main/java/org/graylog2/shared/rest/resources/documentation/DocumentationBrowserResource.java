@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -83,8 +84,8 @@ public class DocumentationBrowserResource extends RestResource {
                 "globalModePath", "",
                 "globalUriMarker", "",
                 "showWarning", "",
-                "nonce", httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
-        LOG.info("cspNonce {}",httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
+                "nonce", Objects.requireNonNullElse(httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE), "EMPTY"));
+        LOG.debug("cspNonce {}", Objects.requireNonNullElse(httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE), "EMPTY"));
         return templateEngine.transform(template, model);
     }
 
@@ -100,8 +101,8 @@ public class DocumentationBrowserResource extends RestResource {
                 "globalModePath", "global/index.html",
                 "globalUriMarker", "/global",
                 "showWarning", "true",
-                "nonce", httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
-        LOG.info("cspNonce {}",httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE));
+                "nonce", Objects.requireNonNullElse(httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE), "EMPTY"));
+        LOG.debug("cspNonce {}", Objects.requireNonNullElse(httpHeaders.getRequestHeaders().getFirst(CSPHeaderFilter.CSP_NONCE), "EMPTY"));
         return templateEngine.transform(template, model);
     }
 
