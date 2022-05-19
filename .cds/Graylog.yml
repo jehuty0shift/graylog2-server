@@ -1,0 +1,135 @@
+name: Graylog
+version: v2.0
+workflow:
+
+  setup-graylog:
+    pipeline: py.tar
+    application: graylog2-server
+
+  build-graylog:
+    depends_on:
+    - setup-graylog
+    when:
+    - success
+    pipeline: graylog.build
+    application: graylog2-server
+
+  build-graylog-output-syslog:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-output-syslog
+
+  build-graylog-kefla:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-kefla
+
+  build-graylog-accounting:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-accounting
+
+  build-graylog-alarm:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-alarm
+
+  build-graylog-asn:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-asn
+
+  build-graylog-consistency:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-consistency
+
+  build-graylog-data-bot:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-data-bot
+
+  build-graylog-stream-router:
+    depends_on:
+    - build-graylog
+    when:
+    - success
+    pipeline: graylog-plugin.build
+    application: graylog-stream-router
+
+  docker-graylog:
+    depends_on:
+    - build-graylog-output-syslog
+    - build-graylog-kefla
+    - build-graylog-accounting
+    - build-graylog-alarm
+    - build-graylog-asn
+    - build-graylog-consistency
+    - build-graylog-data-bot
+    - build-graylog-stream-router
+    when:
+    - success
+    pipeline: graylog.docker
+    application: graylog2-server
+
+  release:
+    depends_on:
+    - docker-graylog
+    when:
+    - success
+    pipeline: art.release
+    application: graylog2-server
+
+  puppet:
+    depends_on:
+    - release
+    when:
+    - success
+    pipeline: puppet.bump
+    application: puppet-hiera
+    parameters:
+      serviceName: ldapprobe
+
+metadata:
+  default_tags: git.branch,git.author
+
+notifications:
+- type: vcs
+  settings:
+    on_success: always
+
+integrations:
+  artifactory-ldp-default:
+    type: artifact_manager
+    config:
+      build.info.path:
+        type: string
+
+hooks:
+  setup-graylog:
+  - type: RepositoryWebHook
+    config:
+      eventFilter: repo:refs_changed
+    conditions:
+      script: return git_branch == "prod"
