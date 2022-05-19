@@ -3,7 +3,7 @@ version: v2.0
 workflow:
 
   setup-graylog:
-    pipeline: py.tar
+    pipeline: pom.version
     application: graylog2-server
 
   build-graylog:
@@ -14,110 +14,89 @@ workflow:
     pipeline: graylog.build
     application: graylog2-server
 
-  build-graylog-output-syslog:
+  bump-graylog-deploy:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-output-syslog
+    pipeline: graylog-deploy.bump
+    application: GraylogDeploy
 
-  build-graylog-kefla:
+  bump-accounting:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-kefla
+    pipeline: graylog-plugin.bump
+    application: ThotAccounting
 
-  build-graylog-accounting:
+  bump-alarm:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-accounting
+    pipeline: graylog-plugin.bump
+    application: ThotAlarm
 
-  build-graylog-alarm:
+  bump-asn-finder:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-alarm
+    pipeline: graylog-plugin.bump
+    application: ThotAsnFinder
 
-  build-graylog-asn:
+  bump-consistency:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-asn
+    pipeline: graylog-plugin.bump
+    application: ThotConsistency
 
-  build-graylog-consistency:
+  bump-data-bot:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-consistency
+    pipeline: graylog-plugin.bump
+    application: ThotDataBot
 
-  build-graylog-data-bot:
+  bump-kefla:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-data-bot
+    pipeline: graylog-plugin.bump
+    application: ThotKefla
 
-  build-graylog-stream-router:
+  bump-output-syslog:
     depends_on:
     - build-graylog
     when:
     - success
-    pipeline: graylog-plugin.build
-    application: graylog-stream-router
+    pipeline: graylog-plugin.bump
+    application: ThotOutputSyslog
 
-  docker-graylog:
+  bump-stream-router:
     depends_on:
-    - build-graylog-output-syslog
-    - build-graylog-kefla
-    - build-graylog-accounting
-    - build-graylog-alarm
-    - build-graylog-asn
-    - build-graylog-consistency
-    - build-graylog-data-bot
-    - build-graylog-stream-router
+    - build-graylog
     when:
     - success
-    pipeline: graylog.docker
-    application: graylog2-server
-
-  release:
-    depends_on:
-    - docker-graylog
-    when:
-    - success
-    pipeline: art.release
-    application: graylog2-server
-
-  puppet:
-    depends_on:
-    - release
-    when:
-    - success
-    pipeline: puppet.bump
-    application: puppet-hiera
-    parameters:
-      serviceName: graylog_server
+    pipeline: graylog-plugin.bump
+    application: ThotStreamRouter
 
 metadata:
   default_tags: git.branch,git.author
 
 notifications:
 - type: vcs
+  pipelines:
+  - build-graylog
   settings:
     on_success: always
+
+retention_policy: git_branch_exists == "true" AND run_days_before < 32
 
 integrations:
   artifactory-ldp-default:
@@ -126,10 +105,3 @@ integrations:
       build.info.path:
         type: string
 
-hooks:
-  setup-graylog:
-  - type: RepositoryWebHook
-    config:
-      eventFilter: repo:refs_changed
-    conditions:
-      script: return git_branch == "prod"

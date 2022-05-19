@@ -1,6 +1,6 @@
 version: v1.0
 name: graylog.build
-description: Build Graylog tarball
+description: Build Graylog docker image (used for plugin and final docker image)
 jobs:
 - job: Build package
   steps:
@@ -8,17 +8,26 @@ jobs:
       path: .
       tag: '{{.cds.version}}'
   - script:
-    - echo "${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN}" | docker login --username ${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN_NAME} --password-stdin ldp-default-docker.artifactory.ovhcloud.tools
-    - tar -xzf build.tgz
+    - mkdir gl
+    - tar -xzf build.tgz -C gl
+    - mv gl/docker/build docker
+    - mv gl docker/
     - rm build.tgz
-    - currentVersion=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
-    - fullVersion=$currentVersion-{{.cds.version}}
-    - worker set-version "$fullVersion"
-    - docker build -t ldp/graylog-build docker/build/
-    - docker run --network=host -v {{.cds.workspace}}:/data --env CDS_VERSION=$fullVersion ldp/graylog-build
-    - tar -czf graylog2-server-build.tgz *
+  - CDS_DockerPackage:
+      dockerRepositoryName: ldp-default-docker
+      dockerfileDirectory: 'docker'
+      dockerOpts: '--build-arg CDS_VERSION={{.cds.version}}'
+      enableBuildkit: "true"
+      imageName: 'graylog-build-dk'
+      imageTag: '{{.cds.version}}'
+  - script:
+    - echo "${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN}" | docker login --username ${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN_NAME} --password-stdin ldp-default-docker.artifactory.ovhcloud.tools
+    - docker run -v {{.cds.workspace}}/results:/opt ldp-default-docker.artifactory.ovhcloud.tools/graylog-build-dk:{{.cds.version}}
+    - ls -lh results
   - artifactUpload:
-      path: graylog2-server-build.tgz
+      path: results/target.tar.gz
       tag: '{{.cds.version}}'
   requirements:
-  - binary: docker
+  - region: pcidss
+  - model: Debian-12-VM-Hardened
+
