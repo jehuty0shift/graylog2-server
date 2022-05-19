@@ -1,0 +1,24 @@
+version: v1.0
+name: graylog-plugin.build
+description: Build given Graylog plugin
+jobs:
+- job: Build package
+  steps:
+  - artifactDownload:
+      path: .
+      tag: '{{.cds.version}}'
+  - script:
+    - echo "${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN}" | docker login --username ${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN_NAME} --password-stdin ldp-default-docker.artifactory.ovhcloud.tools
+    - mkdir graylog2-server
+    - tar -xzf graylog2-server-build.tgz -C graylog2-server
+    - rm graylog2-server-build.tgz
+    - eval $(worker key install --env-git proj-ssh-logs)
+    - git clone {{.git.url}} -b prod {{.cds.workspace}}/plugin
+    - docker build -t ldp/graylog-plugin-build graylog2-server/docker/plugin/
+    - docker run --network=host -v {{.cds.workspace}}:/data ldp/graylog-plugin-build
+    - rm -rf plugin/target/original-*
+  - artifactUpload:
+      path: plugin/target/*.jar
+      tag: '{{.cds.version}}'
+  requirements:
+  - binary: docker

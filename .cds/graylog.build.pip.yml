@@ -1,0 +1,24 @@
+version: v1.0
+name: graylog.build
+description: Build Graylog tarball
+jobs:
+- job: Build package
+  steps:
+  - artifactDownload:
+      path: .
+      tag: '{{.cds.version}}'
+  - script:
+    - echo "${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN}" | docker login --username ${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN_NAME} --password-stdin ldp-default-docker.artifactory.ovhcloud.tools
+    - tar -xzf build.tgz
+    - rm build.tgz
+    - currentVersion=$(grep -oPm1 "(?<=<version>)[^<]+" "pom.xml")
+    - fullVersion=$currentVersion-{{.cds.version}}
+    - worker set-version "$fullVersion"
+    - docker build -t ldp/graylog-build docker/build/
+    - docker run --network=host -v {{.cds.workspace}}:/data ldp/graylog-build
+    - tar -czf graylog2-server-build.tgz *
+  - artifactUpload:
+      path: graylog2-server-build.tgz
+      tag: '{{.cds.version}}'
+  requirements:
+  - binary: docker
