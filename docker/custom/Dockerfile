@@ -64,7 +64,7 @@ RUN set -ex && for path in /etc/graylog/server /var/log/graylog-server ; do \
 
 USER ldp
 
-VOLUME ["/etc/graylog/server", "/usr/share/graylog-server/plugin", "/var/log/graylog-server"]
+VOLUME ["/etc/graylog/server", "/var/log/graylog-server"]
 
 WORKDIR /etc/graylog/server
 
