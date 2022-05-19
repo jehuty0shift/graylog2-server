@@ -109,7 +109,7 @@ workflow:
     pipeline: puppet.bump
     application: puppet-hiera
     parameters:
-      serviceName: ldapprobe
+      serviceName: graylog_server
 
 metadata:
   default_tags: git.branch,git.author
