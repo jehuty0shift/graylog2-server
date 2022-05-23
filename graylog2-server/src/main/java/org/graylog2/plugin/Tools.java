@@ -338,7 +338,7 @@ public final class Tools {
     }
 
     public static String buildElasticSearchTimeFormat(Instant timestamp, Version version) {
-        if (version.getVersion().getMajorVersion()==7) {
+        if (version.getVersion().getMajorVersion() == 7) {
             int nanoSeconds = timestamp.get(ChronoField.NANO_OF_SECOND);
             if (nanoSeconds % 1000000 == 0) {
                 return ES_DATE_FORMAT_FORMATTER_TO_ES_MS.format(timestamp);
@@ -347,7 +347,7 @@ public final class Tools {
                 return ES_DATE_FORMAT_FORMATTER_TO_ES_MICRO.format(timestamp);
             }
             return ES_DATE_FORMAT_FORMATTER_TO_ES_NANO.format(timestamp);
-        }else {
+        } else {
             return ES_DATE_FORMAT_FORMATTER_TO_ES_6.format(timestamp);
         }
     }

@@ -127,7 +127,7 @@
             <!-- Always check mongojack dependencies to see if we need to adjust our mongodb-driver dependencies -->
             <dependency>
                 <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver</artifactId>
+                <artifactId>mongodb-driver-sync</artifactId>
                 <version>${mongodb-driver.version}</version>
             </dependency>
             <dependency>
