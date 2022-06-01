@@ -9,7 +9,7 @@ class UniqueChunkIdPlugin {
     // eslint-disable-next-line prefer-template
     const prefix = randomId + '-';
     compiler.hooks.compilation.tap(pluginName, (compilation) => {
-      compilation.hooks.optimizeChunkIds.tap(pluginName, chunks => chunks.map((chunk) => {
+      compilation.hooks.optimizeChunkIds.tap(pluginName, chunks => chunks.forEach((chunk) => {
         // eslint-disable-next-line prefer-template, no-param-reassign
         if (chunk.id && chunk.id.startsWith && chunk.id.startsWith(prefix)) {
           return chunk;

@@ -20,7 +20,7 @@ function PluginWebpackConfig(fqcn, _options, additionalConfig) {
   const VENDOR_MANIFEST = require(path.resolve(_options.web_src_path, 'manifests', 'vendor-manifest.json'));
 
   const plugins = [
-    new webpack.DllReferencePlugin({ manifest: VENDOR_MANIFEST, context: options.root_path }),
+    new webpack.DllReferencePlugin({ manifest: VENDOR_MANIFEST, context: _options.web_src_path }),
     new HtmlWebpackPlugin({ filename: getPluginFullName(fqcn) + '.module.json', inject: false, template: path.resolve(_options.web_src_path, 'templates', 'module.json.template') }),
     new CspHtmlWebpackPlugin({ 'script-src': ["'self'"], 'style-src': ["'self'"] }),
   ];

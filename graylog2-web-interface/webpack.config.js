@@ -34,7 +34,7 @@ const getCssLoaderOptions = () => {
   // Development
   if (TARGET === 'start') {
     return {
-      localIdentName: '[name]__[local]--[hash:base64:5]',
+      localIdentName: '[name]__[local]--[fullhash:base64:5]',
     };
   }
 
@@ -80,7 +80,7 @@ const webpackConfig = {
   },
   output: {
     path: BUILD_PATH,
-    filename: '[name].[hash].js',
+    filename: '[name].[fullhash].js',
   },
   module: {
     rules: [
