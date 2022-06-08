@@ -4,8 +4,8 @@ const { merge } = require('webpack-merge');
 
 const TARGET = process.env.npm_lifecycle_event;
 
-const pluginConfigPattern = 'graylog-plugin-*/**/webpack.config.js';
-const globCwd = '../..';
+const pluginConfigPattern = '*/**/webpack.config.js';
+const globCwd = './plugin';
 const globOptions = {
   ignore: '**/node_modules/**',
   cwd: globCwd,
@@ -36,7 +36,7 @@ const finalConfig = merge(mergedPluginConfigs, webpackConfig);
 // We need to inject webpack-hot-middleware to all entries, ensuring the app is able to reload on changes.
 if (TARGET === 'start') {
   const hmrEntries = {};
-  const webpackHotMiddlewareEntry = 'webpack-hot-middleware/client?reload=true&path=__webpack_hmr';
+  const webpackHotMiddlewareEntry = '@lukeapage/webpack-hot-middleware/client?reload=true&path=__webpack_hmr';
 
   Object.keys(finalConfig.entry).forEach((entryKey) => {
     const entryValue = finalConfig.entry[entryKey];
@@ -52,6 +52,9 @@ if (TARGET === 'start') {
   });
 
   finalConfig.entry = hmrEntries;
+
+//  console.error('WEBPACK FINAL ' + JSON.stringify(finalConfig.module.rules));
+
 }
 
 module.exports = finalConfig;

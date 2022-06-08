@@ -129,7 +129,7 @@
     "twix": "^1.1.4",
     "typeahead.js": "^0.11.1",
     "ua-parser-js": "^0.7.12",
-    "urijs": "^1.19.1",
+    "urijs": "^1.19.11",
     "uuid": "^3.2.1"
   },
   "devDependencies": {
@@ -142,6 +142,7 @@
     "@babel/preset-env": "^7.8.4",
     "@babel/preset-flow": "^7.8.3",
     "@babel/preset-react": "^7.8.3",
+    "@lukeapage/webpack-hot-middleware": "2.25.2",
     "@testing-library/dom": "7.20.2",
     "@testing-library/jest-dom": "5.11.0",
     "@testing-library/react": "11.0.4",
@@ -161,7 +162,7 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "csp-html-webpack-plugin": "^5.1.0",
-    "css-loader": "^0.28.10",
+    "css-loader": "^6.7.1",
     "enzyme": "3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint-config-graylog": "file:packages/eslint-config-graylog",
@@ -181,7 +182,7 @@
     "jest-styled-components": "7.0.2",
     "json-loader": "^0.5.3",
     "less": "^3.0.1",
-    "less-loader": "^4.1.0",
+    "less-loader": "^11.0.0",
     "phantomjs-prebuilt": ">=1.9",
     "puppeteer": "^2.1.1",
     "react-select-event": "^5.0.0",
@@ -196,7 +197,6 @@
     "webpack-cli": "^4.9.2",
     "webpack-dev-middleware": "^5.2.2",
     "webpack-dev-server": "^4.5.0",
-    "@lukeapage/webpack-hot-middleware": "2.25.2",
     "webpack-merge": "^5.8.0",
     "yargs": "^15.3.1"
   },

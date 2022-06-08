@@ -34,11 +34,18 @@ const getCssLoaderOptions = () => {
   // Development
   if (TARGET === 'start') {
     return {
-      localIdentName: '[name]__[local]--[fullhash:base64:5]',
+      modules : { 
+        localIdentName: '[name]__[local]--[fullhash:base64:5]',
+      }
     };
-  }
+}
 
-  return {};
+  return { 
+      modules : {
+        localIdentName: '[hash:base64]',
+      } 
+  };
+
 };
 
 const chunksSortMode = (c1, c2) => {
@@ -84,17 +91,17 @@ const webpackConfig = {
   },
   module: {
     rules: [
-      { test: /\.js(x)?$/, use: BABELLOADER, exclude: /node_modules|\.node_cache/ },
-      { test: /\.(svg)(\?.+)?$/, loader: 'file-loader' },
-      {
-        test: /\.(woff(2)?|ttf)(\?.+)?$/,
-        use: [{
-          loader: 'file-loader', options: { esModule: false },
-        }],
-      },
+      { test: /\.js(x)?$/i, use: BABELLOADER, exclude: /node_modules|\.node_cache/ },
+      { test: /\.(svg)(\?.+)?$/, use: { loader: 'file-loader' } },
+//      {
+//        test: /\.(woff(2)?|ttf)(\?.+)?$/,
+//        use: [{
+//          loader: 'file-loader', options: { esModule: false },
+//        }],
+//      },
       { test: /\.(png|gif|jpg)(\?.+)?$/, use: 'url-loader' },
       {
-        test: /bootstrap\.less$/,
+        test: /bootstrap\.less$/i,
         use: [
           {
             loader: 'style-loader',
@@ -102,21 +109,23 @@ const webpackConfig = {
               insert: 'head',
             },
           },
-          'css-loader',
+            {loader: 'css-loader'},
           {
             loader: 'less-loader',
             options: {
-              modifyVars: BOOTSTRAPVARS,
+                lessOptions: {
+                    modifyVars: BOOTSTRAPVARS,
+                }
             },
           },
         ],
       },
-      { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'], exclude: /bootstrap\.less$/ },
+      { test: /\.less$/i, use: ['style-loader', 'css-loader', 'less-loader'], exclude: /bootstrap\.less$/i },
       {
-        test: /\.css$/,
+        test: /\.css$/i,
 	exclude: [ /\.lazy\.css$/i, /.*leaflet\.css$/i ],
         use: [
-          'style-loader',
+          {loader: 'style-loader'},
           {
             loader: 'css-loader',
             options: getCssLoaderOptions(),
@@ -124,10 +133,10 @@ const webpackConfig = {
         ],
       },
       {
-        test: [/\.lazy\.css$/, /.*leaflet\.css$/i ],
+        test: [/\.lazy\.css$/i, /.*leaflet\.css$/i ],
         use: [
 	   { loader : 'style-loader', options: { injectType: 'lazyStyleTag'}},
-	  'css-loader',
+       { loader : 'css-loader'},
         ],
       },
     ],
@@ -145,75 +154,9 @@ const webpackConfig = {
   plugins: [
     new UniqueChunkIdPlugin(),
     new webpack.DllReferencePlugin({ manifest: VENDOR_MANIFEST_PATH, context: ROOT_PATH }),
-    new HtmlWebpackPlugin({
-      title: 'Graylog',
-      favicon: path.resolve(ROOT_PATH, 'public/images/favicon.png'),
-      filename: 'index.html',
-      inject: false,
-      template: path.resolve(ROOT_PATH, 'templates/index.html.template'),
-      vendorModule: () => JSON.parse(fs.readFileSync(path.resolve(BUILD_PATH, 'vendor-module.json'), 'utf8')),
-      chunksSortMode,
-      cspPlugin: {
-          enabled: true,
-          policy: {
-            'script-src': ["'self'"],
-            'style-src': [ "'self'"]
-          },
-          hashEnabled: {
-            'script-src': true,
-            'style-src': true
-          },
-          nonceEnabled: {
-            'script-src': true,
-            'style-src': true
-          }
-      }
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'module.json',
-      inject: false,
-      template: path.resolve(ROOT_PATH, 'templates/module.json.template'),
-      excludeChunks: ['config'],
-      chunksSortMode,
-      cspPlugin: {
-                enabled: true,
-                policy: {
-                  'script-src': ["'self'"],
-                  'style-src': ["'self'"]
-                },
-                hashEnabled: {
-                  'script-src': true,
-                  'style-src': true
-                },
-                nonceEnabled: {
-                  'script-src': true,
-                  'style-src': true
-                }
-      }
-    }),
-    new CspHtmlWebpackPlugin({
-      'script-src': ["'self'"],
-      'style-src': ["'self'"]
-    }),
-    new webpack.DefinePlugin({
+   new webpack.DefinePlugin({
       FEATURES: JSON.stringify(process.env.FEATURES),
     }),
-//    new CircularDependencyPlugin({
-//      // `onStart` is called before the cycle detection starts
-//      onStart({ compilation }) {
-//        console.log('start detecting webpack modules cycles');
-//      },
-//      // `onDetected` is called for each module that is cyclical
-//      onDetected({ module: webpackModuleRecord, paths, compilation }) {
-//        // `paths` will be an Array of the relative module paths that make up the cycle
-//        // `module` will be the module record generated by webpack that caused the cycle
-//        compilation.errors.push(new Error(paths.join(' -> ')))
-//      },
-//      // `onEnd` is called before the cycle detection ends
-//      onEnd({ compilation }) {
-//        console.log('end detecting webpack modules cycles');
-//      },
-//    }),
   ],
 };
 
@@ -238,10 +181,33 @@ if (TARGET === 'start') {
         DEVELOPMENT: true,
         GRAYLOG_HTTP_PUBLISH_URI: JSON.stringify(process.env.GRAYLOG_HTTP_PUBLISH_URI),
       }),
+      new HtmlWebpackPlugin({
+          title: 'Graylog',
+          favicon: path.resolve(ROOT_PATH, 'public/images/favicon.png'),
+          filename: 'index.html',
+          inject: false,
+          template: path.resolve(ROOT_PATH, 'templates/index.html.template'),
+          vendorModule: () => JSON.parse(fs.readFileSync(path.resolve(BUILD_PATH, 'vendor-module.json'), 'utf8')),
+          chunksSortMode,
+          cspPlugin: {
+              enabled: false,
+          }
+        }),
+        new HtmlWebpackPlugin({
+          filename: 'module.json',
+          inject: false,
+          template: path.resolve(ROOT_PATH, 'templates/module.json.template'),
+          excludeChunks: ['config'],
+          chunksSortMode,
+          cspPlugin: {
+              enabled: false,
+         }
+        }),
       new CopyWebpackPlugin({ patterns: [{ from: 'config.js' }] }),
       new webpack.HotModuleReplacementPlugin(),
     ],
   });
+
 }
 
 if (TARGET.startsWith('build')) {
@@ -253,23 +219,77 @@ if (TARGET.startsWith('build')) {
     mode: 'production',
     devtool: false,
     optimization: {
-      minimizer: [new TerserPlugin({
-        parallel: true,
-        terserOptions: {
-          compress: {
-            warnings: false,
-          },
-          mangle: {
-            reserved: ['$super', '$', 'exports', 'require'],
-          },
+        minimize: true,
+//        splitChunks: {
+//                chunks: 'all',
+//            },
+//            runtimeChunk: true,
+//        runtimeChunk : 'single',
+//        moduleIds: 'named',
+        minimizer: [new TerserPlugin({
+          parallel: true,
+          terserOptions: {
+            compress: {
+              warnings: false,
+            },
         },
       })],
-     moduleIds: 'deterministic',
+//     moduleIds: 'deterministic',
     },
     plugins: [
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify('production'),
       }),
+      new HtmlWebpackPlugin({
+          title: 'Graylog',
+          favicon: path.resolve(ROOT_PATH, 'public/images/favicon.png'),
+          filename: 'index.html',
+          inject: false,
+          template: path.resolve(ROOT_PATH, 'templates/index.html.template'),
+          vendorModule: () => JSON.parse(fs.readFileSync(path.resolve(BUILD_PATH, 'vendor-module.json'), 'utf8')),
+          chunksSortMode,
+          cspPlugin: {
+              enabled: true,
+              policy: {
+                'script-src': ["'self'"],
+                'style-src': [ "'self'"]
+              },
+              hashEnabled: {
+                'script-src': true,
+                'style-src': true
+              },
+              nonceEnabled: {
+                'script-src': true,
+                'style-src': true
+              }
+          }
+        }),
+        new HtmlWebpackPlugin({
+          filename: 'module.json',
+          inject: false,
+          template: path.resolve(ROOT_PATH, 'templates/module.json.template'),
+          excludeChunks: ['config'],
+          chunksSortMode,
+          cspPlugin: {
+                    enabled: true,
+                    policy: {
+                      'script-src': ["'self'"],
+                      'style-src': ["'self'", "'unsafe-inline'"]
+                    },
+                    hashEnabled: {
+                      'script-src': true,
+                      'style-src': true
+                    },
+                    nonceEnabled: {
+                      'script-src': true,
+                      'style-src': true
+                    }
+          }
+        }),
+        new CspHtmlWebpackPlugin({
+          'script-src': ["'self'"],
+          'style-src': ["'self'", "'unsafe-inline'"]
+        }),       
     ],
   });
 }

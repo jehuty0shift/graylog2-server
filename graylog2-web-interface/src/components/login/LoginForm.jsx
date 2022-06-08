@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 
@@ -19,12 +19,15 @@ const LoginForm = ({ onErrorChange }) => {
   let promise;
   let usernameInput;
   let passwordInput;
+  const mounted = useRef(false);
 
   useEffect(() => {
+    mounted.current = true;
     return () => {
       if (promise) {
         promise.cancel();
       }
+      mounted.current = false;
     };
   }, []);
 
@@ -47,7 +50,7 @@ const LoginForm = ({ onErrorChange }) => {
     });
 
     promise.finally(() => {
-      if (!promise.isCancelled()) {
+      if (!promise.isCancelled() && mounted.current == true) {
         setIsLoading(false);
       }
     });

@@ -112,7 +112,7 @@ const plugins = process.argv.slice(3);
 const config = (url) => `
 window.appConfig = {
   gl2ServerUrl: '${url}',
-  gl2AppPathPrefix: '/',
+  gl2AppPathPrefix: '',
   rootTimeZone: 'UTC',
 };
 `;

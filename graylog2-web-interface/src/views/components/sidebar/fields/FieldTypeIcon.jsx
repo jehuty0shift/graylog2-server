@@ -25,7 +25,6 @@ const iconClass = (type) => {
       return 'network-wired';
     case 'geo-point':
       return 'map-marked-alt';
-      return
     default:
       return 'question-circle';
   }
