@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import createReactClass from 'create-react-class';
 import Reflux from 'reflux';
 
@@ -20,6 +20,7 @@ const StartPage = createReactClass({
   getInitialState() {
     return {
       gettingStarted: undefined,
+      setOnce: false,
     };
   },
 
@@ -29,7 +30,7 @@ const StartPage = createReactClass({
   },
 
   componentDidUpdate() {
-    if (!this._isLoading()) {
+    if (!this._isLoading() && this.state.setOnce == false) {
       this._redirectToStartpage();
     }
   },
@@ -44,6 +45,7 @@ const StartPage = createReactClass({
 
   _redirectToStartpage() {
     const { currentUser: { startpage, permissions }, gettingStarted } = this.state;
+    this.setState({ setOnce: true});
 
     // Show getting started page if user is an admin and getting started wasn't dismissed
     if (PermissionsMixin.isPermitted(permissions, ['inputs:create'])) {

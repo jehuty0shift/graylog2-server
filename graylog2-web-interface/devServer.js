@@ -5,7 +5,7 @@ const history = require('connect-history-api-fallback');
 const http = require('http');
 const yargs = require('yargs');
 const webpackDevMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
+const webpackHotMiddleware = require('@lukeapage/webpack-hot-middleware');
 const webpackConfig = require('./webpack.bundled');
 
 const DEFAULT_HOST = '127.0.0.1';

@@ -72,6 +72,7 @@ const webpackConfig = {
   recordsPath: path.resolve(ROOT_PATH, 'webpack/vendor-module-ids.json'),
 };
 
+
 if (TARGET.startsWith('build')) {
   module.exports = merge(webpackConfig, {
     mode: 'production',
