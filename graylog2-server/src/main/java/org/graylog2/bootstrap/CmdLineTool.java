@@ -416,7 +416,7 @@ public abstract class CmdLineTool implements CliCommand {
                 // TODO this could potentially print duplicate messages depending on what a subclass does...
                 LOG.error("Guice error (more detail on log level debug): {}", message.getMessage());
                 if (rootCause != null) {
-                    LOG.debug("Stacktrace:", rootCause);
+                    LOG.error("Stacktrace:", rootCause);
                 }
             }
         }

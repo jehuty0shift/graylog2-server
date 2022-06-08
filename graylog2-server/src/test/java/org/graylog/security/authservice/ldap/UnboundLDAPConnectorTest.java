@@ -105,7 +105,7 @@ public class UnboundLDAPConnectorTest extends AbstractLdapTestUnit {
                 .serverList(Collections.singletonList(ldapServer))
                 .build();
 
-        connector = new UnboundLDAPConnector(10000, ENABLED_TLS_PROTOCOLS, (host) -> null, encryptedValueService);
+        connector = new UnboundLDAPConnector(10000, ENABLED_TLS_PROTOCOLS, (host, validateHostname) -> null, encryptedValueService);
         connection = connector.connect(connectorConfig);
     }
 
