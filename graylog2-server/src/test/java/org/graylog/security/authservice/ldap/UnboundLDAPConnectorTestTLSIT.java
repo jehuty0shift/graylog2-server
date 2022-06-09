@@ -170,7 +170,7 @@ public class UnboundLDAPConnectorTestTLSIT {
     }
 
     private void mockTrustManagerWithKeystore(KeyStore keyStore) throws KeyStoreException, NoSuchAlgorithmException {
-        when(this.trustManagerProvider.create(anyString()))
+        when(this.trustManagerProvider.create(anyString(), false))
                 .then((invocation) -> provideTrustManager(invocation.getArgument(0), keyStore));
     }
 
