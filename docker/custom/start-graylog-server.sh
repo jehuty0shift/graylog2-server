@@ -13,7 +13,9 @@ source /etc/default/graylog-server
 #    cp -ar /usr/share/graylog-server/plugin.bak/* /usr/share/graylog-server/plugin/
 #fi
 if [ -f "/etc/graylog/server/maintenance" ] ; then
-    exit 1
+    echo "find maintenance file, prevent starting graylog!"
+    sleep 30
+    exit 2
 fi
 
 exec $GRAYLOG_COMMAND_WRAPPER ${JAVA:=/usr/bin/java} $GRAYLOG_SERVER_JAVA_OPTS $GRAYLOG_SERVER_JAVA_EXTRA_OPTS \
