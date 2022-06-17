@@ -12,6 +12,10 @@ source /etc/default/graylog-server
 #if [ -d "/usr/share/graylog-server/plugin.bak" ] ; then
 #    cp -ar /usr/share/graylog-server/plugin.bak/* /usr/share/graylog-server/plugin/
 #fi
+if [ -f "/etc/graylog/server/maintenance" ] ; then
+    exit 1
+fi
+
 exec $GRAYLOG_COMMAND_WRAPPER ${JAVA:=/usr/bin/java} $GRAYLOG_SERVER_JAVA_OPTS $GRAYLOG_SERVER_JAVA_EXTRA_OPTS \
     -Dlog4j.configurationFile=file:///etc/graylog/server/log4j.xml \
     -Djava.library.path=/usr/share/graylog-server/lib/sigar \
