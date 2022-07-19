@@ -30,21 +30,33 @@ const BABELLOADER = { loader: 'babel-loader', options: BABELOPTIONS };
 // eslint-disable-next-line import/no-dynamic-require
 const BOOTSTRAPVARS = require(path.resolve(ROOT_PATH, 'public', 'stylesheets', 'bootstrap-config.json')).vars;
 
-const getCssLoaderOptions = () => {
-  // Development
-  if (TARGET === 'start') {
-    return {
-      modules : { 
-        localIdentName: '[name]__[local]--[fullhash:base64:5]',
-      }
-    };
-}
 
-  return { 
-      modules : {
-        localIdentName: '[hash:base64]',
-      } 
-  };
+
+const getCssLoaderOptions = () => {
+    const returnCssMode = (resourcePath) => {
+    if (/node_modules/i.test(resourcePath)) {
+        return "global";
+    }
+    return "local";
+   }
+
+    
+    // Development
+    if (TARGET === 'start') {
+        return {
+            modules : { 
+                localIdentName: '[name]__[local]--[fullhash:base64:5]',
+                mode: returnCssMode
+            }
+        }
+    }
+
+    return { 
+        modules : {
+            localIdentName: '[hash:base64]',
+            mode: returnCssMode
+        } 
+    };
 
 };
 
@@ -123,7 +135,20 @@ const webpackConfig = {
       { test: /\.less$/i, use: ['style-loader', 'css-loader', 'less-loader'], exclude: /bootstrap\.less$/i },
       {
         test: /\.css$/i,
-	exclude: [ /\.lazy\.css$/i, /.*leaflet\.css$/i ],
+        include: [ /node_modules/],
+	    exclude: [ /\.lazy\.css$/i, /.*leaflet\.css$/i ],
+        sideEffects: true,
+        use: [
+          {loader: 'style-loader'},
+          {
+            loader: 'css-loader',
+            options: getCssLoaderOptions(),
+          },
+        ],
+      },
+      {
+        test: /\.css$/i,
+	    exclude: [ /\.lazy\.css$/i, /.*leaflet\.css$/i, /node_modules/ ],
         use: [
           {loader: 'style-loader'},
           {
@@ -165,6 +190,13 @@ if (TARGET === 'start') {
   console.error('Running in development (no HMR) mode');
 
   module.exports = merge(webpackConfig, {
+//    stats: {
+//    all: true,
+//    // Examine all modules
+//    //maxModules: 42,
+//    // Display bailout reasons
+//    optimizationBailout: true,
+//  },
     mode: 'development',
     devtool: 'cheap-module-source-map',
     output: {
