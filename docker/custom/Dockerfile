@@ -2,9 +2,9 @@ FROM   ldp-default-docker.artifactory.ovhcloud.tools/ldp-openzulu-dk-17
 ENV     DEBIAN_FRONTEND=noninteractive \
         GRAYLOG_VERSION=4.0.0 \
         GRAYLOG_MAJOR=4.0 \
-        REVISION=202205162005
+        REVISION=202207201951
 
-COPY    ["graylog.tar.gz", "graylog-server", "CA-logs.ovh.com.crt", "ldap-ldp.crt", "/tmp/"]
+COPY    ["graylog.tar.gz", "graylog-server", "CA-logs.ovh.com.crt", "ldap-ldp.crt", "mongo-CA.crt", "/tmp/"]
 ADD     plugins /tmp/plugins/
 COPY    start-graylog-server.sh /usr/bin/start-graylog-server.sh
 
@@ -20,11 +20,14 @@ RUN     apt-get update && \
         cd /tmp && \
         cp /tmp/CA-logs.ovh.com.crt $JAVA_SECURITY/CA-logs.ovh.com.crt && \
         cp /tmp/ldap-ldp.crt $JAVA_SECURITY/CA-ldap.logs.ovh.com.crt && \
+        cp /tmp/mongo-CA.crt $JAVA_SECURITY/CA-mongoDB.crt && \
         $JAVA_HOME/bin/keytool -importcert -storepass changeit -keystore $JAVA_SECURITY/cacerts -noprompt -trustcacerts -alias logsovhcom -file $JAVA_SECURITY/CA-logs.ovh.com.crt && \
         $JAVA_HOME/bin/keytool -importcert -storepass changeit -keystore -cacerts -noprompt -trustcacerts -alias logsovhcom -file $JAVA_SECURITY/CA-logs.ovh.com.crt && \
         $JAVA_HOME/bin/keytool -importcert -storepass changeit -keystore $JAVA_SECURITY/cacerts -noprompt -trustcacerts -alias ldaplogsovhcom -file $JAVA_SECURITY/CA-ldap.logs.ovh.com.crt && \
         $JAVA_HOME/bin/keytool -importcert -storepass changeit -keystore -cacerts -noprompt -trustcacerts -alias ldaplogsovhcom -file $JAVA_SECURITY/CA-ldap.logs.ovh.com.crt && \
-        mkdir -p /etc/ssl/certs/graylog && \
+        $JAVA_HOME/bin/keytool -importcert -storepass changeit -keystore $JAVA_SECURITY/cacerts -noprompt -trustcacerts -alias mongologsovhcom -file $JAVA_SECURITY/CA-mongoDB.crt && \
+        $JAVA_HOME/bin/keytool -importcert -storepass changeit -keystore -cacerts -noprompt -trustcacerts -alias mongologsovhcom -file $JAVA_SECURITY/CA-mongoDB.crt && \
+       mkdir -p /etc/ssl/certs/graylog && \
         cp $JAVA_SECURITY/cacerts /etc/ssl/certs/graylog/cacerts.jks && \
 	apt-get install -qqy wget ntp ntpdate apt-transport-https uuid-runtime && \
         echo "server ntp.ovh.net" > /etc/ntp.conf && \
