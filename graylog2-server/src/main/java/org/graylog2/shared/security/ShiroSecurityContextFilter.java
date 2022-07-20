@@ -120,7 +120,9 @@ public class ShiroSecurityContextFilter implements ContainerRequestFilter {
             }
         } else if ("token".equalsIgnoreCase(credential)) {
             authToken = new AccessTokenAuthToken(userName, host);
-        } else if (userName == null) { // without a username we default to using the header environment as potentially containing tokens used by plugins
+        } else if ("token".equalsIgnoreCase(userName)) {
+            authToken = new AccessTokenAuthToken(credential, host);
+        }else if (userName == null) { // without a username we default to using the header environment as potentially containing tokens used by plugins
             authToken = new HttpHeadersToken(headers, host, remoteAddr);
         } else { // otherwise we use the "standard" username/password combination
             authToken = new UsernamePasswordToken(userName, credential, host);
