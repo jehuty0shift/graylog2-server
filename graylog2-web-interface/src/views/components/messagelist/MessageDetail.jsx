@@ -9,6 +9,7 @@ import { MessageFields } from 'views/components/messagelist';
 import MessageDetailsTitle from 'components/search/MessageDetailsTitle';
 import { Icon, Spinner, Timestamp } from 'components/common';
 import Routes from 'routing/Routes';
+import DateTime from 'logic/datetimes/DateTime';
 
 import MessageActions from './MessageActions';
 import MessageMetadata from './MessageMetadata';
@@ -131,7 +132,7 @@ class MessageDetail extends React.Component {
       const rawTimestamp = fields.timestamp;
 
       timestamp.push(<dt key={`dt-${rawTimestamp}`}>Timestamp</dt>);
-      timestamp.push(<dd key={`dd-${rawTimestamp}`}><Timestamp dateTime={rawTimestamp} /></dd>);
+      timestamp.push(<dd key={`dd-${rawTimestamp}`}><Timestamp dateTime={rawTimestamp} format={DateTime.Formats.TIMESTAMP_TSZ_OPTIONAL_NANO}/></dd>);
     }
 
     // eslint-disable-next-line camelcase

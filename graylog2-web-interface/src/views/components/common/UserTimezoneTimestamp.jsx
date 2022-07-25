@@ -9,7 +9,7 @@ const UserTimezoneTimestamp = ({ ...rest }) => {
   const currentUser = useContext(CurrentUserContext);
   const timezone = currentUser?.timezone ?? AppConfig.rootTimeZone();
 
-  return <Timestamp tz={timezone} format={DateTime.Formats.DATETIME_TZ} {...rest} />;
+  return <Timestamp tz={timezone} format={DateTime.Formats.TIMESTAMP_TSZ_OPTIONAL_NANO} {...rest} />;
 };
 
 export default UserTimezoneTimestamp;

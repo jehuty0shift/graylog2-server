@@ -21,6 +21,7 @@ class DateTime {
       TIMESTAMP_TSZ: 'YYYY-MM-DD HH:mm:ss.SSS Z', // Use to show times when decimal second precision is important, in a different TZ
       TIMESTAMP_TSZ_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
       TIMESTAMP_TSZ_NANO: 'YYYY-MM-DD HH:mm:ss.SSSSSSSSS Z', // Use to show times when decimal second precision is important, in a different TZ
+      TIMESTAMP_TSZ_OPTIONAL_NANO: 'WWWWWWW', // DO NOT USE literally, Magic value to convert to right TIMESTAMP_TSZ
       TIMESTAMP_TZ: 'YYYY-MM-DD HH:mm:ssZ', // Use to show times when decimal second precision is important, in a different TZ
       TIMESTAMP_TZ_MILLIS: 'YYYY-MM-DD HH:mm:ss.SSSZ', // Use to show times when decimal second precision is important, in a different TZ
       TIMESTAMP_TZ_MICRO: 'YYYY-MM-DD HH:mm:ss.SSSSSSZ', // Use to show times when decimal second precision is important, in a different TZ
@@ -84,13 +85,13 @@ class DateTime {
     }
 
     const matchNano = dateTimeString.match(/.*\.(\d+)/)
-    let nanoseconds = parsedDateTime.milliseconds() * 1000000;
+    let nanoseconds = (parsedDateTime.milliseconds() * 1000000).toString();
     if (matchNano) {
       nanoseconds = matchNano[1];
     }
 
     const dt = new DateTime(parsedDateTime);
-    dt.setNanoseconds(nanoseconds);
+    dt.setNanoseconds(DateTime.padNano(nanoseconds, true));
 
     return dt;
   }
@@ -116,14 +117,23 @@ class DateTime {
   constructor(dateTime) {
     if (!dateTime) {
       this.dateTime = DateTime.now();
-      this.nanoseconds = (this.dateTime.milliseconds()* 1000000).toString();
-
+      const matchNano = dateTime.match(/.*\.(\d+)Z/)
+      let nanoString = "";
+      if (matchNano) {
+        nanoString = matchNano[1];
+      }
+      this.nanoseconds = DateTime.padNano(nanoString,false);
       return;
     }
 
+      const matchNano = dateTime.match(/.*\.(\d+)Z/)
+      let nanoString = "";
+      if (matchNano) {
+        nanoString = matchNano[1];
+      }
     // Always use user's local time
     this.dateTime = moment.tz(dateTime, DateTime.getUserTimezone());
-    this.nanoseconds = (this.dateTime.milliseconds()* 1000000).toString();
+    this.nanoseconds = DateTime.padNano(nanoString, false);
 
   }
 
@@ -165,6 +175,16 @@ class DateTime {
     return this.dateTime.toDate();
   }
 
+  static padNano(nanoString, before) {
+    while (nanoString.length < 9) {
+      if(before) {
+        nanoString = "0" + nanoString;
+      } else {
+        nanoString = nanoString + "0";
+      }
+    }
+    return nanoString;
+  }
   // Returns an ISO_8601 formatted string
   toISOString() {
      function pad(number) {
@@ -193,6 +213,20 @@ class DateTime {
         effectiveFormat = DateTime.Formats.DATETIME;
       } else {
         effectiveFormat = DateTime.Formats.TIMESTAMP;
+      }
+    }
+    let nanoStr = this.nanoseconds;
+    console.log ("nanoseconds " + nanoStr);
+    if(format == DateTime.Formats.TIMESTAMP_TSZ_OPTIONAL_NANO) {
+    //check if we need to render milliseconds or nanoseconds
+      if (nanoStr.substring(6,9) != "000") {
+        effectiveFormat = DateTime.Formats.TIMESTAMP_TSZ_NANO.replace("SSSSSSSSS", nanoStr);
+      } else if (nanoStr.substring(3,6) != "000") {
+        effectiveFormat = DateTime.Formats.TIMESTAMP_TSZ_MICRO.replace("SSSSSS", nanoStr.substring(0,6));
+      } else if (nanoStr.substring(0,3) != "000") {
+        effectiveFormat = DateTime.Formats.TIMESTAMP_TSZ.replace("SSS", nanoStr.substring(0,3));
+      } else {
+        effectiveFormat = DateTime.Formats.DATETIME_TZ;
       }
     }
 
