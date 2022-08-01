@@ -91,7 +91,6 @@ class DateTime {
     }
 
     const dt = new DateTime(parsedDateTime);
-    dt.setNanoseconds(DateTime.padNano(nanoseconds, true));
 
     return dt;
   }
@@ -117,20 +116,18 @@ class DateTime {
   constructor(dateTime) {
     if (!dateTime) {
       this.dateTime = DateTime.now();
-      const matchNano = dateTime.match(/.*\.(\d+)Z/)
-      let nanoString = "";
-      if (matchNano) {
-        nanoString = matchNano[1];
-      }
-      this.nanoseconds = DateTime.padNano(nanoString,false);
-      return;
     }
 
+    let nanoString = "";
+    if (dateTime instanceof moment) {
+      nanoString = DateTime.padNano((dateTime.milliseconds()*1000000).toString(), true);
+    } else if (typeof dateTime === "string") {
       const matchNano = dateTime.match(/.*\.(\d+)Z/)
-      let nanoString = "";
       if (matchNano) {
         nanoString = matchNano[1];
       }
+    }
+
     // Always use user's local time
     this.dateTime = moment.tz(dateTime, DateTime.getUserTimezone());
     this.nanoseconds = DateTime.padNano(nanoString, false);
@@ -216,7 +213,6 @@ class DateTime {
       }
     }
     let nanoStr = this.nanoseconds;
-    console.log ("nanoseconds " + nanoStr);
     if(format == DateTime.Formats.TIMESTAMP_TSZ_OPTIONAL_NANO) {
     //check if we need to render milliseconds or nanoseconds
       if (nanoStr.substring(6,9) != "000") {
