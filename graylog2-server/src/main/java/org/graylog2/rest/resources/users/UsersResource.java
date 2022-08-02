@@ -62,6 +62,7 @@ import org.graylog2.shared.users.Roles;
 import org.graylog2.shared.users.UserService;
 import org.graylog2.users.PaginatedUserService;
 import org.graylog2.users.RoleService;
+import org.graylog2.users.RoleServiceImpl;
 import org.graylog2.users.UserOverviewDTO;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -478,10 +479,12 @@ public class UsersResource extends RestResource {
         user.setName(username);
         user.setEmail(EXTERNAL_USER_DEFAULT_MAIL);
         user.setFullName(EXTERNAL_USER_DEFAULT_MAIL);
+        user.setSessionTimeoutMs(28800000);
+        user.setTimeZone(DateTimeZone.UTC);
 
         Role defaultReaderRole = null;
         try {
-            roleService.load("Reader");
+            roleService.load(RoleServiceImpl.READER_ROLENAME);
         } catch (org.graylog2.database.NotFoundException ex) {
             throw new ValidationException("default role is not present");
         }
