@@ -147,6 +147,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
     public static final String USER_ACCESS_TOKEN_DELETE = PREFIX + "user_access_token:delete";
     public static final String USER_CREATE = PREFIX + "user:create";
     public static final String USER_DELETE = PREFIX + "user:delete";
+    public static final String USER_INIT = PREFIX + "user:init";
     public static final String USER_PASSWORD_UPDATE = PREFIX + "user_password:update";
     public static final String USER_PERMISSIONS_UPDATE = PREFIX + "user_permissions:update";
     public static final String USER_PERMISSIONS_DELETE = PREFIX + "user_permissions:delete";
@@ -276,6 +277,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
             .add(USER_ACCESS_TOKEN_DELETE)
             .add(USER_CREATE)
             .add(USER_DELETE)
+            .add(USER_INIT)
             .add(USER_PASSWORD_UPDATE)
             .add(USER_PERMISSIONS_UPDATE)
             .add(USER_PERMISSIONS_DELETE)

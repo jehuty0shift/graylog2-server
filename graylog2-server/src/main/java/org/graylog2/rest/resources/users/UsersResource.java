@@ -133,6 +133,8 @@ public class UsersResource extends RestResource {
             .put(UserOverviewDTO.FIELD_EMAIL, SearchQueryField.create(UserOverviewDTO.FIELD_EMAIL))
             .build();
 
+    private static final String EXTERNAL_USER_DEFAULT_MAIL = "registered@logs.ovh.com";
+
     @Inject
     public UsersResource(UserService userService,
                          PaginatedUserService paginatedUserService,
@@ -451,6 +453,43 @@ public class UsersResource extends RestResource {
         user.setPermissions(getEffectiveUserPermissions(user, permissionRequest.permissions()));
         userService.save(user);
     }
+
+    @PUT
+    @Path("{username}/init")
+    @ApiOperation("Initialize an external user")
+    @ApiResponses({
+            @ApiResponse(code = 400, message = "Missing or invalid permission data.")
+    })
+    @AuditEvent(type = AuditEventTypes.USER_INIT)
+    public void initExternalUser(@ApiParam(name = "username", value = "The name of the user to init.", required = true)
+                                @PathParam("username") String username) throws ValidationException {
+        checkPermission(RestPermissions.USERS_CREATE, username);
+
+        User user = userService.load(username);
+        checkPermission(RestPermissions.USERS_EDIT, username);
+
+        if (user != null) {
+            return;
+        }
+
+        user = userService.create();
+
+        user.setExternal(true);
+        user.setName(username);
+        user.setEmail(EXTERNAL_USER_DEFAULT_MAIL);
+        user.setFullName(EXTERNAL_USER_DEFAULT_MAIL);
+
+        Role defaultReaderRole = null;
+        try {
+            roleService.load("Reader");
+        } catch (org.graylog2.database.NotFoundException ex) {
+            throw new ValidationException("default role is not present");
+        }
+        user.setRoleIds(Set.of(defaultReaderRole.getId()));
+
+        userService.save(user);
+    }
+
 
     @PUT
     @Path("{username}/preferences")
