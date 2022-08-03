@@ -482,9 +482,9 @@ public class UsersResource extends RestResource {
         user.setSessionTimeoutMs(28800000);
         user.setTimeZone(DateTimeZone.UTC);
 
-        Role defaultReaderRole = null;
+        Role defaultReaderRole;
         try {
-            roleService.load(RoleServiceImpl.READER_ROLENAME);
+            defaultReaderRole = roleService.load(RoleServiceImpl.READER_ROLENAME);
         } catch (org.graylog2.database.NotFoundException ex) {
             throw new ValidationException("default role is not present");
         }
