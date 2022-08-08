@@ -198,6 +198,7 @@ public class JerseyService extends AbstractIdleService {
         apiHttpServer.start();
 
         LOG.info("Started REST API at <{}>", configuration.getHttpBindAddress());
+
     }
 
     private Set<Resource> prefixPluginResources(String pluginPrefix, Map<String, Set<Class<? extends PluginRestResource>>> pluginResourceMap) {
