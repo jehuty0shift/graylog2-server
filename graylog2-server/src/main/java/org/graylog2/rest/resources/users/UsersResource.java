@@ -91,16 +91,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -457,6 +448,7 @@ public class UsersResource extends RestResource {
 
     @PUT
     @Path("{username}/init")
+    @RequiresPermissions(RestPermissions.USERS_CREATE)
     @ApiOperation("Initialize an external user")
     @ApiResponses({
             @ApiResponse(code = 400, message = "Missing or invalid permission data.")
@@ -464,10 +456,8 @@ public class UsersResource extends RestResource {
     @AuditEvent(type = AuditEventTypes.USER_INIT)
     public void initExternalUser(@ApiParam(name = "username", value = "The name of the user to init.", required = true)
                                 @PathParam("username") String username) throws ValidationException {
-        checkPermission(RestPermissions.USERS_CREATE, username);
 
         User user = userService.load(username);
-        checkPermission(RestPermissions.USERS_EDIT, username);
 
         if (user != null) {
             return;
@@ -481,6 +471,8 @@ public class UsersResource extends RestResource {
         user.setFullName(EXTERNAL_USER_DEFAULT_MAIL);
         user.setSessionTimeoutMs(28800000);
         user.setTimeZone(DateTimeZone.UTC);
+        user.setPassword(UUID.randomUUID().toString()); //needed for validations, use a pseudo-random cryptographically strong generator
+        user.setPermissions(Collections.emptyList());
 
         Role defaultReaderRole;
         try {
