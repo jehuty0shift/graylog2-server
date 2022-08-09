@@ -468,7 +468,7 @@ public class UsersResource extends RestResource {
         user.setExternal(true);
         user.setName(username);
         user.setEmail(EXTERNAL_USER_DEFAULT_MAIL);
-        user.setFullName(EXTERNAL_USER_DEFAULT_MAIL);
+        user.setFullName(username);
         user.setSessionTimeoutMs(28800000);
         user.setTimeZone(DateTimeZone.UTC);
         user.setPassword(UUID.randomUUID().toString()); //needed for validations, use a pseudo-random cryptographically strong generator
