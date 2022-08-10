@@ -15,7 +15,7 @@ jobs:
     - fullVersion=$currentVersion-{{.cds.version}}
     - worker set-version "$fullVersion"
     - docker build -t ldp/graylog-build docker/build/
-    - docker run --network=host -v {{.cds.workspace}}:/data --env CDS_VERSION=fullVersion ldp/graylog-build
+    - docker run --network=host -v {{.cds.workspace}}:/data --env CDS_VERSION=$fullVersion ldp/graylog-build
     - tar -czf graylog2-server-build.tgz *
   - artifactUpload:
       path: graylog2-server-build.tgz
