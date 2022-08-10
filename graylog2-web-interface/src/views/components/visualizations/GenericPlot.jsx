@@ -238,8 +238,7 @@ class GenericPlot extends React.Component<Props, State> {
                                    placement="top"
                                    target={legendConfig.target}>
                             <Popover id="legend-config"
-                                     title={`Configuration for ${legendConfig.name}`}
-                                     className={styles.locals.customPopover}>
+                                     title={`Configuration for ${legendConfig.name}`}>
                               <ColorPicker color={legendConfig.color}
                                            onChange={(newColor) => this._onColorSelect(setColor, legendConfig.name, newColor)} />
                             </Popover>
