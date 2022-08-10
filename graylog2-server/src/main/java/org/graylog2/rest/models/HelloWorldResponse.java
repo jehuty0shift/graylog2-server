@@ -37,7 +37,10 @@ public abstract class HelloWorldResponse {
     @JsonProperty("tagline")
     public abstract String tagline();
 
-    public static HelloWorldResponse create(String clusterId, String nodeId, String version, String tagline) {
-        return new AutoValue_HelloWorldResponse(clusterId, nodeId, version, tagline);
+    @JsonProperty("cds_run")
+    public abstract String cdsRun();
+
+    public static HelloWorldResponse create(String clusterId, String nodeId, String version, String tagline, String cdsRun) {
+        return new AutoValue_HelloWorldResponse(clusterId, nodeId, version, tagline, cdsRun);
     }
 }
