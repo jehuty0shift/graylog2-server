@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.Properties;
 
@@ -29,7 +30,8 @@ import static java.util.Objects.requireNonNull;
 /**
  * Following the <a href="http://semver.org/">Semantic Versioning specification</a>.
  */
-public class Version implements Comparable<Version> {
+public class Version implements Comparable<Version>, Serializable {
+    private static final long serialVersionUID = 1L;
     private static final Logger LOG = LoggerFactory.getLogger(Version.class);
 
     /**
@@ -58,7 +60,7 @@ public class Version implements Comparable<Version> {
     @Deprecated
     public final String abbrevCommitSha;
 
-    private final com.github.zafarkhaja.semver.Version version;
+    private final transient com.github.zafarkhaja.semver.Version version;
 
     /**
      * Reads the current version from the classpath, using version.properties and git.properties.
@@ -336,3 +338,4 @@ public class Version implements Comparable<Version> {
         return version.compareTo(that.getVersion());
     }
 }
+
