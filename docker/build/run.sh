@@ -1,4 +1,4 @@
 #!/bin/bash
 cd /data
-sed -i s/$CDS_VERSION/BUILD_NUMBER/ graylog2-server/src/main/resources/cds.properties
+sed -i s/BUILD_NUMBER/$CDS_VERSION/ graylog2-server/src/main/resources/cds.properties
 mvn package -DskipTests
