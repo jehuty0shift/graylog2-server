@@ -22,25 +22,7 @@ import org.graylog.scheduler.periodicals.ScheduleTriggerCleanUp;
 import org.graylog2.events.ClusterEventCleanupPeriodical;
 import org.graylog2.events.ClusterEventPeriodical;
 import org.graylog2.indexer.fieldtypes.IndexFieldTypePollerPeriodical;
-import org.graylog2.periodical.AlertScannerThread;
-import org.graylog2.periodical.BatchedElasticSearchOutputFlushThread;
-import org.graylog2.periodical.ClusterHealthCheckThread;
-import org.graylog2.periodical.ClusterIdGeneratorPeriodical;
-import org.graylog2.periodical.ConfigurationManagementPeriodical;
-import org.graylog2.periodical.ContentPackLoaderPeriodical;
-import org.graylog2.periodical.ESVersionCheckPeriodical;
-import org.graylog2.periodical.GarbageCollectionWarningThread;
-import org.graylog2.periodical.IndexFailuresPeriodical;
-import org.graylog2.periodical.IndexRangesCleanupPeriodical;
-import org.graylog2.periodical.IndexRangesMigrationPeriodical;
-import org.graylog2.periodical.IndexRetentionThread;
-import org.graylog2.periodical.IndexRotationThread;
-import org.graylog2.periodical.IndexerClusterCheckerThread;
-import org.graylog2.periodical.NodePingThread;
-import org.graylog2.periodical.ThrottleStateUpdaterThread;
-import org.graylog2.periodical.TrafficCounterCalculator;
-import org.graylog2.periodical.UserPermissionMigrationPeriodical;
-import org.graylog2.periodical.VersionCheckThread;
+import org.graylog2.periodical.*;
 import org.graylog2.plugin.periodical.Periodical;
 
 public class PeriodicalBindings extends AbstractModule {
@@ -65,8 +47,11 @@ public class PeriodicalBindings extends AbstractModule {
         periodicalBinder.addBinding().to(IndexRangesCleanupPeriodical.class);
         periodicalBinder.addBinding().to(UserPermissionMigrationPeriodical.class);
         periodicalBinder.addBinding().to(ConfigurationManagementPeriodical.class);
+        periodicalBinder.addBinding().to(IndexFailuresCleanupPeriodical.class);
         periodicalBinder.addBinding().to(IndexFailuresPeriodical.class);
+        periodicalBinder.addBinding().to(SystemMessageCleanupPeriodical.class);
         periodicalBinder.addBinding().to(TrafficCounterCalculator.class);
+        periodicalBinder.addBinding().to(TrafficCounterCleanup.class);
         periodicalBinder.addBinding().to(IndexFieldTypePollerPeriodical.class);
         periodicalBinder.addBinding().to(ScheduleTriggerCleanUp.class);
         periodicalBinder.addBinding().to(ESVersionCheckPeriodical.class);

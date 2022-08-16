@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,6 +20,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.database.CollectionName;
 import org.graylog2.database.MongoConnection;
@@ -33,12 +35,14 @@ import java.util.List;
 
 @Singleton
 public class IndexFailureServiceImpl extends PersistedServiceImpl implements IndexFailureService {
+    private final String collectionName;
+
     @Inject
     public IndexFailureServiceImpl(MongoConnection mongoConnection) {
         super(mongoConnection);
 
         // Make sure that the index failures collection is always created capped.
-        final String collectionName = IndexFailureImpl.class.getAnnotation(CollectionName.class).value();
+        collectionName = IndexFailureImpl.class.getAnnotation(CollectionName.class).value();
         if (!mongoConnection.getDatabase().collectionExists(collectionName)) {
             final DBObject options = BasicDBObjectBuilder.start()
                     .add("capped", true)
@@ -69,6 +73,12 @@ public class IndexFailureServiceImpl extends PersistedServiceImpl implements Ind
         final BasicDBObject query = new BasicDBObject("timestamp", new BasicDBObject("$gte", since.toDate()));
 
         return count(IndexFailureImpl.class, query);
+    }
+
+    @Override
+    public long deleteFrom(DateTime since) {
+        final BasicDBObject query = new BasicDBObject("timestamp", new BasicDBObject("$lte", since.toDate()));
+        return destroy(query, collectionName);
     }
 
     @Override

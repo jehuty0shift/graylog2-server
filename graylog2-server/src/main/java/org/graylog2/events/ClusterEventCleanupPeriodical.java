@@ -89,7 +89,7 @@ public class ClusterEventCleanupPeriodical extends Periodical {
 
     @Override
     public int getPeriodSeconds() {
-        return Ints.saturatedCast(TimeUnit.DAYS.toSeconds(1L));
+        return Ints.saturatedCast(TimeUnit.HOURS.toSeconds(12L));
     }
 
     @Override
