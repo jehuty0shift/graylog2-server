@@ -61,7 +61,7 @@ public class HelloWorldResource extends RestResource {
             nodeId.toString(),
             Version.CURRENT_CLASSPATH.toString(),
             "Manage your logs in the dark and have lasers going and make it look like you're from space!",
-                Version.CDS_VERSION.toString()
+                Version.CDS_VERSION
         );
     }
 
