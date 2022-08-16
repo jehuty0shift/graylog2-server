@@ -2,7 +2,7 @@ import pjson from '../../package.json';
 
 class Version {
   constructor() {
-    this.full = pjson.version;
+    this.full = pjson.ovhVersion;
     const splitVersion = this.full.split('.');
 
     this.major = splitVersion[0];
