@@ -65,9 +65,9 @@ public class Version implements Comparable<Version> {
      */
     public static final Version CURRENT_CLASSPATH = fromClasspathProperties(Version.from(0, 0, 0, "unknown"));
 
-    public static final Version CDS_VERSION = fromCDSProperties(
-            Version.class,"version.properties","project.version",
-            "cds.properties","cds.build.version",Version.from(0,0,0,"unknwon"));
+    public static final String CDS_VERSION = fromCDSProperties(
+            Version.class,
+            "cds.properties","cds.build.version","4.0.0-rc.2-OVHCloud");
 
     /**
      * @deprecated Use {@link #Version(com.github.zafarkhaja.semver.Version)} or {@link #from(int, int, int)}
@@ -247,17 +247,7 @@ public class Version implements Comparable<Version> {
         return defaultVersion;
     }
 
-    public static Version fromCDSProperties(@Nonnull Class<?> clazz, String path, String propertyName, String cdsPath, String cdsPropertyName, Version defaultVersion) {
-        try {
-            final URL resource = getResource(clazz, path);
-            final Properties versionProperties = new Properties();
-            versionProperties.load(resource.openStream());
-
-            final com.github.zafarkhaja.semver.Version version = com.github.zafarkhaja.semver.Version.valueOf(versionProperties.getProperty(propertyName));
-            final int major = version.getMajorVersion();
-            final int minor = version.getMinorVersion();
-            final int patch = version.getPatchVersion();
-            final String qualifier = version.getPreReleaseVersion();
+    public static String fromCDSProperties(@Nonnull Class<?> clazz, String cdsPath, String cdsPropertyName, String defaultVersion) {
 
             String cdsBuildRun = null;
             try {
@@ -265,15 +255,11 @@ public class Version implements Comparable<Version> {
                 final URL gitResource = getResource(clazz, cdsPath);
                 git.load(gitResource.openStream());
                 cdsBuildRun = git.getProperty(cdsPropertyName);
+                return cdsBuildRun;
             } catch (Exception e) {
                 LOG.debug("Git commit details are not available, skipping.", e);
             }
-            return from(major, minor, patch, qualifier, cdsBuildRun);
-
-        } catch (Exception e) {
-            LOG.error("Unable to read " + path + ", this build has no version number.", e);
-        }
-        return defaultVersion;
+            return defaultVersion;
     }
 
     private static URL getResource(Class<?> clazz, String path) {
