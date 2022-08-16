@@ -29,5 +29,7 @@ public interface IndexFailureService extends PersistedService {
 
     long countSince(DateTime since);
 
+    long deleteFrom(DateTime since);
+
     long totalCount();
 }

@@ -23,6 +23,7 @@ import com.mongodb.DBObject;
 import org.bson.types.ObjectId;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PersistedServiceImpl;
+import org.joda.time.DateTime;
 import org.mongojack.DBSort;
 
 import javax.inject.Inject;
@@ -52,6 +53,13 @@ public class SystemMessageServiceImpl extends PersistedServiceImpl implements Sy
         }
 
         return messages;
+    }
+
+    @Override
+    public long destroySince(DateTime since) {
+        final BasicDBObject query = new BasicDBObject("timestamp", new BasicDBObject("$lte", since.toDate()));
+
+        return this.collection(SystemMessageImpl.class).remove(query).getN();
     }
 
     @Override

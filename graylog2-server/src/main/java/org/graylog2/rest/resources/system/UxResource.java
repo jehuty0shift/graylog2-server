@@ -41,7 +41,7 @@ public class UxResource extends RestResource {
         if (active) {
             return UxStatusResponse.create(active);
         } else {
-            throw new ServiceUnavailableException("Rest API and UX not available yet");
+            throw new ServiceUnavailableException("Rest API and UX not available yet, state is " + jerseyService.state().name());
         }
 
     }

@@ -17,6 +17,7 @@
 package org.graylog2.system.activities;
 
 import org.graylog2.plugin.database.PersistedService;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -27,5 +28,6 @@ import java.util.Map;
 public interface SystemMessageService extends PersistedService {
     List<SystemMessage> all(int page);
     long totalCount();
+    long destroySince(DateTime since);
     SystemMessage create(Map<String, Object> fields);
 }

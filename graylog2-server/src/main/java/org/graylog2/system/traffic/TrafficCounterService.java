@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -116,6 +117,12 @@ public class TrafficCounterService {
             }
             return TrafficHistogram.create(from, to, inputHistogram, outputHistogram, decodedHistogram);
         }
+    }
+
+    public long deleteSince(DateTime since) {
+        final BasicDBObject query = new BasicDBObject(BUCKET, new BasicDBObject("$lte", since.toDate()));
+
+        return db.remove(query).getN();
     }
 
     private TreeMap<DateTime, Long> aggregateToDaily(Map<DateTime, Long> histogram) {
