@@ -12,6 +12,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
 
 public class SystemMessageCleanupPeriodical extends Periodical {
@@ -19,6 +20,7 @@ public class SystemMessageCleanupPeriodical extends Periodical {
     private static final Logger LOG = LoggerFactory.getLogger(SystemMessageCleanupPeriodical.class);
     private final MongoCollection systemMessageCollection;
 
+    @Inject
     public SystemMessageCleanupPeriodical(MongoConnection mongoConnection) {
         final String collectionName = SystemMessageImpl.class.getAnnotation(CollectionName.class).value();
         this.systemMessageCollection = mongoConnection.getMongoDatabase().getCollection(collectionName);

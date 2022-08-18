@@ -16,15 +16,12 @@
  */
 package org.graylog2.periodical;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.primitives.Ints;
 import org.graylog2.indexer.IndexFailureService;
-import org.graylog2.indexer.messages.Messages;
 import org.graylog2.plugin.ServerStatus;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.lifecycles.Lifecycle;
 import org.graylog2.plugin.periodical.Periodical;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
