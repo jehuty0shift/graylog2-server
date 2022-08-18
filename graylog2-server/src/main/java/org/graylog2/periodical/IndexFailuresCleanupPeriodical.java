@@ -21,6 +21,7 @@ import com.google.common.primitives.Ints;
 import org.graylog2.indexer.IndexFailureService;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.plugin.ServerStatus;
+import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.lifecycles.Lifecycle;
 import org.graylog2.plugin.periodical.Periodical;
 import org.joda.time.DateTime;
@@ -47,7 +48,7 @@ public class IndexFailuresCleanupPeriodical extends Periodical {
     public void doRun() {
         while (serverStatus.getLifecycle() != Lifecycle.HALTING) {
             try {
-                long deletedIndexFailures = indexFailureService.deleteFrom(DateTime.now().minusDays(1));
+                long deletedIndexFailures = indexFailureService.deleteFrom(Tools.nowUTC().minusDays(1));
                 LOG.info("deleted {} index failures", deletedIndexFailures);
             } catch (Exception e) {
                 LOG.error("Could not persist index failure.", e);
