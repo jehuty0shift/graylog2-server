@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.DynamicFeature;
@@ -89,6 +90,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Objects.requireNonNull;
 
+@Singleton
 public class JerseyService extends AbstractIdleService {
     public static final String PLUGIN_PREFIX = "/plugins";
     private static final Logger LOG = LoggerFactory.getLogger(JerseyService.class);

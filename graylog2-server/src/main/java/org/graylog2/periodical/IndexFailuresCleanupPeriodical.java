@@ -75,7 +75,7 @@ public class IndexFailuresCleanupPeriodical extends Periodical {
 
     @Override
     public boolean startOnThisNode() {
-        return false;
+        return true;
     }
 
     @Override

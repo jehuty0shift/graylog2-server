@@ -44,7 +44,7 @@ public class SystemMessageCleanupPeriodical extends Periodical {
 
     @Override
     public boolean startOnThisNode() {
-        return false;
+        return true;
     }
 
     @Override
