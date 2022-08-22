@@ -29,6 +29,7 @@ public interface AlarmCallbackConfigurationService {
     List<AlarmCallbackConfiguration> getForStreamId(String streamId);
     List<AlarmCallbackConfiguration> getForStream(Stream stream);
     AlarmCallbackConfiguration load(String alarmCallbackId);
+    List<AlarmCallbackConfiguration> loadAll();
     AlarmCallbackConfiguration create(String streamId, CreateAlarmCallbackRequest request, String userId);
     long count();
     Map<String, Long> countPerType();

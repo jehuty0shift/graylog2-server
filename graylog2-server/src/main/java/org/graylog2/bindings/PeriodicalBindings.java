@@ -30,6 +30,7 @@ public class PeriodicalBindings extends AbstractModule {
     protected void configure() {
         Multibinder<Periodical> periodicalBinder = Multibinder.newSetBinder(binder(), Periodical.class);
         periodicalBinder.addBinding().to(AlertScannerThread.class);
+        periodicalBinder.addBinding().to(AlarmCleanerPeriodical.class);
         periodicalBinder.addBinding().to(BatchedElasticSearchOutputFlushThread.class);
         periodicalBinder.addBinding().to(ClusterHealthCheckThread.class);
         periodicalBinder.addBinding().to(ContentPackLoaderPeriodical.class);
