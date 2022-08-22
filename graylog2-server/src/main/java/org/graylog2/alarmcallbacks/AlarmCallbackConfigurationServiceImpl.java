@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.mongodb.DBCollection;
 import org.bson.types.ObjectId;
+import org.glassfish.jersey.internal.guava.Lists;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.CollectionName;
 import org.graylog2.database.MongoConnection;
@@ -63,6 +64,11 @@ public class AlarmCallbackConfigurationServiceImpl implements AlarmCallbackConfi
     @Override
     public AlarmCallbackConfiguration load(String alarmCallbackId) {
         return coll.findOneById(alarmCallbackId);
+    }
+
+    @Override
+    public List<AlarmCallbackConfiguration> loadAll() {
+        return Lists.newArrayList(coll.find().iterator());
     }
 
     @Override
