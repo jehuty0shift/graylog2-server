@@ -70,7 +70,7 @@ public class SystemMessageCleanupPeriodical extends Periodical {
     @Override
     public void doRun() {
         DateTime threeMonthsAgo = Tools.nowUTC().minusMonths(3);
-        long deleted = systemMessageCollection.deleteMany(Filters.lte("timestamp", threeMonthsAgo)).getDeletedCount();
+        long deleted = systemMessageCollection.deleteMany(Filters.lte("timestamp", threeMonthsAgo.toDate())).getDeletedCount();
         LOG.info("Deleted {} system Events", deleted);
     }
 }
