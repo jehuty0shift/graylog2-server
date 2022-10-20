@@ -21,11 +21,13 @@ import com.github.joschi.jadconfig.util.Duration;
 import com.github.joschi.jadconfig.validators.PositiveDurationValidator;
 import com.github.joschi.jadconfig.validators.PositiveIntegerValidator;
 import org.graylog2.configuration.converters.MajorVersionConverter;
+import org.graylog2.configuration.converters.SearchEngineConverter;
 import org.graylog2.configuration.converters.URIListConverter;
-import org.graylog2.configuration.validators.ElasticsearchVersionValidator;
+import org.graylog2.configuration.validators.SearchEngineVersionValidator;
 import org.graylog2.configuration.validators.HttpOrHttpsSchemeValidator;
 import org.graylog2.configuration.validators.ListOfURIsWithHostAndSchemeValidator;
 import org.graylog2.configuration.validators.NonEmptyListValidator;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 
 import java.net.URI;
@@ -33,7 +35,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class ElasticsearchClientConfiguration {
-    @Parameter(value = "elasticsearch_version", converter = MajorVersionConverter.class, validators = {ElasticsearchVersionValidator.class})
+    @Parameter(value = "search_engine", converter = SearchEngineConverter.class)
+    BackendVersion.SearchEngine searchEngine = BackendVersion.SearchEngine.ELASTICSEARCH;
+
+    @Parameter(value = "elasticsearch_version", converter = MajorVersionConverter.class, validators = {SearchEngineVersionValidator.class})
     Version elasticsearchVersion;
 
     @Parameter(value = "elasticsearch_hosts", converter = URIListConverter.class, validators = {NonEmptyListValidator.class, ListOfURIsWithHostAndSchemeValidator.class})

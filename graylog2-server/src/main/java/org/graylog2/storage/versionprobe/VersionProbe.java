@@ -21,6 +21,7 @@ import com.google.common.base.Strings;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,16 +47,15 @@ public class VersionProbe {
         this.okHttpClient = okHttpClient;
     }
 
-    public Optional<Version> probe(Collection<URI> hosts) {
+    public Optional<BackendVersion> probe(Collection<URI> hosts) {
         return hosts
                 .stream()
                 .map(this::probe)
-                .filter(Optional::isPresent)
                 .findFirst()
                 .orElse(Optional.empty());
     }
 
-    public Optional<Version> probe(URI host) {
+    public Optional<BackendVersion> probe(URI host) {
         final Retrofit retrofit;
         try {
             retrofit = new Retrofit.Builder()
@@ -72,7 +72,6 @@ public class VersionProbe {
 
         return rootResponse(root)
                 .map(RootResponse::version)
-                .map(VersionResponse::number)
                 .flatMap(this::parseVersion);
     }
 
@@ -96,7 +95,9 @@ public class VersionProbe {
         return okHttpClient;
     }
 
-    private Optional<Version> parseVersion(String versionString) {
+    private Optional<BackendVersion> parseVersion(VersionResponse versionReponse) {
+        final String versionString = versionReponse.number();
+        final String distribution = versionReponse.distribution();
         final String[] versionParts = versionString.split("\\.");
         if (versionParts.length != 3) {
             LOG.error("Unable to parse version retrieved from Elasticsearch node: " + versionString);
@@ -109,9 +110,9 @@ public class VersionProbe {
 
             final Version version = Version.from(major, minor, patch);
 
-            return Optional.of(version);
+            return Optional.of(BackendVersion.from(distribution, version));
         } catch (NumberFormatException e) {
-            throw new ElasticsearchProbeException("Unable to parse version retrieved from Elasticsearch node: " + versionString, e);
+            throw new ElasticsearchProbeException("Unable to parse version retrieved from Elasticsearch/OpenSearch node: " + versionString, e);
         }
     }
 
@@ -122,7 +123,7 @@ public class VersionProbe {
                 return Optional.ofNullable(response.body());
             }
         } catch (IOException e) {
-            LOG.error("Unable to retrieve version from Elasticsearch node: ", e);
+            LOG.error("Unable to retrieve version from Elasticsearch/OpenSearch node: ", e);
         }
         return Optional.empty();
     }

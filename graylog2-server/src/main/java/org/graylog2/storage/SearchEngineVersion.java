@@ -26,5 +26,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @BindingAnnotation
-public @interface ElasticsearchVersion {
+public @interface SearchEngineVersion {
 }

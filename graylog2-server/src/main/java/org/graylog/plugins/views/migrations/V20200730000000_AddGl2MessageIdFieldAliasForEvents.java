@@ -24,9 +24,10 @@ import com.google.common.collect.ImmutableSet;
 import org.graylog.autovalue.WithBeanGetter;
 import org.graylog2.configuration.ElasticsearchConfiguration;
 import org.graylog2.migrations.Migration;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.graylog2.plugin.cluster.ClusterConfigService;
-import org.graylog2.storage.ElasticsearchVersion;
+import org.graylog2.storage.SearchEngineVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,11 +48,11 @@ public class V20200730000000_AddGl2MessageIdFieldAliasForEvents extends Migratio
 
     @Inject
     public V20200730000000_AddGl2MessageIdFieldAliasForEvents(
-            @ElasticsearchVersion Version elasticsearchVersion,
+            @SearchEngineVersion BackendVersion elasticsearchVersion,
             ClusterConfigService clusterConfigService,
             ElasticsearchAdapter elasticsearch,
             ElasticsearchConfiguration elasticsearchConfig) {
-        this.elasticsearchVersion = elasticsearchVersion;
+        this.elasticsearchVersion = elasticsearchVersion.getVersion();
         this.clusterConfigService = clusterConfigService;
         this.elasticsearch = elasticsearch;
         this.elasticsearchConfig = elasticsearchConfig;

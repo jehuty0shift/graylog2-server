@@ -18,6 +18,7 @@ package org.graylog.storage.elasticsearch7;
 
 import org.graylog.shaded.elasticsearch7.org.elasticsearch.index.query.QueryBuilders;
 import org.graylog.shaded.elasticsearch7.org.elasticsearch.index.query.RangeQueryBuilder;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.Version;
@@ -35,7 +36,7 @@ public class TimeRangeQueryFactory {
 
         return QueryBuilders.rangeQuery(Message.FIELD_TIMESTAMP)
                 .format(Tools.ES_DATE_FORMAT_NANO)
-                .gte(Tools.buildElasticSearchTimeFormat(range.getFrom(), Version.from(7,0,0)))
-                .lte(Tools.buildElasticSearchTimeFormat(range.getTo(),Version.from(7,0,0)));
+                .gte(Tools.buildElasticSearchTimeFormat(range.getFrom(), BackendVersion.fromES(Version.from(7,0,0))))
+                .lte(Tools.buildElasticSearchTimeFormat(range.getTo(),BackendVersion.fromES(Version.from(7,0,0))));
     }
 }

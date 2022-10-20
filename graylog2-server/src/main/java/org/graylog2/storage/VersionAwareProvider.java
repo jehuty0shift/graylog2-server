@@ -16,19 +16,24 @@
  */
 package org.graylog2.storage;
 
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Map;
+import java.util.Objects;
 
 public class VersionAwareProvider<T> implements Provider<T> {
-    private final Version elasticsearchMajorVersion;
-    private final Map<Version, Provider<T>> pluginBindings;
+    private final BackendVersion elasticsearchMajorVersion;
+    private final Map<BackendVersion, Provider<T>> pluginBindings;
+    private static  final Logger LOG = LoggerFactory.getLogger(VersionAwareProvider.class);
 
     @Inject
-    public VersionAwareProvider(@ElasticsearchVersion Version elasticsearchVersion, Map<Version, Provider<T>> pluginBindings) {
-        this.elasticsearchMajorVersion = majorVersionFrom(elasticsearchVersion);
+    public VersionAwareProvider(@SearchEngineVersion BackendVersion searchEngineVersion, Map<BackendVersion, Provider<T>> pluginBindings) {
+        this.elasticsearchMajorVersion = majorVersionFrom(searchEngineVersion);
         this.pluginBindings = pluginBindings;
     }
 
@@ -36,12 +41,14 @@ public class VersionAwareProvider<T> implements Provider<T> {
     public T get() {
         final Provider<T> provider = this.pluginBindings.get(elasticsearchMajorVersion);
         if (provider == null) {
+            LOG.error("not found {} for {}",  elasticsearchMajorVersion);
+            LOG.error("plugin bindings :\n {}", pluginBindings);
             throw new UnsupportedElasticsearchException(elasticsearchMajorVersion);
         }
         return provider.get();
     }
 
-    private Version majorVersionFrom(Version version) {
-        return Version.from(version.getVersion().getMajorVersion(), 0, 0);
+    private BackendVersion majorVersionFrom(BackendVersion version) {
+        return BackendVersion.from(version.getSearchEngine(), Version.from(version.getMajorVersion(), 0, 0));
     }
 }

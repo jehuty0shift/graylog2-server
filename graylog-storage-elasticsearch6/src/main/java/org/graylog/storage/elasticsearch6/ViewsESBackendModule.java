@@ -70,6 +70,7 @@ import org.graylog.storage.elasticsearch6.views.searchtypes.pivot.series.ESStdDe
 import org.graylog.storage.elasticsearch6.views.searchtypes.pivot.series.ESSumHandler;
 import org.graylog.storage.elasticsearch6.views.searchtypes.pivot.series.ESSumOfSquaresHandler;
 import org.graylog.storage.elasticsearch6.views.searchtypes.pivot.series.ESVarianceHandler;
+import org.graylog2.plugin.BackendVersion;
 
 import static org.graylog.storage.elasticsearch6.Elasticsearch6Plugin.SUPPORTED_ES_VERSION;
 
@@ -78,7 +79,7 @@ public class ViewsESBackendModule extends ViewsModule {
     protected void configure() {
         install(new FactoryModuleBuilder().build(ESGeneratedQueryContext.Factory.class));
 
-        bindForVersion(SUPPORTED_ES_VERSION, new TypeLiteral<QueryBackend<? extends GeneratedQueryContext>>() {})
+        bindForVersion(BackendVersion.fromES(SUPPORTED_ES_VERSION), new TypeLiteral<QueryBackend<? extends GeneratedQueryContext>>() {})
             .to(ElasticsearchBackend.class);
 
         registerESSearchTypeHandler(MessageList.NAME, ESMessageList.class);

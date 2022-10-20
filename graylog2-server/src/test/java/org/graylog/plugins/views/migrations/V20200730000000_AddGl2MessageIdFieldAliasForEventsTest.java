@@ -18,6 +18,7 @@ package org.graylog.plugins.views.migrations;
 
 import com.google.common.collect.ImmutableSet;
 import org.graylog2.configuration.ElasticsearchConfiguration;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,7 +52,7 @@ class V20200730000000_AddGl2MessageIdFieldAliasForEventsTest {
     }
 
     private V20200730000000_AddGl2MessageIdFieldAliasForEvents buildSut(int major) {
-        return new V20200730000000_AddGl2MessageIdFieldAliasForEvents(Version.from(major, 0, 0), clusterConfigService, elasticsearchAdapter, elasticsearchConfig);
+        return new V20200730000000_AddGl2MessageIdFieldAliasForEvents(BackendVersion.fromES(Version.from(major, 0, 0)), clusterConfigService, elasticsearchAdapter, elasticsearchConfig);
     }
 
     @Test

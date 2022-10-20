@@ -1,0 +1,112 @@
+package org.graylog.storage.opensearch2;
+
+import com.google.common.collect.Streams;
+import org.graylog2.indexer.IndexNotFoundException;
+import org.opensearch.OpenSearchException;
+import org.opensearch.action.search.MultiSearchRequest;
+import org.opensearch.action.search.MultiSearchResponse;
+import org.opensearch.action.search.SearchRequest;
+import org.opensearch.action.search.SearchResponse;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.RestHighLevelClient;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkArgument;
+
+public class OpensearchClient {
+    private final RestHighLevelClient client;
+    private final boolean compressionEnabled;
+
+    @Inject
+    public OpensearchClient(RestHighLevelClient client,
+                            @Named("elasticsearch_compression_enabled") boolean compressionEnabled) {
+        this.client = client;
+        this.compressionEnabled = compressionEnabled;
+    }
+
+    public SearchResponse search(SearchRequest searchRequest, String errorMessage) {
+        final MultiSearchRequest multiSearchRequest = new MultiSearchRequest()
+                .add(searchRequest);
+
+        final MultiSearchResponse result = this.execute((c, requestOptions) -> c.msearch(multiSearchRequest, requestOptions), errorMessage);
+
+        return firstResponseFrom(result, errorMessage);
+    }
+
+    public SearchResponse singleSearch(SearchRequest searchRequest, String errorMessage) {
+        return execute((c, requestOptions) -> c.search(searchRequest, requestOptions), errorMessage);
+    }
+
+    public List<MultiSearchResponse.Item> msearch(List<SearchRequest> searchRequests, String errorMessage) {
+        final MultiSearchRequest multiSearchRequest = new MultiSearchRequest();
+
+        searchRequests.forEach(multiSearchRequest::add);
+
+        final MultiSearchResponse result = this.execute((c, requestOptions) -> c.msearch(multiSearchRequest, requestOptions), errorMessage);
+
+        return Streams.stream(result)
+                .collect(Collectors.toList());
+    }
+
+    private SearchResponse firstResponseFrom(MultiSearchResponse result, String errorMessage) {
+        checkArgument(result != null);
+        checkArgument(result.getResponses().length == 1);
+
+        final MultiSearchResponse.Item firstResponse = result.getResponses()[0];
+        if (firstResponse.getResponse() == null) {
+            throw exceptionFrom(firstResponse.getFailure(), errorMessage);
+        }
+
+        return firstResponse.getResponse();
+    }
+
+    public <R> R execute(ThrowingBiFunction<RestHighLevelClient, RequestOptions, R, IOException> fn) {
+        return execute(fn, "An error occurred: ");
+    }
+
+    public <R> R execute(ThrowingBiFunction<RestHighLevelClient, RequestOptions, R, IOException> fn, String errorMessage) {
+        try {
+            return fn.apply(client, requestOptions());
+        } catch (Exception e) {
+            throw exceptionFrom(e, errorMessage);
+        }
+    }
+
+    public <R> R executeWithIOException(ThrowingBiFunction<RestHighLevelClient, RequestOptions, R, IOException> fn, String errorMessage) throws IOException {
+        try {
+            return fn.apply(client, requestOptions());
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw exceptionFrom(e, errorMessage);
+        }
+    }
+
+    private RequestOptions requestOptions() {
+        return compressionEnabled
+                ? RequestOptions.DEFAULT.toBuilder()
+                .addHeader("Accept-Encoding", "gzip")
+                .addHeader("Content-type", "application/json")
+                .build()
+                : RequestOptions.DEFAULT;
+    }
+
+    private OpenSearchException exceptionFrom(Exception e, String errorMessage) {
+        if (e instanceof OpenSearchException) {
+            final OpenSearchException OpensearchException = (OpenSearchException) e;
+            if (isIndexNotFoundException(OpensearchException)) {
+                throw IndexNotFoundException.create(errorMessage + OpensearchException.getResourceId(), OpensearchException.getIndex().getName());
+            }
+        }
+        return new OpenSearchException(errorMessage, e);
+    }
+
+    private boolean isIndexNotFoundException(OpenSearchException e) {
+        return e.getMessage().contains("index_not_found_exception");
+    }
+}

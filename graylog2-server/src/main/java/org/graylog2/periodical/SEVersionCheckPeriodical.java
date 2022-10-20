@@ -18,9 +18,10 @@ package org.graylog2.periodical;
 
 import org.graylog2.notifications.Notification;
 import org.graylog2.notifications.NotificationService;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.graylog2.plugin.periodical.Periodical;
-import org.graylog2.storage.ElasticsearchVersion;
+import org.graylog2.storage.SearchEngineVersion;
 import org.graylog2.storage.versionprobe.VersionProbe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,21 +33,21 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-public class ESVersionCheckPeriodical extends Periodical {
-    private static final Logger LOG = LoggerFactory.getLogger(ESVersionCheckPeriodical.class);
-    private final Version initialElasticsearchVersion;
+public class SEVersionCheckPeriodical extends Periodical {
+    private static final Logger LOG = LoggerFactory.getLogger(SEVersionCheckPeriodical.class);
+    private final BackendVersion initialElasticsearchVersion;
     private final Optional<Version> versionOverride;
     private final List<URI> elasticsearchHosts;
     private final VersionProbe versionProbe;
     private final NotificationService notificationService;
 
     @Inject
-    public ESVersionCheckPeriodical(@ElasticsearchVersion Version elasticsearchVersion,
+    public SEVersionCheckPeriodical(@SearchEngineVersion BackendVersion searchEngineVersion,
                                     @Named("elasticsearch_version") @Nullable Version versionOverride,
                                     @Named("elasticsearch_hosts") List<URI> elasticsearchHosts,
                                     VersionProbe versionProbe,
                                     NotificationService notificationService) {
-        this.initialElasticsearchVersion = elasticsearchVersion;
+        this.initialElasticsearchVersion = searchEngineVersion;
         this.versionOverride = Optional.ofNullable(versionOverride);
         this.elasticsearchHosts = elasticsearchHosts;
         this.versionProbe = versionProbe;
@@ -100,7 +101,7 @@ public class ESVersionCheckPeriodical extends Periodical {
             return;
         }
 
-        final Optional<Version> probedVersion = this.versionProbe.probe(this.elasticsearchHosts);
+        final Optional<BackendVersion> probedVersion = this.versionProbe.probe(this.elasticsearchHosts);
 
         probedVersion.ifPresent(version -> {
             if (compatible(this.initialElasticsearchVersion, version)) {
@@ -118,7 +119,7 @@ public class ESVersionCheckPeriodical extends Periodical {
         });
     }
 
-    private boolean compatible(Version initialElasticsearchMajorVersion, Version version) {
-        return initialElasticsearchMajorVersion.getVersion().getMajorVersion() == version.getVersion().getMajorVersion();
+    private boolean compatible(BackendVersion initialEngineVersion, BackendVersion version) {
+        return initialEngineVersion.getSearchEngine().equals(version.getSearchEngine()) && initialEngineVersion.getMajorVersion() == version.getMajorVersion();
     }
 }

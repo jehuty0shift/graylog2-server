@@ -18,7 +18,7 @@ package org.graylog2.indexer.messages;
 
 import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.graylog2.plugin.Version;
+import org.graylog2.plugin.BackendVersion;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -28,6 +28,6 @@ import java.util.Map;
 public interface Indexable {
     String getId();
     DateTime getReceiveTime();
-    Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull final Meter invalidTimestampMeter, Version version);
+    Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull final Meter invalidTimestampMeter, BackendVersion version);
     Instant getTimestamp();
 }

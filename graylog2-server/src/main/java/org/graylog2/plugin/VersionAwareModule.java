@@ -21,19 +21,19 @@ import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.multibindings.MapBinder;
 
 public abstract class VersionAwareModule extends PluginModule {
-    protected  <T> LinkedBindingBuilder<T> bindForVersion(Version supportedVersion, Class<T> interfaceClass) {
+    protected  <T> LinkedBindingBuilder<T> bindForVersion(BackendVersion supportedVersion, Class<T> interfaceClass) {
         return mapBinder(interfaceClass).addBinding(supportedVersion);
     }
 
-    private <T> MapBinder<Version, T> mapBinder(Class<T> interfaceClass) {
-        return MapBinder.newMapBinder(binder(), Version.class, interfaceClass);
+    private <T> MapBinder<BackendVersion, T> mapBinder(Class<T> interfaceClass) {
+        return MapBinder.newMapBinder(binder(), BackendVersion.class, interfaceClass);
     }
 
-    protected  <T> LinkedBindingBuilder<T> bindForVersion(Version supportedVersion, TypeLiteral<T> interfaceClass) {
+    protected  <T> LinkedBindingBuilder<T> bindForVersion(BackendVersion supportedVersion, TypeLiteral<T> interfaceClass) {
         return mapBinder(interfaceClass).addBinding(supportedVersion);
     }
 
-    private <T> MapBinder<Version, T> mapBinder(TypeLiteral<T> interfaceClass) {
-        return MapBinder.newMapBinder(binder(), new TypeLiteral<Version>() {}, interfaceClass);
+    private <T> MapBinder<BackendVersion, T> mapBinder(TypeLiteral<T> interfaceClass) {
+        return MapBinder.newMapBinder(binder(), new TypeLiteral<BackendVersion>() {}, interfaceClass);
     }
 }

@@ -17,8 +17,8 @@
 package org.graylog2.storage.providers;
 
 import org.graylog2.indexer.messages.MessagesAdapter;
-import org.graylog2.plugin.Version;
-import org.graylog2.storage.ElasticsearchVersion;
+import org.graylog2.plugin.BackendVersion;
+import org.graylog2.storage.SearchEngineVersion;
 import org.graylog2.storage.VersionAwareProvider;
 
 import javax.inject.Inject;
@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class MessagesAdapterProvider extends VersionAwareProvider<MessagesAdapter> {
     @Inject
-    public MessagesAdapterProvider(@ElasticsearchVersion Version version, Map<Version, Provider<MessagesAdapter>> pluginBindings) {
+    public MessagesAdapterProvider(@SearchEngineVersion BackendVersion version, Map<BackendVersion, Provider<MessagesAdapter>> pluginBindings) {
         super(version, pluginBindings);
     }
 }
