@@ -17,7 +17,7 @@
     <description>Graylog Storage Module for Elasticsearch 6</description>
 
     <properties>
-        <opensearch.version>2.10.0</opensearch.version>
+        <opensearch.version>2.7.0</opensearch.version>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 

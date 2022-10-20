@@ -33,7 +33,7 @@ import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.rest.models.messages.responses.ResultMessageSummary;
 import org.graylog2.rest.resources.search.responses.SearchResponse;
 import org.joda.time.DateTime;
-import org.opensearch.core.common.text.Text;
+import org.opensearch.common.text.Text;
 import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.index.query.QueryStringQueryBuilder;
 import org.opensearch.search.SearchHit;
@@ -169,3 +169,4 @@ public class OSMessageList implements OSSearchTypeHandler<MessageList> {
         return searchType.name().map(resultBuilder::name).orElse(resultBuilder).build();
     }
 }
+

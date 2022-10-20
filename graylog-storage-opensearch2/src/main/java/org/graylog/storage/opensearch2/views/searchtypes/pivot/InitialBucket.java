@@ -45,3 +45,4 @@ public class InitialBucket implements MultiBucketsAggregation.Bucket {
         throw new IllegalStateException("Not implemented!");
     }
 }
+

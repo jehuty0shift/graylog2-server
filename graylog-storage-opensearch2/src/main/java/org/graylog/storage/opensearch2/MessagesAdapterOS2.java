@@ -19,7 +19,7 @@ import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.indices.AnalyzeRequest;
 import org.opensearch.client.indices.AnalyzeResponse;
 import org.opensearch.common.xcontent.XContentType;
-import org.opensearch.core.rest.RestStatus;
+import org.opensearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -218,3 +218,4 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
                 .source(body, XContentType.JSON);
     }
 }
+
