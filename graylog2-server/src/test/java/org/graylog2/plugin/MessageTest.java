@@ -350,11 +350,11 @@ public class MessageTest {
         message.addField(Message.FIELD_TIMESTAMP,
                 dateTime);
 
-        final Map<String, Object> elasticSearchObject = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
+        final Map<String, Object> elasticSearchObject = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, BackendVersion.fromES(Version.from(7, 0, 0)));
         final Object esTimestampFormatted = elasticSearchObject.get(Message.FIELD_TIMESTAMP);
 
         assertEquals("Setting message timestamp as java.util.Date results in correct format for elasticsearch",
-                Tools.buildElasticSearchTimeFormat(dateTime.toInstant(), Version.from(7, 0, 0)), esTimestampFormatted);
+                Tools.buildElasticSearchTimeFormat(dateTime.toInstant(), BackendVersion.fromES(Version.from(7, 0, 0))), esTimestampFormatted);
     }
 
     @Test
@@ -389,13 +389,13 @@ public class MessageTest {
         message.addField("field2", "that");
         message.addField(Message.FIELD_STREAMS, Collections.singletonList("test-stream"));
 
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, BackendVersion.fromES(Version.from(7, 0, 0)));
 
         assertEquals("foo", object.get("message"));
         assertEquals("bar", object.get("source"));
         assertEquals("wat", object.get("field1"));
         assertEquals("that", object.get("field2"));
-        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp"), Version.from(7, 0, 0)), object.get("timestamp"));
+        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp"), BackendVersion.fromES(Version.from(7, 0, 0))), object.get("timestamp"));
 
         @SuppressWarnings("unchecked") final Collection<String> streams = (Collection<String>) object.get("streams");
         assertThat(streams).containsOnly("test-stream");
@@ -405,7 +405,7 @@ public class MessageTest {
     public void testToElasticSearchObjectWithInvalidKey() throws Exception {
         message.addField("field.3", "dot");
 
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, BackendVersion.fromES(Version.from(7, 0, 0)));
 
         // Elasticsearch >=2.0 does not allow "." in keys. Make sure we replace them before writing the message.
         assertEquals("#toElasticsearchObject() should replace \".\" in keys with a \"_\"",
@@ -413,7 +413,7 @@ public class MessageTest {
 
         assertEquals("foo", object.get("message"));
         assertEquals("bar", object.get("source"));
-        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp"), Version.from(7, 0, 0)), object.get("timestamp"));
+        assertEquals(Tools.buildElasticSearchTimeFormat((Instant) message.getField("timestamp"), BackendVersion.fromES(Version.from(7, 0, 0))), object.get("timestamp"));
 
         @SuppressWarnings("unchecked") final Collection<String> streams = (Collection<String>) object.get("streams");
         assertThat(streams).isEmpty();
@@ -424,7 +424,7 @@ public class MessageTest {
         message.addField("timestamp", "time!");
 
         final Meter errorMeter = metricRegistry.meter("test-meter");
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, errorMeter, Version.from(7, 0, 0));
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, errorMeter, BackendVersion.fromES(Version.from(7, 0, 0)));
 
         assertNotEquals("time!", object.get("timestamp"));
         assertEquals(1, errorMeter.getCount());
@@ -438,7 +438,7 @@ public class MessageTest {
 
         message.addStream(stream);
 
-        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, Version.from(7, 0, 0));
+        final Map<String, Object> object = message.toElasticSearchObject(objectMapper, invalidTimestampMeter, BackendVersion.fromES(Version.from(7, 0, 0)));
 
         @SuppressWarnings("unchecked") final Collection<String> streams = (Collection<String>) object.get("streams");
         assertThat(streams).containsOnly("stream-id");

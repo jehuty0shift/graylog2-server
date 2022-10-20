@@ -337,8 +337,9 @@ public final class Tools {
         return ImmutableSortedSet.copyOf(c);
     }
 
-    public static String buildElasticSearchTimeFormat(Instant timestamp, Version version) {
-        if (version.getVersion().getMajorVersion() == 7) {
+    public static String buildElasticSearchTimeFormat(Instant timestamp, BackendVersion version) {
+        if (version.getSearchEngine().equals(BackendVersion.SearchEngine.OPENSEARCH) ||
+                (version.getSearchEngine().equals(BackendVersion.SearchEngine.ELASTICSEARCH) && version.getMajorVersion() == 7)) {
             int nanoSeconds = timestamp.get(ChronoField.NANO_OF_SECOND);
             if (nanoSeconds % 1000000 == 0) {
                 return ES_DATE_FORMAT_FORMATTER_TO_ES_MS.format(timestamp);

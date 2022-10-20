@@ -30,13 +30,14 @@ import org.graylog.plugins.views.search.export.ExportBackend;
 import org.graylog.plugins.views.search.rest.SeriesDescription;
 import org.graylog.plugins.views.search.searchtypes.pivot.SeriesSpec;
 import org.graylog.plugins.views.search.views.ViewDTO;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.PluginMetaData;
 import org.graylog2.plugin.Version;
 import org.graylog2.plugin.VersionAwareModule;
 
 public abstract class ViewsModule extends VersionAwareModule {
     protected LinkedBindingBuilder<ExportBackend> bindExportBackend(Version supportedVersion) {
-        return bindForVersion(supportedVersion, ExportBackend.class);
+        return bindForVersion(BackendVersion.fromES(supportedVersion), ExportBackend.class);
     }
 
     protected void registerQueryMetadataDecorator(Class<? extends QueryMetadataDecorator> queryMetadataDecorator) {

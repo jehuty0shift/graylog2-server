@@ -23,8 +23,9 @@ import org.graylog2.plugin.Version;
 
 import java.util.List;
 
-public class ElasticsearchVersionValidator implements Validator<Version> {
+public class SearchEngineVersionValidator implements Validator<Version> {
     private static final List<Version> SUPPORTED_ES_VERSIONS = ImmutableList.of(
+            Version.from(2,0,0), //Added for Opensearch
             Version.from(6, 0, 0),
             Version.from(7, 0, 0)
     );

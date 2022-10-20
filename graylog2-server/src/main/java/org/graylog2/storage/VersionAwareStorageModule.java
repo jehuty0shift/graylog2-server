@@ -33,7 +33,7 @@ import org.graylog2.indexer.searches.SearchesAdapter;
 import org.graylog2.migrations.V20170607164210_MigrateReopenedIndicesToAliases;
 import org.graylog2.storage.providers.ClusterAdapterProvider;
 import org.graylog2.storage.providers.CountsAdapterProvider;
-import org.graylog2.storage.providers.ElasticsearchBackendProvider;
+import org.graylog2.storage.providers.SearchEngineBackendProvider;
 import org.graylog2.storage.providers.IndexFieldTypePollerAdapterProvider;
 import org.graylog2.storage.providers.IndexToolsAdapterProvider;
 import org.graylog2.storage.providers.IndicesAdapterProvider;
@@ -67,6 +67,6 @@ public class VersionAwareStorageModule extends AbstractModule {
 
     private void bindQueryBackend() {
         bind(new TypeLiteral<QueryBackend<? extends GeneratedQueryContext>>() {})
-                .toProvider(ElasticsearchBackendProvider.class);
+                .toProvider(SearchEngineBackendProvider.class);
     }
 }

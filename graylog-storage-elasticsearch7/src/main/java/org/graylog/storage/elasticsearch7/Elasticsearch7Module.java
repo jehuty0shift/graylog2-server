@@ -18,6 +18,7 @@ import org.graylog2.indexer.indices.IndicesAdapter;
 import org.graylog2.indexer.messages.MessagesAdapter;
 import org.graylog2.indexer.searches.SearchesAdapter;
 import org.graylog2.migrations.V20170607164210_MigrateReopenedIndicesToAliases;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.VersionAwareModule;
 
 import static org.graylog.storage.elasticsearch7.Elasticsearch7Plugin.SUPPORTED_ES_VERSION;
@@ -46,6 +47,6 @@ public class Elasticsearch7Module extends VersionAwareModule {
     }
 
     private <T> LinkedBindingBuilder<T> bindForSupportedVersion(Class<T> interfaceClass) {
-        return bindForVersion(SUPPORTED_ES_VERSION, interfaceClass);
+        return bindForVersion(BackendVersion.fromES(SUPPORTED_ES_VERSION), interfaceClass);
     }
 }

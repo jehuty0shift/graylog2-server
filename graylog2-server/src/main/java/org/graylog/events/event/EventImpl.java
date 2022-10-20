@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.logging.log4j.util.Strings;
 import org.graylog.events.fields.FieldValue;
 import org.graylog2.jackson.TypeReferences;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -293,7 +294,7 @@ public class EventImpl implements Event {
     }
 
     @Override
-    public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull Meter invalidTimestampMeter, Version version) {
+    public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull Meter invalidTimestampMeter, BackendVersion version) {
 
         final Map<String, Object> source = objectMapper.convertValue(this.toDto(), TypeReferences.MAP_STRING_OBJECT);
 

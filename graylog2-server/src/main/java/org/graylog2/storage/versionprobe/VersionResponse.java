@@ -27,9 +27,10 @@ import com.google.auto.value.AutoValue;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class VersionResponse {
     public abstract String number();
+    public abstract String distribution();
 
     @JsonCreator
-    public static VersionResponse create(@JsonProperty("number") String number) {
-        return new AutoValue_VersionResponse(number);
+    public static VersionResponse create(@JsonProperty("number") String number, @JsonProperty(value = "distribution", defaultValue = "elasticsearch") String distribution) {
+        return new AutoValue_VersionResponse(number, distribution);
     }
 }

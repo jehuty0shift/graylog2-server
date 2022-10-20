@@ -18,14 +18,14 @@ package org.graylog2.bindings;
 
 import com.google.inject.AbstractModule;
 import org.graylog2.indexer.IndexMappingFactory;
-import org.graylog2.plugin.Version;
-import org.graylog2.storage.ElasticsearchVersion;
-import org.graylog2.storage.providers.ElasticsearchVersionProvider;
+import org.graylog2.plugin.BackendVersion;
+import org.graylog2.storage.SearchEngineVersion;
+import org.graylog2.storage.providers.SearchEngineVersionProvider;
 
 public class ElasticsearchModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(Version.class).annotatedWith(ElasticsearchVersion.class).toProvider(ElasticsearchVersionProvider.class).asEagerSingleton();
+        bind(BackendVersion.class).annotatedWith(SearchEngineVersion.class).toProvider(SearchEngineVersionProvider.class).asEagerSingleton();
         bind(IndexMappingFactory.class).asEagerSingleton();
     }
 }

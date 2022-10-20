@@ -23,6 +23,7 @@ import org.graylog2.indexer.messages.IndexingRequest;
 import org.graylog2.indexer.messages.Messages;
 import org.graylog2.indexer.messages.MessagesAdapter;
 import org.graylog2.indexer.results.ResultMessage;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,7 +219,7 @@ public class MessagesAdapterES7 implements MessagesAdapter {
     private IndexRequest indexRequestFrom(IndexingRequest request) {
         final byte[] body;
         try {
-            body = this.objectMapper.writeValueAsBytes(request.message().toElasticSearchObject(objectMapper, this.invalidTimestampMeter, Version.from(7,0,0)));
+            body = this.objectMapper.writeValueAsBytes(request.message().toElasticSearchObject(objectMapper, this.invalidTimestampMeter, BackendVersion.fromES(Version.from(7,0,0))));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

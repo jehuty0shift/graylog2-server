@@ -47,16 +47,7 @@ import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.graylog2.plugin.BaseConfiguration;
-import org.graylog2.plugin.DocsHelper;
-import org.graylog2.plugin.Plugin;
-import org.graylog2.plugin.PluginConfigBean;
-import org.graylog2.plugin.PluginLoaderConfig;
-import org.graylog2.plugin.PluginMetaData;
-import org.graylog2.plugin.PluginModule;
-import org.graylog2.plugin.ServerStatus;
-import org.graylog2.plugin.Tools;
-import org.graylog2.plugin.Version;
+import org.graylog2.plugin.*;
 import org.graylog2.plugin.system.NodeIdPersistenceException;
 import org.graylog2.shared.UI;
 import org.graylog2.shared.bindings.GuiceInjectorHolder;
@@ -405,8 +396,8 @@ public abstract class CmdLineTool implements CliCommand {
                 LOG.error(UI.wallString("Unable to access file " + rootCause.getMessage()));
                 System.exit(-2);
             } else if (rootCause instanceof UnsupportedElasticsearchException) {
-                final Version elasticsearchVersion = ((UnsupportedElasticsearchException) rootCause).getElasticsearchMajorVersion();
-                LOG.error(UI.wallString("Unsupported Elasticsearch version: " + elasticsearchVersion, DocsHelper.PAGE_ES_VERSIONS.toString()));
+                final BackendVersion searchEngineVersion = ((UnsupportedElasticsearchException) rootCause).getSearchEngineMajorVersion();
+                LOG.error(UI.wallString("Unsupported Elasticsearch version: " + searchEngineVersion, DocsHelper.PAGE_ES_VERSIONS.toString()));
                 System.exit(-3);
             } else if (rootCause instanceof ElasticsearchProbeException) {
                 LOG.error(UI.wallString(rootCause.getMessage(), DocsHelper.PAGE_ES_CONFIGURATION.toString()));

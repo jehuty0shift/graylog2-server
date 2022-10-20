@@ -19,6 +19,7 @@ package org.graylog2.periodical;
 import org.graylog2.notifications.Notification;
 import org.graylog2.notifications.NotificationService;
 import org.graylog2.notifications.NotificationServiceImpl;
+import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.graylog2.plugin.periodical.Periodical;
 import org.graylog2.storage.versionprobe.VersionProbe;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-class ESVersionCheckPeriodicalTest {
+class SEVersionCheckPeriodicalTest {
     private VersionProbe versionProbe;
     private NotificationService notificationService;
 
@@ -108,14 +109,14 @@ class ESVersionCheckPeriodicalTest {
     }
 
     private void returnProbedVersion(@Nullable Version probedVersion) {
-        when(versionProbe.probe(anyCollection())).thenReturn(Optional.ofNullable(probedVersion));
+        when(versionProbe.probe(anyCollection())).thenReturn(Optional.ofNullable(BackendVersion.fromES(probedVersion)));
     }
 
     private Periodical createPeriodical(Version initialVersion) {
-        return new ESVersionCheckPeriodical(initialVersion, null, Collections.emptyList(), versionProbe, notificationService);
+        return new SEVersionCheckPeriodical(BackendVersion.fromES(initialVersion), null, Collections.emptyList(), versionProbe, notificationService);
     }
 
     private Periodical createPeriodical(Version initialVersion, @Nullable Version versionOverride) {
-        return new ESVersionCheckPeriodical(initialVersion, versionOverride, Collections.emptyList(), versionProbe, notificationService);
+        return new SEVersionCheckPeriodical(BackendVersion.fromES(initialVersion),versionOverride, Collections.emptyList(), versionProbe, notificationService);
     }
 }
