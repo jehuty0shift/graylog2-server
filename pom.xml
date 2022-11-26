@@ -82,6 +82,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.release>11</maven.compiler.release>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
@@ -113,7 +114,7 @@
         <HdrHistogram.version>2.1.12</HdrHistogram.version>
         <hibernate-validator.version>6.2.5.Final</hibernate-validator.version>
         <hk2.version>2.6.1</hk2.version> <!-- The HK2 version should match the version being used by Jersey -->
-        <jackson.version>2.12.7.20221012</jackson.version>
+        <jackson.version>2.10.5.20201202</jackson.version>
         <jadconfig.version>0.13.0</jadconfig.version>
         <java-semver.version>0.9.0</java-semver.version>
         <javapoet.version>1.13.0</javapoet.version>
@@ -274,7 +275,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.13.0</version>
+                    <version>3.19.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -299,7 +300,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>3.1.9</version>
+                    <version>4.7.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>de.thetaphi</groupId>
