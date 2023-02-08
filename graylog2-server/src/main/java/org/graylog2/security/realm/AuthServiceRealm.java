@@ -31,6 +31,8 @@ import org.graylog2.audit.AuditEventSender;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.security.encryption.EncryptedValue;
 import org.graylog2.security.encryption.EncryptedValueService;
+import org.graylog2.shared.security.Auditable;
+import org.graylog2.shared.security.AuditableUsernamePasswordToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +98,7 @@ public class AuthServiceRealm extends AuthenticatingRealm {
         try {
             // We encrypt the password before passing it on to reduce the chance of exposing it somewhere by accident.
             final EncryptedValue encryptedPassword = encryptedValueService.encrypt(plainPassword);
-            final AuthServiceResult result = authenticator.authenticate(AuthServiceCredentials.create(username, encryptedPassword));
+            final AuthServiceResult result = authenticator.authenticate(AuthServiceCredentials.create(username, encryptedPassword, token instanceof AuditableUsernamePasswordToken && ((AuditableUsernamePasswordToken) token).mustAudit()));
 
             if (result.isSuccess()) {
                 LOG.debug("Successfully authenticated username <{}> for user profile <{}> with backend <{}/{}/{}>",

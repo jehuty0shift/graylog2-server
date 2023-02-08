@@ -86,7 +86,11 @@ public class AccessTokenAuthenticator extends AuthenticatingRealm {
         }
         Map<String, Object> details = ImmutableMap.of(
                 "auth_realm", this.getClass().toString());
-        auditEventSender.success(AuditActor.user(user.getName()), AuditEventTypes.AUTHENTICATION_CHECK, details);
+        if (authToken.mustAudit()) {
+            auditEventSender.success(AuditActor.user(user.getName()), AuditEventTypes.AUTHENTICATION_CHECK, details);
+        } else {
+            LOG.debug("not auditing authentication for user {}", user.getName());
+        }
         try {
             accessTokenService.touch(accessToken);
         } catch (ValidationException e) {

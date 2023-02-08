@@ -27,6 +27,8 @@ import org.apache.shiro.authz.permission.WildcardPermission;
 import org.graylog.security.permissions.GRNPermission;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.audit.jersey.AuditEvent;
+import org.graylog2.audit.jersey.NoAuditAuthAllowed;
+import org.graylog2.audit.jersey.NoAuditEvent;
 import org.graylog2.database.NotFoundException;
 import org.graylog2.plugin.database.ValidationException;
 import org.graylog2.plugin.database.users.User;
@@ -83,6 +85,7 @@ public class RolesResource extends RestResource {
     }
 
     @GET
+    @NoAuditAuthAllowed
     @RequiresPermissions(RestPermissions.ROLES_READ)
     @ApiOperation("List all roles")
     public RolesResponse listAll() throws NotFoundException {

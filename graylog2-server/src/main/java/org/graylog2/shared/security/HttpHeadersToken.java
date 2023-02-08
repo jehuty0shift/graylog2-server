@@ -21,16 +21,19 @@ import org.apache.shiro.authc.HostAuthenticationToken;
 import javax.annotation.Nullable;
 import javax.ws.rs.core.MultivaluedMap;
 
-public class HttpHeadersToken implements HostAuthenticationToken {
+public class HttpHeadersToken implements Auditable, HostAuthenticationToken {
 
     private final MultivaluedMap<String, String> httpHeaders;
     private final String host;
     private final String remoteAddr;
 
-    public HttpHeadersToken(MultivaluedMap<String, String> httpHeaders, String host, String remoteAddr) {
+    private final boolean mustAudit;
+
+    public HttpHeadersToken(MultivaluedMap<String, String> httpHeaders, String host, String remoteAddr, boolean mustAudit) {
         this.httpHeaders = httpHeaders;
         this.host = host;
         this.remoteAddr = remoteAddr;
+        this.mustAudit = mustAudit;
     }
 
     /**
@@ -53,6 +56,16 @@ public class HttpHeadersToken implements HostAuthenticationToken {
     @Nullable
     public Object getCredentials() {
         return null;
+    }
+
+
+    /**
+     * Returns if the Authentication must be audited or not.
+     * @return boolean
+     */
+    @Override
+    public boolean mustAudit() {
+        return this.mustAudit;
     }
 
     @Override

@@ -102,7 +102,9 @@ public class MongoDBAuthServiceBackend implements AuthServiceBackend {
 
         Map<String, Object> details = ImmutableMap.of(
                 "auth_realm", this.getClass().toString());
-        auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
+        if(authCredentials.mustAuditSuccess()) {
+            auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
+        }
         LOG.debug("Successfully validated password for user <{}>", username);
 
         final UserDetails userDetails = provisionerService.provision(provisionerService.newDetails(this)

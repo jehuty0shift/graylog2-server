@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -19,6 +19,7 @@ package org.graylog2.shared.security;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.graylog2.shared.bindings.GuiceInjectorHolder;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -26,12 +27,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import javax.inject.Provider;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.SecurityContext;
@@ -67,7 +70,10 @@ public class ShiroSecurityContextFilterTest {
 
         final DefaultSecurityManager securityManager = new DefaultSecurityManager();
         final Provider<Request> grizzlyRequestProvider = () -> mock(Request.class);
-        filter = new ShiroSecurityContextFilter(securityManager, grizzlyRequestProvider, Collections.emptySet());
+        //Test will be broken
+        final ExtendedUriInfo eui = mock(ExtendedUriInfo.class);
+        final ResourceInfo rI = mock(ResourceInfo.class);
+        filter = new ShiroSecurityContextFilter(securityManager, grizzlyRequestProvider, Collections.emptySet(), "", eui, rI);
     }
 
     @Test

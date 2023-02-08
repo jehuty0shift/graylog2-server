@@ -24,6 +24,8 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.audit.jersey.AuditEvent;
+import org.graylog2.audit.jersey.NoAuditAuthAllowed;
+import org.graylog2.audit.jersey.NoAuditEvent;
 import org.graylog2.plugin.ServerStatus;
 import org.graylog2.plugin.lifecycles.LoadBalancerStatus;
 import org.graylog2.rest.TooManyRequestsStatus;
@@ -61,6 +63,8 @@ public class LoadBalancerStatusResource extends RestResource {
     @GET
     @Timed
     @Produces(MediaType.TEXT_PLAIN)
+    @NoAuditEvent("Probe to know if the server is alive")
+    @NoAuditAuthAllowed
     @ApiOperation(value = "Get status of this Graylog server node for load balancers. " +
             "Returns ALIVE with HTTP 200, DEAD with HTTP 503, or THROTTLED with HTTP 429.")
     public Response status() {

@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.graylog2.audit.jersey.NoAuditAuthAllowed;
 import org.graylog2.audit.jersey.NoAuditEvent;
 import org.graylog2.cluster.Node;
 import org.graylog2.cluster.NodeNotFoundException;
@@ -111,6 +112,7 @@ public class ClusterNodeMetricsResource extends ProxiedResource {
     @GET
     @Timed
     @Path("/namespace/{namespace}")
+    @NoAuditAuthAllowed
     @ApiOperation(value = "Get all metrics of a namespace from node")
     @ApiResponses(value = {
             @ApiResponse(code = 404, message = "No such metric namespace")

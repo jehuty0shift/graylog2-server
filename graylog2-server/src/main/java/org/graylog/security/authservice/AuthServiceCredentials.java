@@ -33,11 +33,28 @@ public abstract class AuthServiceCredentials {
      */
     public abstract boolean isAuthenticated();
 
+    /**
+     *
+     * @return true if we must audit a successful authentication
+     */
+    public abstract boolean mustAuditSuccess();
+
+
+    public static AuthServiceCredentials create(String username, EncryptedValue password, boolean mustAuditSuccess) {
+        return builder()
+                .username(username)
+                .password(password)
+                .isAuthenticated(false)
+                .mustAuditSuccess(mustAuditSuccess)
+                .build();
+    }
+
     public static AuthServiceCredentials create(String username, EncryptedValue password) {
         return builder()
                 .username(username)
                 .password(password)
                 .isAuthenticated(false)
+                .mustAuditSuccess(true)
                 .build();
     }
 
@@ -46,6 +63,7 @@ public abstract class AuthServiceCredentials {
                 .username(username)
                 .password(EncryptedValue.createUnset())
                 .isAuthenticated(true)
+                .mustAuditSuccess(true)
                 .build();
     }
 
@@ -57,7 +75,8 @@ public abstract class AuthServiceCredentials {
     public abstract static class Builder {
         public static Builder create() {
             return new AutoValue_AuthServiceCredentials.Builder()
-                    .isAuthenticated(false);
+                    .isAuthenticated(false)
+                    .mustAuditSuccess(true);
         }
 
         public abstract Builder username(String username);
@@ -65,6 +84,8 @@ public abstract class AuthServiceCredentials {
         public abstract Builder password(EncryptedValue password);
 
         public abstract Builder isAuthenticated(boolean isAuthenticated);
+
+        public abstract Builder mustAuditSuccess(boolean mustAuditSuccess);
 
         public abstract AuthServiceCredentials build();
     }
