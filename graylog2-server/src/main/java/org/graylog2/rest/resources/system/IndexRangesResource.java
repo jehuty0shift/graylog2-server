@@ -27,6 +27,7 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.audit.jersey.AuditEvent;
+import org.graylog2.audit.jersey.NoAuditAuthAllowed;
 import org.graylog2.database.NotFoundException;
 import org.graylog2.indexer.IndexSet;
 import org.graylog2.indexer.IndexSetRegistry;
@@ -88,6 +89,7 @@ public class IndexRangesResource extends RestResource {
 
     @GET
     @Timed
+    @NoAuditAuthAllowed
     @ApiOperation(value = "Get a list of all index ranges")
     @Produces(MediaType.APPLICATION_JSON)
     public IndexRangesResponse list() {

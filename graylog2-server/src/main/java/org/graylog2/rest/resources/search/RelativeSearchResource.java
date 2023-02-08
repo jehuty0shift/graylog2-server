@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.glassfish.jersey.server.ChunkedOutput;
+import org.graylog2.audit.jersey.NoAuditAuthAllowed;
 import org.graylog2.decorators.DecoratorProcessor;
 import org.graylog2.indexer.results.ScrollResult;
 import org.graylog2.indexer.searches.Searches;
@@ -69,6 +70,7 @@ public class RelativeSearchResource extends SearchResource {
 
     @GET
     @Timed
+    @NoAuditAuthAllowed
     @ApiOperation(value = "Message search with relative timerange.",
             notes = "Search for messages in a relative timerange, specified as seconds from now. " +
                     "Example: 300 means search from 5 minutes ago to now.")

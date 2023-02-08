@@ -17,12 +17,16 @@
 package org.graylog2.shared.security;
 
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.jersey.server.ExtendedUriInfo;
+import org.graylog2.audit.Util;
+import org.graylog2.audit.jersey.NoAuditAuthAllowed;
 import org.graylog2.rest.RestTools;
 import org.graylog2.utilities.IpSubnet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -32,12 +36,16 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
@@ -49,13 +57,27 @@ public class ShiroSecurityContextFilter implements ContainerRequestFilter {
     private Provider<Request> grizzlyRequestProvider;
     private final Set<IpSubnet> trustedProxies;
 
+    private final ExtendedUriInfo extendedUriInfo;
+
+    private final ResourceInfo resourceInfo;
+
+    private Optional<String> noAuditAuthKey;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ShiroSecurityContextFilter.class);
+
     @Inject
     public ShiroSecurityContextFilter(DefaultSecurityManager securityManager,
                                       Provider<Request> grizzlyRequestProvider,
-                                      @Named("trusted_proxies") Set<IpSubnet> trustedProxies) {
+                                      @Named("trusted_proxies") Set<IpSubnet> trustedProxies,
+                                      @Named("no_audit_auth_key") String noAuditAuthKey,
+                                      @Context ExtendedUriInfo extendedUriInfo,
+                                      @Context ResourceInfo resourceInfo) {
         this.securityManager = requireNonNull(securityManager);
         this.grizzlyRequestProvider = grizzlyRequestProvider;
         this.trustedProxies = trustedProxies;
+        this.extendedUriInfo = extendedUriInfo;
+        this.resourceInfo = resourceInfo;
+        this.noAuditAuthKey = noAuditAuthKey != null && noAuditAuthKey.isEmpty()?Optional.empty():Optional.of(noAuditAuthKey);
     }
 
     @Override
@@ -66,6 +88,27 @@ public class ShiroSecurityContextFilter implements ContainerRequestFilter {
 
         final String host = RestTools.getRemoteAddrFromRequest(grizzlyRequest, trustedProxies);
         final String authHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
+
+        //mustAudit is false if the no_audit_key is set and its value is present in the URL parameter NO_AUDIT_URI_PARAM
+        boolean  mustAudit = true;
+        if (resourceInfo.getResourceMethod() != null) {
+            if (resourceInfo.getResourceMethod().getAnnotation(NoAuditAuthAllowed.class) != null) {
+                mustAudit = noAuditAuthKey.filter(t -> {
+                    return extendedUriInfo.getQueryParameters().getOrDefault(Util.NO_AUDIT_URI_PARAM, Collections.emptyList()).stream().anyMatch(
+                            s -> s.equals(t)
+                    );
+                }).isEmpty();
+            }
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("mustAudit {}", mustAudit);
+            if(!mustAudit) {
+                LOG.debug("must Audt False, no audit key {}",noAuditAuthKey.orElse("nothing").substring(0,7));
+            }
+            LOG.debug("has Annotation method; {}", Optional.ofNullable(resourceInfo.getResourceMethod()).map(m -> m.getAnnotation(NoAuditAuthAllowed.class) != null).orElse(Boolean.FALSE));
+            LOG.debug("no audit key: {}", extendedUriInfo.getQueryParameters().getOrDefault(Util.NO_AUDIT_URI_PARAM, Collections.emptyList()));
+        }
 
         final SecurityContext securityContext;
         if (authHeader != null && authHeader.startsWith("Basic")) {
@@ -83,12 +126,13 @@ public class ShiroSecurityContextFilter implements ContainerRequestFilter {
                                                     SecurityContext.BASIC_AUTH,
                                                     host,
                                                     grizzlyRequest.getRemoteAddr(),
-                                                    headers);
+                                                    headers,
+                                                    mustAudit);
 
         } else {
             securityContext = createSecurityContext(null, null, secure, null, host,
                                                     grizzlyRequest.getRemoteAddr(),
-                                                    headers);
+                                                    headers,mustAudit);
         }
 
         requestContext.setSecurityContext(securityContext);
@@ -108,24 +152,25 @@ public class ShiroSecurityContextFilter implements ContainerRequestFilter {
                                                   String authcScheme,
                                                   String host,
                                                   String remoteAddr,
-                                                  MultivaluedMap<String, String> headers) {
+                                                  MultivaluedMap<String, String> headers,
+                                                  boolean mustAudit) {
         final AuthenticationToken authToken;
         if ("session".equalsIgnoreCase(credential)) {
             // Basic auth: undefined:session is sent when the UI doesn't have a valid session id,
             // we don't want to create a SessionIdToken in that case but fall back to looking at the headers instead
             if ("undefined".equalsIgnoreCase(userName)) {
-                authToken = new HttpHeadersToken(headers, host, remoteAddr);
+                authToken = new HttpHeadersToken(headers, host, remoteAddr, mustAudit);
             } else {
                 authToken = new SessionIdToken(userName, host);
             }
         } else if ("token".equalsIgnoreCase(credential)) {
-            authToken = new AccessTokenAuthToken(userName, host);
+            authToken = new AccessTokenAuthToken(userName, host, mustAudit);
         } else if ("token".equalsIgnoreCase(userName)) {
-            authToken = new AccessTokenAuthToken(credential, host);
+            authToken = new AccessTokenAuthToken(credential, host, mustAudit);
         }else if (userName == null) { // without a username we default to using the header environment as potentially containing tokens used by plugins
-            authToken = new HttpHeadersToken(headers, host, remoteAddr);
+            authToken = new HttpHeadersToken(headers, host, remoteAddr, mustAudit);
         } else { // otherwise we use the "standard" username/password combination
-            authToken = new UsernamePasswordToken(userName, credential, host);
+            authToken = new AuditableUsernamePasswordToken(userName, credential, host, mustAudit);
         }
 
         final Subject subject = new Subject.Builder(securityManager)

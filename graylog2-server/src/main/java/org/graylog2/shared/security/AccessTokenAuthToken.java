@@ -21,13 +21,21 @@ import org.apache.shiro.authc.HostAuthenticationToken;
 
 import java.util.Objects;
 
-public final class AccessTokenAuthToken implements HostAuthenticationToken {
+public final class AccessTokenAuthToken implements HostAuthenticationToken, Auditable {
     private final String token;
     private final String host;
 
-    public AccessTokenAuthToken(String token, String host) {
+    private final boolean mustAudit;
+
+    public AccessTokenAuthToken(String token, String host, boolean mustAudit) {
         this.token = token;
         this.host = host;
+        this.mustAudit = mustAudit;
+    }
+
+    @Override
+    public boolean mustAudit() {
+        return this.mustAudit;
     }
 
     @Override
@@ -55,12 +63,13 @@ public final class AccessTokenAuthToken implements HostAuthenticationToken {
         if (o == null || getClass() != o.getClass()) return false;
         AccessTokenAuthToken that = (AccessTokenAuthToken) o;
         return Objects.equals(token, that.token) &&
-                Objects.equals(host, that.host);
+                Objects.equals(host, that.host) &&
+                Objects.equals(mustAudit, that.mustAudit);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(token, host);
+        return Objects.hash(token, host, token);
     }
 
     @Override
@@ -68,6 +77,7 @@ public final class AccessTokenAuthToken implements HostAuthenticationToken {
         return MoreObjects.toStringHelper(this)
                 .add("token", token)
                 .add("host", host)
+                .add("mustAudit", mustAudit)
                 .toString();
     }
 }

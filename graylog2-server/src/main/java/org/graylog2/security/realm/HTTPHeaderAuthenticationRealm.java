@@ -122,7 +122,7 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
             try {
                 InetAddress originAddress = InetAddress.getByName(origin);
                 if (origin != null && origin.length() > 0 && originAddress.isLoopbackAddress()) {
-                    return doAuthenticate(username, config, origin);
+                    return doAuthenticate(username, config, origin, headersToken.mustAudit());
                 }
             } catch (UnknownHostException ex) {
                 LOG.warn("Request for SSO Login received from unknown origin, denying", ex);
@@ -141,7 +141,7 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
         return null;
     }
 
-    private AuthenticationInfo doAuthenticate(String username, HTTPHeaderAuthConfig config, String remoteAddr) {
+    private AuthenticationInfo doAuthenticate(String username, HTTPHeaderAuthConfig config, String remoteAddr, boolean auditSuccess) {
         LOG.debug("Attempting authentication for username <{}>", username);
         try {
             // Create already authenticated credentials to make sure the auth service backend doesn't try to
@@ -185,7 +185,9 @@ public class HTTPHeaderAuthenticationRealm extends AuthenticatingRealm {
                 Map<String, Object> details = ImmutableMap.of(
                         "auth_realm", this.getClass().toString(),
                         "remote_address", remoteAddr);
-                auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
+                if (auditSuccess) {
+                    auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
+                }
                 // Setting this, will let the SessionResource know, that when a non-existing session is validated, it
                 // should in fact create a session.
                 ShiroSecurityContext.requestSessionCreation(true);

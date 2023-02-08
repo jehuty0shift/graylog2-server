@@ -171,6 +171,9 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "trusted_proxies", converter = IPSubnetConverter.class)
     private Set<IpSubnet> trustedProxies = Collections.emptySet();
 
+    @Parameter(value = "no_audit_auth_key")
+    private String noAuditAuthKey = "";
+
     @Parameter(value = "force_sso_users", converter = StringSetConverter.class)
     private Set<String> forceSSOUsers = Collections.emptySet();
 
@@ -451,6 +454,10 @@ public class Configuration extends BaseConfiguration {
 
     public String getKafkaAuditNodeName() {
         return kafkaAuditNodeName;
+    }
+
+    public String getNoAuditAuthKey() {
+        return noAuditAuthKey;
     }
 
     @ValidatorMethod

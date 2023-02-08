@@ -38,6 +38,7 @@ import org.graylog2.alarmcallbacks.AlarmCallbackConfigurationService;
 import org.graylog2.alerts.AlertService;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.audit.jersey.AuditEvent;
+import org.graylog2.audit.jersey.NoAuditAuthAllowed;
 import org.graylog2.audit.jersey.NoAuditEvent;
 import org.graylog2.database.NotFoundException;
 import org.graylog2.database.PaginatedList;
@@ -156,6 +157,7 @@ public class StreamResource extends RestResource {
 
     @POST
     @Timed
+    @NoAuditAuthAllowed
     @ApiOperation(value = "Create a stream")
     @RequiresPermissions(RestPermissions.STREAMS_CREATE)
     @Consumes(MediaType.APPLICATION_JSON)

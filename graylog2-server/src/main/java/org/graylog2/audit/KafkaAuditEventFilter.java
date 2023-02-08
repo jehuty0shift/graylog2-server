@@ -30,7 +30,7 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
     private final ResourceInfo resourceInfo;
     private final ExtendedUriInfo extendedUriInfo;
     private final Response response;
-    private final ObjectMapper objMapper;
+    private static final ObjectMapper objMapper = new ObjectMapper();
     private final UserService userService;
     private JsonNode requestObj;
 
@@ -44,7 +44,6 @@ public class KafkaAuditEventFilter implements ContainerRequestFilter, ContainerR
         this.resourceInfo = resourceInfo;
         this.response = response;
         this.userService = userService;
-        this.objMapper = new ObjectMapper();
         this.requestObj = objMapper.createObjectNode();
     }
 
