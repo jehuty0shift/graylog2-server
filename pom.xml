@@ -126,7 +126,7 @@
         <jbcrypt.version>0.4</jbcrypt.version>
         <jcip-annotations.version>1.0</jcip-annotations.version>
         <jdot.version>1.0</jdot.version>
-        <jersey.version>2.38</jersey.version>
+        <jersey.version>2.39</jersey.version>
         <jmte.version>5.0.0</jmte.version>
         <joda-time.version>2.12.2</joda-time.version>
         <jool.version>0.9.14</jool.version>
@@ -137,8 +137,8 @@
         <mongodb-driver.version>3.12.12</mongodb-driver.version>
         <mongojack.version>2.10.1</mongojack.version>
         <natty.version>0.13</natty.version>
-        <netty.version>4.1.87.Final</netty.version>
-        <netty-tcnative-boringssl-static.version>2.0.57.Final</netty-tcnative-boringssl-static.version>
+        <netty.version>4.1.89.Final</netty.version>
+        <netty-tcnative-boringssl-static.version>2.0.59.Final</netty-tcnative-boringssl-static.version>
         <okhttp.version>3.14.9</okhttp.version>
         <opencsv.version>2.3</opencsv.version>
         <os-platform-finder.version>1.2.3</os-platform-finder.version>
@@ -147,6 +147,7 @@
         <reflections.version>0.9.12</reflections.version>
         <retrofit.version>2.9.0</retrofit.version>
         <scala.version>2.13.10</scala.version>
+        <snakeyaml.version>1.3.3</snakeyaml.version>
         <semver4j.version>2.2.0-graylog.1</semver4j.version>
         <shiro.version>1.11.0</shiro.version>
         <sigar.version>1.6.4</sigar.version>
@@ -179,7 +180,7 @@
         <testcontainers.version>1.17.6</testcontainers.version>
 
         <!-- Nodejs dependencies -->
-        <nodejs.version>v16.19.0</nodejs.version>
+        <nodejs.version>v16.19.1</nodejs.version>
         <yarn.version>v1.22.19</yarn.version>
 
         <!-- Plugin versions -->
