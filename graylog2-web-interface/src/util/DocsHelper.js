@@ -36,7 +36,7 @@ class DocsHelper {
     WELCOME: '', // Welcome page to the documentation
   };
 
-  DOCS_URL = 'https://archivedocs.docs.graylog.org/en/';
+  DOCS_URL = 'https://archivedocs.graylog.org/en/';
   LDP_URL = 'https://docs.ovh.com/gb/en/logs-data-platform/';
 
   toStringLDP() {
