@@ -238,7 +238,7 @@ public class KafkaAuditEventSender implements AuditEventSender {
 
     private ObjectNode buildGelf(final ObjectNode objNode, double timestamp) {
         objNode.put("version", "1.1");
-        objNode.put("host", clientId);
+        objNode.put("host", nodeName);
         objNode.put("timestamp", timestamp);
         objNode.put("_type", "audit_graylog");
         objNode.put("_client_id", clientId);
