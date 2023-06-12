@@ -109,7 +109,7 @@
         <grok.version>0.1.9-graylog-2</grok.version>
         <grpc.version>1.29.0</grpc.version>
         <guava-retrying.version>2.0.0</guava-retrying.version>
-        <guava.version>31.1-jre</guava.version>
+        <guava.version>32.0.1-jre</guava.version>
         <guice.version>5.1.0</guice.version>
         <HdrHistogram.version>2.1.12</HdrHistogram.version>
         <hibernate-validator.version>6.2.5.Final</hibernate-validator.version>
@@ -128,17 +128,17 @@
         <jdot.version>1.0</jdot.version>
         <jersey.version>2.39.1</jersey.version>
         <jmte.version>5.0.0</jmte.version>
-        <joda-time.version>2.12.3</joda-time.version>
+        <joda-time.version>2.12.5</joda-time.version>
         <jool.version>0.9.14</jool.version>
         <json-path.version>2.7.0</json-path.version>
         <kafka.version>2.7.2</kafka.version>
         <log4j.version>2.20.0</log4j.version>
         <metrics.version>4.1.36</metrics.version>
-        <mongodb-driver.version>3.12.12</mongodb-driver.version>
+        <mongodb-driver.version>3.12.14</mongodb-driver.version>
         <mongojack.version>2.10.1</mongojack.version>
         <natty.version>0.13</natty.version>
-        <netty.version>4.1.90.Final</netty.version>
-        <netty-tcnative-boringssl-static.version>2.0.59.Final</netty-tcnative-boringssl-static.version>
+        <netty.version>4.1.93.Final</netty.version>
+        <netty-tcnative-boringssl-static.version>2.0.61.Final</netty-tcnative-boringssl-static.version>
         <okhttp.version>3.14.9</okhttp.version>
         <opencsv.version>2.3</opencsv.version>
         <os-platform-finder.version>1.2.3</os-platform-finder.version>
@@ -157,7 +157,7 @@
         <swagger.version>1.5.13</swagger.version>
         <syslog4j.version>0.9.60</syslog4j.version>
         <ulid.version>8.2.0</ulid.version>
-        <unboundid-ldap.version>6.0.7</unboundid-ldap.version>
+        <unboundid-ldap.version>6.0.9</unboundid-ldap.version>
         <uuid.version>3.2.1</uuid.version>
         <validation-api.version>2.0.1.Final</validation-api.version>
         <zkclient.version>0.11</zkclient.version>
@@ -180,7 +180,7 @@
         <testcontainers.version>1.17.6</testcontainers.version>
 
         <!-- Nodejs dependencies -->
-        <nodejs.version>v16.19.1</nodejs.version>
+        <nodejs.version>v16.20.0</nodejs.version>
         <yarn.version>v1.22.19</yarn.version>
 
         <!-- Plugin versions -->
