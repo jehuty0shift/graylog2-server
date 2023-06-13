@@ -81,4 +81,3 @@ WORKDIR /etc/graylog/server
 ENV GRAY_HEAP_SIZE 30g
 
 ENTRYPOINT ["/usr/bin/start-graylog-server.sh"]
-
