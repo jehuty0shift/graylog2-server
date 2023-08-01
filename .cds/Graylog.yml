@@ -105,4 +105,3 @@ integrations:
       build.info.path:
         type: string
 
-
