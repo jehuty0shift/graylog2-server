@@ -1,0 +1,34 @@
+version: v1.0
+name: graylog-deploy.bump
+description: Bump graylog deploy
+stages:
+- bump
+options:
+  bump:
+    conditions:
+      script: return string.match(cds_version, '^.*[.][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]$') ~= cds_version
+jobs:
+- job: Bump graylog deploy
+  stage: bump
+  steps:
+    - script:
+      - '#!/bin/bash'
+      - set -eux
+      - apt update && apt install -y jq
+      - cd {{.cds.workspace}}
+      - eval $(worker key install --env-git proj-ssh-logs)
+      - git config --global user.name "CDS Framework"
+      - git config --global user.email "su.core-services+coredev@interne.ovh.net"
+      - git config --global push.default simple
+      - git clone {{.git.url}} -b prod
+      - cd *-deploy
+      - gitRepo=${PWD##*/}
+      - remoteBranchExists=`git ls-remote origin "refs/heads/cds"`
+      - if [[ -z "$remoteBranchExists" ]]; then git checkout -b cds ; else git checkout cds ; fi
+      - 'sed -i -e "s/\(graylogBuildVersion: \).*/\1\"{{.cds.version}}\"/" .cds/*.yml'
+      - gitChanged=$(git status --porcelain)
+      - if ! [[ -z "$gitChanged" ]]; then git commit -am "[CDS] bump graylog release to {{.cds.version}}" && git push origin cds; fi
+      - 'curl -s -H "X-Ovh-Gateway-Source: token:logs:6f6baace-0976-45a9-96e1-460f75c6b6db" -H "X-Ovh-Gateway-Token: {{.cds.proj.gw_token}}" -H "X-Ovh-Gateway-Service-Name: autoconf-bitbucket" https://gateway2.uservice.lb.engine.ha.ovh.net/rest/api/1.0/projects/THOT/repos/$gitRepo/pull-requests\?from\=refs/heads/cds\&to\=refs/heads/prod\&status\=OPEN'
+      - 'if [[ -n "$gitChanged" && $(curl -s -H "X-Ovh-Gateway-Source: token:logs:6f6baace-0976-45a9-96e1-460f75c6b6db" -H "X-Ovh-Gateway-Token: {{.cds.proj.gw_token}}" -H "X-Ovh-Gateway-Service-Name: autoconf-bitbucket" https://gateway2.uservice.lb.engine.ha.ovh.net/rest/api/1.0/projects/THOT/repos/$gitRepo/pull-requests\?from\=refs/heads/cds\&to\=refs/heads/prod\&status\=OPEN  | jq -r .size) -eq 0 ]]; then echo {\"title\": \"[CDS] bump requirements\",\"state\": \"OPEN\",\"open\": true,\"closed\": false,\"fromRef\": {\"id\": \"refs/heads/cds\",\"repository\": {\"slug\": \"$gitRepo\",\"project\": {\"key\": \"THOT\"}}},\"toRef\": {\"id\": \"refs/heads/prod\",\"repository\": {\"slug\": \"$gitRepo\",\"project\": {\"key\": \"THOT\"}}},\"locked\": false,\"reviewers\": [{\"user\": {\"name\": \"cedric.dumay\"}},{\"user\": {\"name\": \"edward.de-faria\"}},{\"user\": {\"name\": \"babacar.diasse\"}},{\"user\": {\"name\": \"pierre.de-paepe\"}},{\"user\": {\"name\": \"pierre.frayer\"}}]} > data.json; curl -v -X POST -H "Content-Type: application/json" -H "X-Ovh-Gateway-Source: token:logs:6f6baace-0976-45a9-96e1-460f75c6b6db" -H "X-Ovh-Gateway-Token: {{.cds.proj.gw_token}}" -H "X-Ovh-Gateway-Service-Name: autoconf-bitbucket" -d @data.json "https://gateway2.uservice.lb.engine.ha.ovh.net/rest/api/1.0/projects/THOT/repos/$gitRepo/pull-requests"; fi'
+requirements:
+  - region: "eu" # according core-platform "eu" region is also pcidss

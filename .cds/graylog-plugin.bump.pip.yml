@@ -1,0 +1,26 @@
+version: v1.0
+name: graylog-plugin.bump
+description: Bump given graylog plugin
+stages:
+- bump
+options:
+  bump:
+    conditions:
+      script: return string.match(cds_version, '^.*[.][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]$') ~= cds_version
+jobs:
+- job: Bump plugin
+  stage: bump
+  steps:
+    - script:
+      - cd {{.cds.workspace}}
+      - eval $(worker key install --env-git proj-ssh-logs)
+      - git config --global user.name "CDS Framework"
+      - git config --global user.email "su.core-services+coredev@interne.ovh.net"
+      - git config --global push.default simple
+      - git clone {{.git.url}} -b prod
+      - cd thot-*
+      - 'sed -i -e "s/\(graylogBuildVersion: \).*/\1\"{{.cds.version}}\"/" .cds/*.yml'
+      - git commit -am "[CDS] bump graylog to {{.cds.version}}"
+      - git push
+requirements:
+  - region: "eu" # according core-platform "eu" region is also pcidss
