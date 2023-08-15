@@ -1,0 +1,46 @@
+version: v1.0
+name: graylog-plugin.build
+description: Test and build given Graylog plugin
+parameters:
+  graylogBuildVersion:
+    type: string
+  jarName:
+    type: string
+jobs:
+- job: Build package
+  steps:
+  - artifactDownload:
+      path: .
+      tag: '{{.cds.version}}'
+  - script:
+    - cd {{.cds.workspace}}
+    - echo "${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN}" | docker login --username ${CDS_INTEGRATION_ARTIFACT_MANAGER_TOKEN_NAME} --password-stdin ldp-default-docker.artifactory.ovhcloud.tools
+    - docker run -v {{.cds.workspace}}/results:/opt ldp-default-docker.artifactory.ovhcloud.tools/graylog-build-dk:{{.cds.pip.graylogBuildVersion}}
+    - mkdir graylog2-server plugin
+    - tar -xzf results/graylog2-server-build.tar.gz -C graylog2-server
+    - rm -rf results
+    - tar -xzf build.tgz -C plugin
+    - fullVersion={{.cds.version}}
+    - docker run -v {{.cds.workspace}}/plugin:/data ldp-default-docker.artifactory.ovhcloud.tools/ldp-maven-dk-17 mvn versions:set -DnewVersion=$fullVersion
+    - docker build -t ldp/graylog-plugin-build graylog2-server/docker/plugin/
+    - docker run --network=host -v {{.cds.workspace}}:/data ldp/graylog-plugin-build
+    - ls -lah *
+    - cd {{.cds.workspace}}/plugin
+    - tar czf target.tar.gz target/
+    - worker run-result add artifact-manager {{.cds.pip.jarName}}-$fullVersion.jar ldp-default-maven org/ovh/thot/{{.cds.pip.jarName}}/$fullVersion/{{.cds.pip.jarName}}-$fullVersion.jar
+    - worker run-result add artifact-manager {{.cds.pip.jarName}}-$fullVersion.pom ldp-default-maven org/ovh/thot/{{.cds.pip.jarName}}/$fullVersion/{{.cds.pip.jarName}}-$fullVersion.pom
+    - mvnReport=$(grep 'Tests run' {{.cds.workspace}}/plugin/log2.txt | base64 -w 0)
+    - worker export mvnReport "$mvnReport"
+  - artifactUpload:
+      path: '{{.cds.workspace}}/plugin/log2.txt'
+      tag: '{{.cds.version}}'
+  - artifactUpload:
+      path: '{{.cds.workspace}}/plugin/target.tar.gz'
+      tag: '{{.cds.version}}'    
+  - jUnitReport: '{{.cds.workspace}}/plugin/target/surefire-reports/*.xml'
+  - coverage:
+      format: other
+      path: '{{.cds.workspace}}/plugin/target/site/jacoco/jacoco.xml'
+  requirements:
+  - region: pcidss
+  - model: Debian-10-VM-Hardened
