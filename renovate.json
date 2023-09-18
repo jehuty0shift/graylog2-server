@@ -1,3 +1,14 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "ignoreDeps": [
+    "org.graylog2:graylog2-server",
+    "org.graylog.plugins:graylog-plugin-web-parent"
+  ],
+  "packageRules": [
+    {
+      "matchPaths": ["*"],
+      "matchUpdateTypes": ["major", "provided"],
+      "enabled": false
+    }
+  ]
 }
