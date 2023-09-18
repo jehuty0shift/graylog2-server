@@ -2,7 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "ignoreDeps": [
     "org.graylog2:graylog2-server",
-    "org.graylog.plugins:graylog-plugin-web-parent"
+    "org.graylog.plugins:graylog-plugin-web-parent",
+    "com.fasterxml.jackson:jackson-bom",
+    "com.google.auto.value:auto-value",
+    "org.scala-lang:scala-library",
+    "org.graylog.shaded:elasticsearch5"
   ],
   "packageRules": [
     {
