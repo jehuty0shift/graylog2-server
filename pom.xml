@@ -147,7 +147,7 @@
         <reflections.version>0.9.12</reflections.version>
         <retrofit.version>2.9.0</retrofit.version>
         <scala.version>2.13.10</scala.version>
-        <snakeyaml.version>2.0</snakeyaml.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
         <semver4j.version>2.2.0-graylog.1</semver4j.version>
         <shiro.version>1.12.0</shiro.version>
         <sigar.version>1.6.4</sigar.version>
