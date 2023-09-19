@@ -161,7 +161,7 @@
         <uuid.version>3.2.1</uuid.version>
         <validation-api.version>2.0.1.Final</validation-api.version>
         <zkclient.version>0.11</zkclient.version>
-        <zookeeper.version>3.5.10</zookeeper.version>
+        <zookeeper.version>3.9.0</zookeeper.version>
 
         <!-- Test dependencies -->
         <apacheds-server.version>2.0.0.AM26</apacheds-server.version>
