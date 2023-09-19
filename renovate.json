@@ -6,7 +6,8 @@
     "com.fasterxml.jackson:jackson-bom",
     "com.google.auto.value:auto-value",
     "org.scala-lang:scala-library",
-    "org.graylog.shaded:elasticsearch5"
+    "org.graylog.shaded:elasticsearch5",
+    "io.swagger:swagger-annotations"
   ],
   "packageRules": [
     {
