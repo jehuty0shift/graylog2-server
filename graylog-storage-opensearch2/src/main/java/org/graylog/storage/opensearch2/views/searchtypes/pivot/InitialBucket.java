@@ -1,7 +1,7 @@
 package org.graylog.storage.opensearch2.views.searchtypes.pivot;
 
 import org.opensearch.action.search.SearchResponse;
-import org.opensearch.common.xcontent.XContentBuilder;
+import org.opensearch.core.xcontent.XContentBuilder;
 import org.opensearch.search.aggregations.Aggregations;
 import org.opensearch.search.aggregations.bucket.MultiBucketsAggregation;
 
