@@ -109,7 +109,7 @@ public class KeywordSearchResource extends SearchResource {
     @Timed
     @ApiOperation(value = "Message search with keyword as timerange.",
             notes = "Search for messages in a timerange defined by a keyword like \"yesterday\" or \"2 weeks ago to wednesday\".")
-    @Produces(MoreMediaTypes.TEXT_CSV)
+    @Produces({MoreMediaTypes.TEXT_CSV, "*/*;q=0"})
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Invalid keyword provided.")
     })
