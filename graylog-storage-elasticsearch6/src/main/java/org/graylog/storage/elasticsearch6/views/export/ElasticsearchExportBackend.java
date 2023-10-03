@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -199,7 +200,7 @@ public class ElasticsearchExportBackend implements ExportBackend {
 
     private Object fixTimestampFormat(Object rawTimestamp) {
         try {
-            return ES_DATE_FORMAT_FORMATTER.parse(String.valueOf(rawTimestamp)).toString();
+            return DateTimeFormatter.ISO_DATE_TIME.format(ES_DATE_FORMAT_FORMATTER.parse(String.valueOf(rawTimestamp)));
         } catch (IllegalArgumentException e) {
             LOG.warn("Could not parse timestamp {}", rawTimestamp, e);
             return rawTimestamp;
