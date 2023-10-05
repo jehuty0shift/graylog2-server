@@ -113,7 +113,7 @@ public class AbsoluteSearchResource extends SearchResource {
     @ApiOperation(value = "Message search with absolute timerange.",
             notes = "Search for messages using an absolute timerange, specified as from/to " +
                     "with format yyyy-MM-ddTHH:mm:ss.SSSZ (e.g. 2014-01-23T15:34:49.000Z) or yyyy-MM-dd HH:mm:ss.")
-    @Produces({MoreMediaTypes.TEXT_CSV, "*/*;q=0"})
+    @Produces({MoreMediaTypes.TEXT_CSV})
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Invalid timerange parameters provided.")
     })
@@ -129,7 +129,7 @@ public class AbsoluteSearchResource extends SearchResource {
             @ApiParam(name = "batch_size", value = "Batch size for the backend storage export request.", required = false) @QueryParam("batch_size") @DefaultValue(DEFAULT_SCROLL_BATCH_SIZE) int batchSize,
             @ApiParam(name = "filter", value = "Filter", required = false) @QueryParam("filter") String filter,
             @ApiParam(name = "fields", value = "Comma separated list of fields to return", required = true)
-            @QueryParam("fields") @NotEmpty String fields) {
+            @QueryParam("fields") @NotEmpty(message = "fields parameter should not be empty for text/csv. Or you instead meant to use the header 'accept: application/json'") String fields) {
         checkSearchPermission(filter, RestPermissions.SEARCHES_ABSOLUTE);
 
         final List<String> fieldList = parseFields(fields);
