@@ -110,7 +110,7 @@ public class RelativeSearchResource extends SearchResource {
     @ApiOperation(value = "Message search with relative timerange.",
             notes = "Search for messages in a relative timerange, specified as seconds from now. " +
                     "Example: 300 means search from 5 minutes ago to now.")
-    @Produces({MoreMediaTypes.TEXT_CSV, "*/*;q=0"})
+    @Produces({MoreMediaTypes.TEXT_CSV})
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Invalid timerange parameters provided.")
     })
@@ -124,7 +124,7 @@ public class RelativeSearchResource extends SearchResource {
             @ApiParam(name = "batch_size", value = "Batch size for the backend storage export request.", required = false) @QueryParam("batch_size") @DefaultValue(DEFAULT_SCROLL_BATCH_SIZE) int batchSize,
             @ApiParam(name = "filter", value = "Filter", required = false) @QueryParam("filter") String filter,
             @ApiParam(name = "fields", value = "Comma separated list of fields to return", required = true)
-            @QueryParam("fields") @NotEmpty String fields) {
+            @QueryParam("fields") @NotEmpty(message = "fields parameter should not be empty for text/csv. Or you instead meant to use the header 'accept: application/json'") String fields) {
         checkSearchPermission(filter, RestPermissions.SEARCHES_RELATIVE);
 
         final List<String> fieldList = parseFields(fields);

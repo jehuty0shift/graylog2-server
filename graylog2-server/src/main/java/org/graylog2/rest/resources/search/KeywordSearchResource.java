@@ -109,7 +109,7 @@ public class KeywordSearchResource extends SearchResource {
     @Timed
     @ApiOperation(value = "Message search with keyword as timerange.",
             notes = "Search for messages in a timerange defined by a keyword like \"yesterday\" or \"2 weeks ago to wednesday\".")
-    @Produces({MoreMediaTypes.TEXT_CSV, "*/*;q=0"})
+    @Produces({MoreMediaTypes.TEXT_CSV})
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Invalid keyword provided.")
     })
@@ -123,7 +123,7 @@ public class KeywordSearchResource extends SearchResource {
             @ApiParam(name = "batch_size", value = "Batch size for the backend storage export request.", required = false) @QueryParam("batch_size") @DefaultValue(DEFAULT_SCROLL_BATCH_SIZE) int batchSize,
             @ApiParam(name = "filter", value = "Filter", required = false) @QueryParam("filter") String filter,
             @ApiParam(name = "fields", value = "Comma separated list of fields to return", required = true)
-            @QueryParam("fields") @NotEmpty String fields) {
+            @QueryParam("fields") @NotEmpty(message = "fields parameter should not be empty for text/csv. Or you instead meant to use the header 'accept: application/json'") String fields) {
         checkSearchPermission(filter, RestPermissions.SEARCHES_KEYWORD);
 
         final List<String> fieldList = parseFields(fields);
