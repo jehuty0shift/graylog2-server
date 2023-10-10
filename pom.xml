@@ -152,7 +152,7 @@
         <semver4j.version>2.2.0-graylog.1</semver4j.version>
         <shiro.version>1.12.0</shiro.version>
         <sigar.version>1.6.4</sigar.version>
-        <siv-mode.version>1.4.4</siv-mode.version>
+        <siv-mode.version>1.5.0</siv-mode.version>
         <slf4j.version>1.7.36</slf4j.version>
         <streamex.version>0.8.2</streamex.version>
         <swagger.version>1.5.13</swagger.version>
