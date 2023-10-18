@@ -9,6 +9,7 @@
     "org.graylog.shaded:elasticsearch5",
     "io.swagger:swagger-annotations",
     "org.assertj:assertj-core",
+    "org.reflections:reflections",
     "io.dropwizard.metrics:metrics-core",
     "io.dropwizard.metrics:metrics-annotation",
     "io.dropwizard.metrics:metrics-graphite",
