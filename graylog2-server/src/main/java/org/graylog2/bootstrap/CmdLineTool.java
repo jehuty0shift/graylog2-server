@@ -389,18 +389,27 @@ public abstract class CmdLineTool implements CliCommand {
             //noinspection ThrowableResultOfMethodCallIgnored
             final Throwable rootCause = ExceptionUtils.getRootCause(message.getCause());
             if (rootCause instanceof NodeIdPersistenceException) {
-                LOG.error(UI.wallString(
-                        "Unable to read or persist your NodeId file. This means your node id file (" + configuration.getNodeIdFile() + ") is not readable or writable by the current user. The following exception might give more information: " + message));
+                if(LOG.isErrorEnabled()) {
+                    LOG.error(UI.wallString(
+                            "Unable to read or persist your NodeId file. This means your node id file (" + configuration.getNodeIdFile() + ") is not readable or writable by the current user. The following exception might give more information: " + message));
+                }
                 System.exit(-1);
             } else if (rootCause instanceof AccessDeniedException) {
-                LOG.error(UI.wallString("Unable to access file " + rootCause.getMessage()));
+                if(LOG.isErrorEnabled()) {
+
+                    LOG.error(UI.wallString("Unable to access file " + rootCause.getMessage()));
+                }
                 System.exit(-2);
             } else if (rootCause instanceof UnsupportedElasticsearchException) {
-                final BackendVersion searchEngineVersion = ((UnsupportedElasticsearchException) rootCause).getSearchEngineMajorVersion();
-                LOG.error(UI.wallString("Unsupported Elasticsearch version: " + searchEngineVersion, DocsHelper.PAGE_ES_VERSIONS.toString()));
+               final BackendVersion searchEngineVersion = ((UnsupportedElasticsearchException) rootCause).getSearchEngineMajorVersion();
+                if(LOG.isErrorEnabled()) {
+                    LOG.error(UI.wallString("Unsupported Elasticsearch version: " + searchEngineVersion, DocsHelper.PAGE_ES_VERSIONS.toString()));
+                }
                 System.exit(-3);
             } else if (rootCause instanceof ElasticsearchProbeException) {
-                LOG.error(UI.wallString(rootCause.getMessage(), DocsHelper.PAGE_ES_CONFIGURATION.toString()));
+                if(LOG.isErrorEnabled()) {
+                    LOG.error(UI.wallString(rootCause.getMessage(), DocsHelper.PAGE_ES_CONFIGURATION.toString()));
+                }
                 System.exit(-4);
             } else {
                 // other guice error, still print the raw messages
