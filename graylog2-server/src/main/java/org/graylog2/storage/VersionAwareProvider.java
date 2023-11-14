@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Map;
-import java.util.Objects;
 
 public class VersionAwareProvider<T> implements Provider<T> {
     private final BackendVersion elasticsearchMajorVersion;
@@ -41,7 +40,7 @@ public class VersionAwareProvider<T> implements Provider<T> {
     public T get() {
         final Provider<T> provider = this.pluginBindings.get(elasticsearchMajorVersion);
         if (provider == null) {
-            LOG.error("not found {} for {}",  elasticsearchMajorVersion);
+            LOG.error("not found {}",  elasticsearchMajorVersion);
             LOG.error("plugin bindings :\n {}", pluginBindings);
             throw new UnsupportedElasticsearchException(elasticsearchMajorVersion);
         }

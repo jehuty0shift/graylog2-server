@@ -61,19 +61,22 @@ public class SearchEngineVersionProvider implements Provider<BackendVersion> {
     public BackendVersion get() {
         if (this.fullVersionOverride.isPresent()) {
             final BackendVersion explicitVersion = fullVersionOverride.get();
-            LOG.info("Elasticsearch version set to " + explicitVersion + " - disabling version probe.");
+            LOG.info("Elasticsearch version set to {} - disabling version probe.",explicitVersion);
             return explicitVersion;
         }
 
         try {
             return this.cachedVersion.get(() -> {
                 final Optional<BackendVersion> probedVersion = this.versionProbe.probe(this.backendHosts);
-                probedVersion.ifPresent(version -> LOG.info("Elasticsearch cluster is running v" + version));
+                probedVersion.ifPresent(version -> LOG.info("Elasticsearch cluster is running v{}",version));
                 return probedVersion;
             })
                     .orElseThrow(() -> new ElasticsearchProbeException(NO_HOST_REACHABLE_ERROR + "!"));
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (ExecutionException e) {
             throw new ElasticsearchProbeException(NO_HOST_REACHABLE_ERROR + ": ", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ElasticsearchProbeException(NO_HOST_REACHABLE_ERROR,e);
         }
     }
 }

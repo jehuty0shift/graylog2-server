@@ -24,7 +24,7 @@ import org.graylog2.plugin.Version;
 import java.util.List;
 
 public class SearchEngineVersionValidator implements Validator<Version> {
-    private static final List<Version> SUPPORTED_ES_VERSIONS = ImmutableList.of(
+    private static final List<Version> SUPPORTED_ES_VERSIONS = List.of(
             Version.from(2,0,0), //Added for Opensearch
             Version.from(6, 0, 0),
             Version.from(7, 0, 0)

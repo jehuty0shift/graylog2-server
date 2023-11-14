@@ -1,14 +1,17 @@
 package org.graylog2.plugin;
 
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
 
-public class BackendVersion implements Comparable<BackendVersion> {
+public class BackendVersion implements Comparable<BackendVersion>, Serializable {
+
     public enum SearchEngine {
         ELASTICSEARCH,
         OPENSEARCH
     }
 
+    private static final long serialVersionUID = 1L;
     private final Version version;
     private final SearchEngine engine;
 
