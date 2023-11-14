@@ -18,7 +18,6 @@ package org.graylog2.configuration.validators;
 
 import com.github.joschi.jadconfig.ValidationException;
 import com.github.joschi.jadconfig.Validator;
-import com.google.common.collect.ImmutableList;
 import org.graylog2.plugin.Version;
 
 import java.util.List;
