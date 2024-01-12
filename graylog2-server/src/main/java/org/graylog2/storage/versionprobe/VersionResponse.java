@@ -30,7 +30,12 @@ public abstract class VersionResponse {
     public abstract String distribution();
 
     @JsonCreator
-    public static VersionResponse create(@JsonProperty("number") String number, @JsonProperty(value = "distribution", defaultValue = "elasticsearch") String distribution) {
-        return new AutoValue_VersionResponse(number, distribution);
+    public static VersionResponse create(@JsonProperty("number") String number, @JsonProperty(value = "distribution") String distribution) {
+        String detectedDistribution = distribution;
+        if (detectedDistribution == null) {
+            //when using Elasticsearch6
+            detectedDistribution = "elasticsearch";
+        }
+        return new AutoValue_VersionResponse(number, detectedDistribution);
     }
 }
