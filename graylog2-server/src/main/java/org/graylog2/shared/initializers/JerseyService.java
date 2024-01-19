@@ -284,6 +284,9 @@ public class JerseyService extends AbstractIdleService {
             rc.registerClasses(CORSFilter.class);
         }
 
+        //HSTS filter for HTTPS
+        rc.registerClasses(HSTSFilter.class);
+
         if (LOG.isDebugEnabled()) {
             rc.registerClasses(PrintModelProcessor.class);
         }
