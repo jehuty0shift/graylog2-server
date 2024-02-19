@@ -183,7 +183,7 @@
         <testcontainers.version>1.19.5</testcontainers.version>
 
         <!-- Nodejs dependencies -->
-        <nodejs.version>v16.20.1</nodejs.version>
+        <nodejs.version>v16.20.2</nodejs.version>
         <yarn.version>v1.22.19</yarn.version>
 
         <!-- Plugin versions -->
