@@ -30,6 +30,8 @@ import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.system.NodeId;
+import org.graylog2.security.SafeChainingClassLoader;
+import org.graylog2.security.SafeClassesProvider;
 import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.system.debug.DebugEvent;
@@ -89,7 +91,7 @@ public class ClusterEventPeriodicalTest {
                 provider,
                 mongodb.mongoConnection(),
                 nodeId,
-                new ChainingClassLoader(getClass().getClassLoader()),
+                new SafeChainingClassLoader(new ChainingClassLoader(getClass().getClassLoader()), SafeClassesProvider.allLdpInternal()),
                 serverEventBus,
                 clusterEventBus
         );

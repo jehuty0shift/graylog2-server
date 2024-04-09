@@ -31,7 +31,7 @@ import org.graylog2.audit.jersey.AuditEvent;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.rest.MoreMediaTypes;
 import org.graylog2.rest.models.system.config.ClusterConfigList;
-import org.graylog2.shared.plugins.ChainingClassLoader;
+import org.graylog2.security.SafeChainingClassLoader;
 import org.graylog2.shared.rest.resources.RestResource;
 import org.graylog2.shared.security.RestPermissions;
 import org.slf4j.Logger;
@@ -41,16 +41,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -67,15 +58,15 @@ public class ClusterConfigResource extends RestResource {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterConfigResource.class);
 
     private final ClusterConfigService clusterConfigService;
-    private final ChainingClassLoader chainingClassLoader;
+    private final SafeChainingClassLoader chainingClassLoader;
     private final ObjectMapper objectMapper;
 
     @Inject
     public ClusterConfigResource(ClusterConfigService clusterConfigService,
-                                 ChainingClassLoader chainingClassLoader,
+                                 SafeChainingClassLoader safeChainingClassLoader,
                                  ObjectMapper objectMapper) {
         this.clusterConfigService = requireNonNull(clusterConfigService);
-        this.chainingClassLoader = chainingClassLoader;
+        this.chainingClassLoader = safeChainingClassLoader;
         this.objectMapper = objectMapper;
     }
 

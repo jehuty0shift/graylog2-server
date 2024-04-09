@@ -27,6 +27,7 @@ import com.github.joschi.jadconfig.validators.PositiveDurationValidator;
 import com.github.joschi.jadconfig.validators.PositiveIntegerValidator;
 import com.github.joschi.jadconfig.validators.PositiveLongValidator;
 import com.github.joschi.jadconfig.validators.StringNotBlankValidator;
+import org.apache.commons.lang3.StringUtils;
 import org.graylog2.plugin.BaseConfiguration;
 import org.graylog2.security.realm.RootAccountRealm;
 import org.graylog2.shared.security.tls.DefaultTLSProtocolProvider;
@@ -38,6 +39,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -45,6 +47,7 @@ import java.util.Set;
  */
 @SuppressWarnings("FieldMayBeFinal")
 public class Configuration extends BaseConfiguration {
+    public static final String SAFE_CLASSES = "safe_classes";
     @Parameter(value = "is_master", required = true)
     private boolean isMaster = true;
 
@@ -114,6 +117,9 @@ public class Configuration extends BaseConfiguration {
 
     @Parameter(value = "stream_processing_max_faults", validator = PositiveIntegerValidator.class)
     private int streamProcessingMaxFaults = 3;
+
+    @Parameter(value = SAFE_CLASSES, converter = StringSetConverter.class, validators = SafeClassesValidator.class)
+    private Set<String> safeClasses = Set.of("org.graylog.", "org.graylog2.","thot.ovh","com.wizecore","com.ovh","org.ovh");
 
     @Parameter(value = "output_module_timeout", validator = PositiveLongValidator.class)
     private long outputModuleTimeout = 10000;
@@ -309,6 +315,10 @@ public class Configuration extends BaseConfiguration {
         return streamProcessingMaxFaults;
     }
 
+    public Set<String> getSafeClasses() {
+        return safeClasses;
+    }
+
     public long getOutputModuleTimeout() {
         return outputModuleTimeout;
     }
@@ -482,6 +492,19 @@ public class Configuration extends BaseConfiguration {
      */
     public boolean isRootUserDisabled() {
         return getDeactivatedBuiltinAuthenticationProviders().contains(RootAccountRealm.NAME);
+    }
+
+    public static class SafeClassesValidator implements Validator<Set<String>> {
+        @Override
+        public void validate(String name, Set<String> set) throws ValidationException {
+            if (set.isEmpty()) {
+                throw new ValidationException(String.format(Locale.ENGLISH, "\"%s\" must not be empty. Please specify a comma-separated list of " +
+                        "fully-qualified class name prefixes.", name));
+            }
+            if (set.stream().anyMatch(StringUtils::isBlank)) {
+                throw new ValidationException(String.format(Locale.ENGLISH, "\"%s\" must only contain non-empty class name prefixes.", name));
+            }
+        }
     }
 
     public static class NodeIdFileValidator implements Validator<String> {
