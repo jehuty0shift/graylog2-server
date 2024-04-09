@@ -4,7 +4,6 @@ import jakarta.inject.Inject;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 
 import java.util.Locale;
-import java.util.Set;
 
 public class SafeChainingClassLoader extends ClassLoader {
     private final ChainingClassLoader delegate;
