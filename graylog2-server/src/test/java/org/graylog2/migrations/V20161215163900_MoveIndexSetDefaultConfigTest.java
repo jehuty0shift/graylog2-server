@@ -28,6 +28,8 @@ import org.graylog2.events.ClusterEventBus;
 import org.graylog2.indexer.indexset.DefaultIndexSetConfig;
 import org.graylog2.migrations.V20161215163900_MoveIndexSetDefaultConfig.MigrationCompleted;
 import org.graylog2.plugin.system.NodeId;
+import org.graylog2.security.SafeChainingClassLoader;
+import org.graylog2.security.SafeClassesProvider;
 import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.junit.Before;
@@ -71,7 +73,7 @@ public class V20161215163900_MoveIndexSetDefaultConfigTest {
     public void setUp() throws Exception {
         this.clusterConfigService = spy(new ClusterConfigServiceImpl(objectMapperProvider,
                 mongodb.mongoConnection(), nodeId,
-                new ChainingClassLoader(getClass().getClassLoader()), new ClusterEventBus()));
+                new SafeChainingClassLoader(new ChainingClassLoader(getClass().getClassLoader()), SafeClassesProvider.allLdpInternal()), new ClusterEventBus()));
 
         this.collection = mongodb.mongoConnection().getMongoDatabase().getCollection("index_sets");
 

@@ -31,6 +31,8 @@ import org.graylog2.database.MongoConnection;
 import org.graylog2.events.ClusterEventBus;
 import org.graylog2.migrations.V20170110150100_FixAlertConditionsMigration.MigrationCompleted;
 import org.graylog2.plugin.system.NodeId;
+import org.graylog2.security.SafeChainingClassLoader;
+import org.graylog2.security.SafeClassesProvider;
 import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.junit.Before;
@@ -74,7 +76,7 @@ public class V20170110150100_FixAlertConditionsMigrationTest {
     public void setUp() throws Exception {
         this.clusterConfigService = spy(new ClusterConfigServiceImpl(objectMapperProvider,
                 mongodb.mongoConnection(), nodeId,
-                new ChainingClassLoader(getClass().getClassLoader()), new ClusterEventBus()));
+                new SafeChainingClassLoader(new ChainingClassLoader(getClass().getClassLoader()), SafeClassesProvider.allLdpInternal()), new ClusterEventBus()));
 
         final MongoConnection mongoConnection = spy(mongodb.mongoConnection());
         final MongoDatabase mongoDatabase = spy(mongoConnection.getMongoDatabase());

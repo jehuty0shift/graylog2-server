@@ -27,6 +27,7 @@ import org.graylog2.database.MongoConnection;
 import org.graylog2.events.ClusterEventBus;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.system.NodeId;
+import org.graylog2.security.SafeChainingClassLoader;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.shared.utilities.AutoValueUtils;
 import org.joda.time.DateTime;
@@ -54,14 +55,14 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
     private final JacksonDBCollection<ClusterConfig, String> dbCollection;
     private final NodeId nodeId;
     private final ObjectMapper objectMapper;
-    private final ChainingClassLoader chainingClassLoader;
+    private final SafeChainingClassLoader chainingClassLoader;
     private final EventBus clusterEventBus;
 
     @Inject
     public ClusterConfigServiceImpl(final MongoJackObjectMapperProvider mapperProvider,
                                     final MongoConnection mongoConnection,
                                     final NodeId nodeId,
-                                    final ChainingClassLoader chainingClassLoader,
+                                    final SafeChainingClassLoader chainingClassLoader,
                                     final ClusterEventBus clusterEventBus) {
         this(JacksonDBCollection.wrap(prepareCollection(mongoConnection), ClusterConfig.class, String.class, mapperProvider.get()),
                 nodeId, mapperProvider.get(), chainingClassLoader, clusterEventBus);
@@ -70,7 +71,7 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
     private ClusterConfigServiceImpl(final JacksonDBCollection<ClusterConfig, String> dbCollection,
                                      final NodeId nodeId,
                                      final ObjectMapper objectMapper,
-                                     final ChainingClassLoader chainingClassLoader,
+                                     final SafeChainingClassLoader chainingClassLoader,
                                      final EventBus clusterEventBus) {
         this.nodeId = checkNotNull(nodeId);
         this.dbCollection = checkNotNull(dbCollection);

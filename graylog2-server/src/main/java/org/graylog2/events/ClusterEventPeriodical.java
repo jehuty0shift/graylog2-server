@@ -21,17 +21,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.DeadEvent;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
+import com.mongodb.*;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.periodical.Periodical;
 import org.graylog2.plugin.system.NodeId;
+import org.graylog2.security.SafeChainingClassLoader;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.shared.utilities.AutoValueUtils;
 import org.mongojack.DBCursor;
@@ -55,29 +50,29 @@ public class ClusterEventPeriodical extends Periodical {
     private final NodeId nodeId;
     private final ObjectMapper objectMapper;
     private final EventBus serverEventBus;
-    private final ChainingClassLoader chainingClassLoader;
+    private final SafeChainingClassLoader chainingClassLoader;
 
     @Inject
     public ClusterEventPeriodical(final MongoJackObjectMapperProvider mapperProvider,
                                   final MongoConnection mongoConnection,
                                   final NodeId nodeId,
-                                  final ChainingClassLoader chainingClassLoader,
+                                  final SafeChainingClassLoader safeChainingClassLoader,
                                   final EventBus serverEventBus,
                                   final ClusterEventBus clusterEventBus) {
         this(JacksonDBCollection.wrap(prepareCollection(mongoConnection), ClusterEvent.class, String.class, mapperProvider.get()),
-                nodeId, mapperProvider.get(), chainingClassLoader, serverEventBus, clusterEventBus);
+                nodeId, mapperProvider.get(), safeChainingClassLoader, serverEventBus, clusterEventBus);
     }
 
     private ClusterEventPeriodical(final JacksonDBCollection<ClusterEvent, String> dbCollection,
                            final NodeId nodeId,
                            final ObjectMapper objectMapper,
-                           final ChainingClassLoader chainingClassLoader,
+                           final SafeChainingClassLoader safeChainingClassLoader,
                            final EventBus serverEventBus,
                            final ClusterEventBus clusterEventBus) {
         this.nodeId = checkNotNull(nodeId);
         this.dbCollection = checkNotNull(dbCollection);
         this.objectMapper = checkNotNull(objectMapper);
-        this.chainingClassLoader = chainingClassLoader;
+        this.chainingClassLoader = safeChainingClassLoader;
         this.serverEventBus = checkNotNull(serverEventBus);
 
         checkNotNull(clusterEventBus).registerClusterEventSubscriber(this);
