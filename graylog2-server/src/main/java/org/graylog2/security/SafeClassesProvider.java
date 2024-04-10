@@ -1,11 +1,11 @@
 package org.graylog2.security;
 
 import com.mongodb.lang.NonNull;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import org.graylog2.Configuration;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.util.Objects;
 import java.util.Set;
 

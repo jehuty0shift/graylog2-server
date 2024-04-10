@@ -1,8 +1,8 @@
 package org.graylog2.security;
 
-import jakarta.inject.Inject;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 
+import javax.inject.Inject;
 import java.util.Locale;
 
 public class SafeChainingClassLoader extends ClassLoader {
