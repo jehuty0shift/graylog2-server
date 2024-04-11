@@ -1,6 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "ignoreDeps": [
+    "org.apache.directory.server:ldap-client-test",
+    "org.apache.directory.server:apacheds-test-framework",
+    "org.opensearch.client:opensearch-rest-client-sniffer ",
+    "org.opensearch.client:opensearch-rest-high-level-client",
     "org.graylog2:graylog2-server",
     "org.graylog.plugins:graylog-plugin-web-parent",
     "com.fasterxml.jackson:jackson-bom",
