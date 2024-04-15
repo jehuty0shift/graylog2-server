@@ -17,6 +17,17 @@ public class SafeChainingClassLoader extends ClassLoader {
     }
 
 
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        throw new UnsupportedOperationException("Only loadClassSafely must be used");
+    }
+
+    @Override
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        throw new UnsupportedOperationException("Only loadClassSafely must be used");
+    }
+
+
     public Class<?> loadClassSafely(String name) throws ClassNotFoundException, UnauthorizedClassLoadingException {
         if (scp.isClassSafe(name)) {
             return delegate.loadClass(name);

@@ -28,6 +28,7 @@ import org.graylog2.events.ClusterEventBus;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.system.NodeId;
 import org.graylog2.security.SafeChainingClassLoader;
+import org.graylog2.security.UnauthorizedClassLoadingException;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.shared.utilities.AutoValueUtils;
 import org.joda.time.DateTime;
@@ -167,10 +168,12 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
             for (ClusterConfig clusterConfig : clusterConfigs) {
                 final String type = clusterConfig.type();
                 try {
-                    final Class<?> cls = chainingClassLoader.loadClass(type);
+                    final Class<?> cls = chainingClassLoader.loadClassSafely(type);
                     classes.add(cls);
                 } catch (ClassNotFoundException e) {
                     LOG.debug("Couldn't find configuration class \"{}\"", type, e);
+                } catch (UnauthorizedClassLoadingException e) {
+                    LOG.error("Class {} is not allowed to be loaded",type);
                 }
             }
         }

@@ -32,6 +32,7 @@ import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.rest.MoreMediaTypes;
 import org.graylog2.rest.models.system.config.ClusterConfigList;
 import org.graylog2.security.SafeChainingClassLoader;
+import org.graylog2.security.UnauthorizedClassLoadingException;
 import org.graylog2.shared.rest.resources.RestResource;
 import org.graylog2.shared.security.RestPermissions;
 import org.slf4j.Logger;
@@ -173,8 +174,11 @@ public class ClusterConfigResource extends RestResource {
     @Nullable
     private Class<?> classFromName(String className) {
         try {
-            return chainingClassLoader.loadClass(className);
+            return chainingClassLoader.loadClassSafely(className);
         } catch (ClassNotFoundException e) {
+            return null;
+        } catch (UnauthorizedClassLoadingException e) {
+            LOG.error("Class {} is not allowed to be loaded",className);
             return null;
         }
     }

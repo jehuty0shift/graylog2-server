@@ -27,6 +27,7 @@ import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.periodical.Periodical;
 import org.graylog2.plugin.system.NodeId;
 import org.graylog2.security.SafeChainingClassLoader;
+import org.graylog2.security.UnauthorizedClassLoadingException;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.shared.utilities.AutoValueUtils;
 import org.mongojack.DBCursor;
@@ -194,7 +195,7 @@ public class ClusterEventPeriodical extends Periodical {
 
     private Object extractPayload(Object payload, String eventClass) {
         try {
-            final Class<?> clazz = chainingClassLoader.loadClass(eventClass);
+            final Class<?> clazz = chainingClassLoader.loadClassSafely(eventClass);
             return objectMapper.convertValue(payload, clazz);
         } catch (ClassNotFoundException e) {
             LOG.debug("Couldn't load class <" + eventClass + "> for event", e);
@@ -202,7 +203,9 @@ public class ClusterEventPeriodical extends Periodical {
         } catch (IllegalArgumentException e) {
             LOG.debug("Error while deserializing payload", e);
             return null;
-
+        }catch (UnauthorizedClassLoadingException e) {
+            LOG.error("Class {} is not allowed to be loaded", eventClass);
+            return null;
         }
     }
 }
