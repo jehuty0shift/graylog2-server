@@ -43,4 +43,4 @@ jobs:
       path: '{{.cds.workspace}}/plugin/target/site/jacoco/jacoco.xml'
   requirements:
   - region: pcidss
-  - model: Debian-10-VM-Hardened
+  - model: Debian-12-VM-Hardened
