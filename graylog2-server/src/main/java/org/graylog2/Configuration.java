@@ -228,6 +228,9 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "kafka_audit_node_name")
     private String kafkaAuditNodeName = "";
 
+    @Parameter(value = "alarm_monitor_username")
+    private String alarmMonitorUsername = "";
+
     public boolean isMaster() {
         return isMaster;
     }
@@ -469,6 +472,8 @@ public class Configuration extends BaseConfiguration {
     public String getNoAuditAuthKey() {
         return noAuditAuthKey;
     }
+
+    public String getAlarmMonitorUsername() { return alarmMonitorUsername;}
 
     @ValidatorMethod
     @SuppressWarnings("unused")
