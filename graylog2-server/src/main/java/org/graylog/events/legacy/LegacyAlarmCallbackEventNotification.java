@@ -16,7 +16,11 @@
  */
 package org.graylog.events.legacy;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.inject.name.Named;
 import org.graylog.events.notifications.EventNotification;
 import org.graylog.events.notifications.EventNotificationContext;
 import org.graylog.events.notifications.EventNotificationService;
@@ -40,12 +44,21 @@ public class LegacyAlarmCallbackEventNotification implements EventNotification {
 
     private final EventNotificationService notificationCallbackService;
     private final LegacyAlarmCallbackSender alarmCallbackSender;
+    private final Counter successfulMonitor;
+    private final Counter failureMonitor;
+    private static final String CK_USERNAME_KEY = "username";
+    private final String monitorUsername;
 
     @Inject
     public LegacyAlarmCallbackEventNotification(EventNotificationService notificationCallbackService,
-                                                LegacyAlarmCallbackSender alarmCallbackSender) {
+                                                LegacyAlarmCallbackSender alarmCallbackSender,
+                                                MetricRegistry metricRegistry,
+                                                @Named("alarm_monitor_username") String monitorUsername) {
         this.notificationCallbackService = notificationCallbackService;
         this.alarmCallbackSender = alarmCallbackSender;
+        this.successfulMonitor = metricRegistry.counter(MetricRegistry.name(getClass(), "monitor", "successful"));
+        this.failureMonitor = metricRegistry.counter(MetricRegistry.name(getClass(), "monitor", "failure"));
+        this.monitorUsername = monitorUsername;
     }
 
     @Override
@@ -59,10 +72,23 @@ public class LegacyAlarmCallbackEventNotification implements EventNotification {
             LOG.error(msg);
             throw new PermanentEventNotificationException(msg);
         }
-
+        boolean isMonitoring = false;
+        if (!Strings.isNullOrEmpty(monitorUsername)) {
+            if (config.configuration().get(CK_USERNAME_KEY) != null) {
+                if ((monitorUsername.equals(config.configuration().get(CK_USERNAME_KEY)))) {
+                    isMonitoring = true;
+                }
+            }
+        }
         try {
             alarmCallbackSender.send(config, optionalEventDefinition.get(), ctx.event(), messagesForEvent);
+            if(isMonitoring) {
+                successfulMonitor.inc();
+            }
         } catch (Exception e) {
+            if(isMonitoring) {
+                failureMonitor.inc();
+            }
             // TODO: Is there a case where we want to retry? (and are able to detect when to do it)
             throw new PermanentEventNotificationException("Couldn't send legacy notification - legacy notifications cannot be retried!", e);
         }
