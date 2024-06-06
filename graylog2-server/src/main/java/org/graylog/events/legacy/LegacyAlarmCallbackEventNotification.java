@@ -57,7 +57,7 @@ public class LegacyAlarmCallbackEventNotification implements EventNotification {
         this.notificationCallbackService = notificationCallbackService;
         this.alarmCallbackSender = alarmCallbackSender;
         this.successfulMonitor = metricRegistry.counter(MetricRegistry.name(getClass(), "monitor", "successful"));
-        this.failureMonitor = metricRegistry.counter(MetricRegistry.name(getClass(), "monitor", "failure"));
+        this.failureMonitor = metricRegistry.counter(MetricRegistry.name(getClass(), "monitor", "failed"));
         this.monitorUsername = monitorUsername;
     }
 
@@ -73,7 +73,9 @@ public class LegacyAlarmCallbackEventNotification implements EventNotification {
             throw new PermanentEventNotificationException(msg);
         }
         boolean isMonitoring = false;
+        LOG.debug("Configuration is: {}",config.configuration());
         if (!Strings.isNullOrEmpty(monitorUsername)) {
+            LOG.debug("Monitor Username is used");
             if (config.configuration().get(CK_USERNAME_KEY) != null) {
                 if ((monitorUsername.equals(config.configuration().get(CK_USERNAME_KEY)))) {
                     isMonitoring = true;
@@ -83,10 +85,12 @@ public class LegacyAlarmCallbackEventNotification implements EventNotification {
         try {
             alarmCallbackSender.send(config, optionalEventDefinition.get(), ctx.event(), messagesForEvent);
             if(isMonitoring) {
+                LOG.debug("Monitor alert is successful");
                 successfulMonitor.inc();
             }
         } catch (Exception e) {
             if(isMonitoring) {
+                LOG.debug("Monitor alert has failed");
                 failureMonitor.inc();
             }
             // TODO: Is there a case where we want to retry? (and are able to detect when to do it)
