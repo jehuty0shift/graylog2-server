@@ -76,12 +76,11 @@ public class LegacyAlarmCallbackEventNotification implements EventNotification {
         LOG.debug("Configuration is: {}",config.configuration());
         if (!Strings.isNullOrEmpty(monitorUsername)) {
             LOG.debug("Monitor Username is used");
-            if (config.configuration().get(CK_USERNAME_KEY) != null) {
-                if ((monitorUsername.equals(config.configuration().get(CK_USERNAME_KEY)))) {
+            if (config.configuration().get(CK_USERNAME_KEY) != null && (monitorUsername.equals(config.configuration().get(CK_USERNAME_KEY)))) {
                     isMonitoring = true;
-                }
             }
         }
+
         try {
             alarmCallbackSender.send(config, optionalEventDefinition.get(), ctx.event(), messagesForEvent);
             if(isMonitoring) {
