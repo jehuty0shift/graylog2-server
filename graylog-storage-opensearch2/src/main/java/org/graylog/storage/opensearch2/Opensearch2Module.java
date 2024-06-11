@@ -46,6 +46,6 @@ public class Opensearch2Module extends VersionAwareModule {
     }
 
     private <T> LinkedBindingBuilder<T> bindForSupportedVersion(Class<T> interfaceClass) {
-        return bindForVersion(BackendVersion.fromOS(Opensearch2Plugin.SUPPORTED_ES_VERSION), interfaceClass);
+        return bindForVersion(BackendVersion.fromOS(Opensearch2Plugin.SUPPORTED_OS_VERSION), interfaceClass);
     }
 }
