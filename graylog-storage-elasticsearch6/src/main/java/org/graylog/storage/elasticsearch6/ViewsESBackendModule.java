@@ -110,7 +110,7 @@ public class ViewsESBackendModule extends ViewsModule {
     }
 
     private LinkedBindingBuilder<ExportBackend> bindExportBackend() {
-        return bindExportBackend(SUPPORTED_ES_VERSION);
+        return bindExportBackend(BackendVersion.fromES(SUPPORTED_ES_VERSION));
     }
 
     private void registerQueryBackend() {

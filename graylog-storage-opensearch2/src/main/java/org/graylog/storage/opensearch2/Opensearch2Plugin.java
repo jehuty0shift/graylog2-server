@@ -9,7 +9,7 @@ import org.graylog2.plugin.Version;
 import java.util.Collection;
 
 public class Opensearch2Plugin implements Plugin {
-    public static final Version SUPPORTED_ES_VERSION = Version.from(2, 0, 0);
+    public static final Version SUPPORTED_OS_VERSION = Version.from(2, 0, 0);
 
     @Override
     public PluginMetaData metadata() {

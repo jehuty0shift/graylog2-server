@@ -53,7 +53,7 @@ public class ViewsESBackendModule extends ViewsModule {
     protected void configure() {
         install(new FactoryModuleBuilder().build(OSGeneratedQueryContext.Factory.class));
 
-        bindForVersion(BackendVersion.fromOS(Opensearch2Plugin.SUPPORTED_ES_VERSION), new TypeLiteral<QueryBackend<? extends GeneratedQueryContext>>() {})
+        bindForVersion(BackendVersion.fromOS(Opensearch2Plugin.SUPPORTED_OS_VERSION), new TypeLiteral<QueryBackend<? extends GeneratedQueryContext>>() {})
                 .to(OpensearchBackend.class);
 
         registerESSearchTypeHandler(MessageList.NAME, OSMessageList.class);
@@ -84,7 +84,7 @@ public class ViewsESBackendModule extends ViewsModule {
     }
 
     private LinkedBindingBuilder<ExportBackend> bindExportBackend() {
-        return bindExportBackend(Opensearch2Plugin.SUPPORTED_ES_VERSION);
+        return bindExportBackend(BackendVersion.fromOS(Opensearch2Plugin.SUPPORTED_OS_VERSION));
     }
 
     private MapBinder<String, OSPivotBucketSpecHandler<? extends BucketSpec, ? extends Aggregation>> pivotBucketHandlerBinder() {

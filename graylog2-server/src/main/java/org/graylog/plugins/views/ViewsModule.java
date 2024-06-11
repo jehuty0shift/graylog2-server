@@ -36,8 +36,8 @@ import org.graylog2.plugin.Version;
 import org.graylog2.plugin.VersionAwareModule;
 
 public abstract class ViewsModule extends VersionAwareModule {
-    protected LinkedBindingBuilder<ExportBackend> bindExportBackend(Version supportedVersion) {
-        return bindForVersion(BackendVersion.fromES(supportedVersion), ExportBackend.class);
+    protected LinkedBindingBuilder<ExportBackend> bindExportBackend(BackendVersion supportedBackendVersion) {
+        return bindForVersion(supportedBackendVersion, ExportBackend.class);
     }
 
     protected void registerQueryMetadataDecorator(Class<? extends QueryMetadataDecorator> queryMetadataDecorator) {
