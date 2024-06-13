@@ -5,6 +5,8 @@ import { MenuItem, NavDropdown } from 'components/graylog';
 import { ExternalLink, Icon } from 'components/common';
 import DocsHelper from 'util/DocsHelper';
 
+import AppConfig from 'util/AppConfig'
+
 const HelpMenu = ({ active }) => (
   <NavDropdown active={active}
                id="help-menu-dropdown"
@@ -12,11 +14,11 @@ const HelpMenu = ({ active }) => (
                aria-label="Help"
                noCaret>
 
-    <MenuItem href={DocsHelper.quickStartLDPPage()} target="_blank">
+    <MenuItem href={AppConfig.webUIGuideLink()} target="_blank">
       <ExternalLink>Getting Started</ExternalLink>
     </MenuItem>
 
-    <MenuItem href="https://community.ovh.com/c/platform/data-platforms" target="_blank">
+    <MenuItem href={AppConfig.webUICommunityLink()} target="_blank">
       <ExternalLink>Community</ExternalLink>
     </MenuItem>
   </NavDropdown>
