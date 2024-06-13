@@ -43,6 +43,14 @@ const AppConfig = {
     return window.appConfig.badgeText;
   },
 
+  webUIGuideLink() {
+    return window.appConfig.webUIGuideLink;
+  },
+
+  webUICommunityLink() {
+    return window.appConfig.webUICommunityLink;
+  },
+
 };
 
 export default AppConfig;

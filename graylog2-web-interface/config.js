@@ -4,4 +4,6 @@ window.appConfig = {
   rootTimeZone: 'Europe/Berlin',
   customUsername: 'Username',
   badgeText: 'BHS30',
+  webUIGuideLink: 'https://docs.ovh.com/gb/en/logs-data-platform/',
+  webUICommunityLink: 'https://community.ovh.com/c/platform/data-platforms',
 };

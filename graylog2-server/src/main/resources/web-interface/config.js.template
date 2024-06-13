@@ -4,4 +4,6 @@ window.appConfig = {
   rootTimeZone: '${rootTimeZone}',
   customUsername: '${customUsername}',
   badgeText: '${badgeText}',
+  webUIGuideLink: ${webUIGuideLink},
+  webUICommunityLink: ${webUICommunityLink},
 };

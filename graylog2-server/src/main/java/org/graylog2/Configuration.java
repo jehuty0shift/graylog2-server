@@ -231,6 +231,12 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "alarm_monitor_username")
     private String alarmMonitorUsername = "";
 
+    @Parameter(value = "webui_guide_link")
+    private String webUIGuideLink = "https://docs.ovh.com/gb/en/logs-data-platform/";
+
+    @Parameter(value = "webui_community_link")
+    private String webUICommunityLink = "https://community.ovh.com/c/platform/data-platforms";
+
     public boolean isMaster() {
         return isMaster;
     }
@@ -474,6 +480,10 @@ public class Configuration extends BaseConfiguration {
     }
 
     public String getAlarmMonitorUsername() { return alarmMonitorUsername;}
+
+    public String getWebUIGuideLink() { return webUIGuideLink;}
+
+    public String getWebUICommunityLink(){ return  webUICommunityLink;}
 
     @ValidatorMethod
     @SuppressWarnings("unused")
