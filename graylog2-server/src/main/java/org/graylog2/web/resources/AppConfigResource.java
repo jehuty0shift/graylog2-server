@@ -70,7 +70,10 @@ public class AppConfigResource {
             "serverUri", baseUri.resolve(HttpConfiguration.PATH_API),
             "appPathPrefix", baseUri.getPath().equals("/")?"":baseUri.getPath(),
             "customUsername", configuration.getCustomUsername(),
-            "badgeText", configuration.getBadgeText());
+            "badgeText", configuration.getBadgeText(),
+            "webUIGuideLink", configuration.getWebUIGuideLink(),
+            "webUICommunityLink", configuration.getWebUICommunityLink());
+
         return templateEngine.transform(template, model);
     }
 }

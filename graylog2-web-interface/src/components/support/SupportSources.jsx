@@ -7,6 +7,8 @@ import DocumentationLink from './DocumentationLink';
 
 import DocsHelper from '../../util/DocsHelper';
 
+import AppConfig from 'util/AppConfig';
+
 const SourcesList = styled.ul`
   margin: 0;
   padding: 0;
@@ -17,17 +19,17 @@ const SupportSources = () => (
   <div className="support-sources">
     <h2>Need help?</h2>
     <p>
-      Do not hesitate to consult the <a href="https://docs.ovh.com/gb/en/logs-data-platform/" target="_blank">Logs Data Platform documentation</a>.
+      Do not hesitate to consult the <a href={AppConfig.webUIGuideLink()} target="_blank">Logs Data Platform documentation</a>.
     </p>
 
     <SourcesList>
       <li>
         <Icon name="users" />&nbsp;
-        <a href="https://community.ovh.com/c/platform/data-platforms" target="_blank">Community support</a>
+        <a href={AppConfig.webUICommunityLink()} target="_blank">Community support</a>
       </li>
       <li>
         <Icon name="heart" />&nbsp;
-        <a href="https://www.ovh.com/support/" target="_blank">OVHcloud support</a>
+        <a href="https://help.ovhcloud.com/" target="_blank">OVHcloud support</a>
       </li>
     </SourcesList>
   </div>
