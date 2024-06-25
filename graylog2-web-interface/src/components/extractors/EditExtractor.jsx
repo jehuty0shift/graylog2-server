@@ -351,14 +351,6 @@ class EditExtractor extends React.Component {
                                              converters={updatedExtractor.converters}
                                              onChange={this._onConverterChange} />
                   </div>
-
-                  <Row>
-                    <Col mdOffset={2} md={10}>
-                      <Button type="submit" bsStyle="success">
-                        {action === 'create' ? 'Create extractor' : 'Update extractor'}
-                      </Button>
-                    </Col>
-                  </Row>
                 </form>
               </Col>
             </Row>
