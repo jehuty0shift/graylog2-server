@@ -248,12 +248,6 @@ export default {
       isEnabled: ShowDocumentsHandler.isEnabled,
     },
     {
-      type: 'create-extractor',
-      title: 'Create extractor',
-      isEnabled: (({ type, contexts }) => (!!contexts.message && !type.isDecorated()): ActionHandlerCondition),
-      component: SelectExtractorType,
-    },
-    {
       type: 'highlight-value',
       title: 'Highlight this value',
       handler: HighlightValueHandler,
