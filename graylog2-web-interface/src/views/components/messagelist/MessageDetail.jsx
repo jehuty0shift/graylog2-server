@@ -36,7 +36,7 @@ class MessageDetail extends React.Component {
     disableFieldActions: false,
     disableMessageActions: false,
     disableSurroundingSearch: false,
-    disableTestAgainstStream: false,
+    disableTestAgainstStream: true,
     expandAllRenderAsync: false,
     inputs: {},
     message: {},
