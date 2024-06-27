@@ -104,20 +104,6 @@ class MessageDetail extends React.Component {
       <dd key={`dd-${rawTimestamp}`}><Timestamp dateTime={rawTimestamp} /></dd>,
     ];
 
-    const receivedBy = message.source_input_id && message.source_node_id && nodes
-      ? (
-        <div>
-          <dt>Received by</dt>
-          <dd>
-            <em>{this._inputName(message.source_input_id)}</em>{' '}
-            on {this._nodeName(message.source_node_id)}
-            {viaRadio && <br />}
-            {viaRadio}
-          </dd>
-        </div>
-      )
-      : null;
-
     const messageTitle = message.index
       ? (
         <Link to={Routes.message_show(message.index, message.id)}>
@@ -142,7 +128,6 @@ class MessageDetail extends React.Component {
           <Col md={3}>
             <MessageDetailsDefinitionList>
               {timestamp}
-              {receivedBy}
 
               <dt>Stored in index</dt>
               <dd>{message.index ? message.index : 'Message is not stored'}</dd>

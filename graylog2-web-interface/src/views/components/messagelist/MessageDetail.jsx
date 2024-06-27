@@ -67,11 +67,6 @@ class MessageDetail extends React.Component {
 
     return (
       <div>
-        <dt>Received by</dt>
-        <dd>
-          <em>{this._inputName(sourceInputId)}</em>{' '}
-          on <NodeName nodeId={sourceNodeId} />
-        </dd>
       </div>
     );
   };
