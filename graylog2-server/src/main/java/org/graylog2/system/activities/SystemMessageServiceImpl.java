@@ -31,13 +31,31 @@ import java.util.List;
 import java.util.Map;
 
 public class SystemMessageServiceImpl extends PersistedServiceImpl implements SystemMessageService {
-    private final int PER_PAGE = 30;
+    private static final int PER_PAGE = 30;
+    private static final String TIMESTAMP_KEY = "timestamp";
 
     @Inject
     public SystemMessageServiceImpl(MongoConnection mongoConnection) {
         super(mongoConnection);
         final DBCollection collection = this.collection(SystemMessageImpl.class);
-        collection.createIndex(DBSort.desc("timestamp"));
+        if (!collectionTimestampIndexExists(collection)) {
+            collection.createIndex(DBSort.desc(TIMESTAMP_KEY), new BasicDBObject().append("background",1));
+        }
+    }
+
+    private boolean collectionTimestampIndexExists(DBCollection collection) {
+        List<DBObject> mongoIndices = collection.getIndexInfo();
+        if (mongoIndices.isEmpty()) {
+            return false;
+        }
+
+        for (DBObject index: mongoIndices) {
+            if (index.containsField("name") && index.get("name").toString().contains(TIMESTAMP_KEY)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -45,7 +63,7 @@ public class SystemMessageServiceImpl extends PersistedServiceImpl implements Sy
         List<SystemMessage> messages = Lists.newArrayList();
 
         DBObject sort = new BasicDBObject();
-        sort.put("timestamp", -1);
+        sort.put(TIMESTAMP_KEY, -1);
 
         List<DBObject> results = query(SystemMessageImpl.class, new BasicDBObject(), sort, PER_PAGE, PER_PAGE * page);
         for (DBObject o : results) {
@@ -57,7 +75,7 @@ public class SystemMessageServiceImpl extends PersistedServiceImpl implements Sy
 
     @Override
     public long destroySince(DateTime since) {
-        final BasicDBObject query = new BasicDBObject("timestamp", new BasicDBObject("$lte", since.toDate()));
+        final BasicDBObject query = new BasicDBObject(TIMESTAMP_KEY, new BasicDBObject("$lte", since.toDate()));
 
         return this.collection(SystemMessageImpl.class).remove(query).getN();
     }
