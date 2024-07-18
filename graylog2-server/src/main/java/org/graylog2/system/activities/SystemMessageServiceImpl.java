@@ -37,7 +37,24 @@ public class SystemMessageServiceImpl extends PersistedServiceImpl implements Sy
     public SystemMessageServiceImpl(MongoConnection mongoConnection) {
         super(mongoConnection);
         final DBCollection collection = this.collection(SystemMessageImpl.class);
-        collection.createIndex(DBSort.desc("timestamp"));
+        if (!collectionTimestampIndexExists(collection)) {
+            collection.createIndex(DBSort.desc("timestamp"), new BasicDBObject().append("background",1));
+        }
+    }
+
+    private boolean collectionTimestampIndexExists(DBCollection collection) {
+        List<DBObject> mongoIndices = collection.getIndexInfo();
+        if (mongoIndices.size() == 0) {
+            return false;
+        }
+
+        for (DBObject index: mongoIndices) {
+            if (index.containsField("name") && index.get("name").toString().contains("timestamp")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
