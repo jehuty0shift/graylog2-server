@@ -115,6 +115,13 @@ public class AggregationEventProcessor implements EventProcessor {
             throw new EventProcessorPreconditionException(msg, eventDefinition);
         }
 
+        // Check if all streams exist before creating the event.
+        if (config.streams().isEmpty() || streamService.loadByIds(config.streams()).isEmpty()) {
+            final String msg = String.format(Locale.ROOT, "The List of streams defined in the event is empty or streams do not exist. (streams : %s) Event won't be created", config.streams());
+            throw new EventProcessorPreconditionException(msg, eventDefinition);
+        }
+
+
         LOG.debug("Creating events for config={} parameters={}", config, parameters);
 
         // The absence of a series indicates that the user doesn't want to do an aggregation but create events from
