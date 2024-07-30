@@ -11,7 +11,6 @@ const TimeoutSelect = styled(Select)`
 
 class TimeoutUnitSelect extends React.Component {
   options = [
-    { value: `${MS_SECOND}`, label: 'Seconds' },
     { value: `${MS_MINUTE}`, label: 'Minutes' },
     { value: `${MS_HOUR}`, label: 'Hours' },
     { value: `${MS_DAY}`, label: 'Days' },

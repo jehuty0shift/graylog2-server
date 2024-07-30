@@ -390,12 +390,11 @@ public class UsersResource extends RestResource {
             user.setStartpage(startpage.type(), startpage.id());
         }
 
-        if (isPermitted("*")) {
-            final Long sessionTimeoutMs = cr.sessionTimeoutMs();
-            if (sessionTimeoutMs != null && sessionTimeoutMs != 0) {
-                user.setSessionTimeoutMs(sessionTimeoutMs);
-            }
+        final Long sessionTimeoutMs = cr.sessionTimeoutMs();
+        if (sessionTimeoutMs != null && sessionTimeoutMs > 0 && user.getSessionTimeoutMs() != sessionTimeoutMs) {
+            user.setSessionTimeoutMs(sessionTimeoutMs);
         }
+
         userService.save(user);
     }
 
