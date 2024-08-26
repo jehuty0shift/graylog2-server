@@ -1,4 +1,4 @@
 module.exports = {
-  PluginWebpackConfig: require('./lib/PluginWebpackConfig'),
-  loadBuildConfig: require('./lib/loadBuildConfig'),
+  PluginWebpackConfig: require('./src/PluginWebpackConfig'),
+  loadBuildConfig: require('./src/loadBuildConfig'),
 };
