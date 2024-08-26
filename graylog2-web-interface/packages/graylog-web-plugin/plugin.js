@@ -1,4 +1,4 @@
 module.exports = {
-  PluginManifest: require('./lib/PluginManifest'),
-  PluginStore: require('./lib/PluginStore'),
+  PluginManifest: require('./src/PluginManifest'),
+  PluginStore: require('./src/PluginStore'),
 }
