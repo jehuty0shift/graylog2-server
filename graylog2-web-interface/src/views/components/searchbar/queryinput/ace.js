@@ -1,3 +1,4 @@
+import 'ace-builds';
 import AceEditor from 'react-ace';
 
 import './ace-queryinput';

@@ -1,8 +1,6 @@
 module.exports = {
-	presets: [['@babel/preset-env', { modules: false, useBuiltIns : "usage", "corejs": 3  }], '@babel/react', '@babel/flow'],
+	presets: [['@babel/preset-env', { modules: false, useBuiltIns : "usage", "corejs": 3  }], ['@babel/preset-react'],['@babel/preset-typescript'], ['@babel/flow']],
   plugins: [
-    '@babel/plugin-syntax-dynamic-import',
-    '@babel/plugin-proposal-class-properties',
     'babel-plugin-styled-components',
     'lodash',
   ],

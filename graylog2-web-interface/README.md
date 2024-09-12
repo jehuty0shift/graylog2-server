@@ -1,7 +1,7 @@
 # Graylog Web Interface
 
 ## Requirements
-- [Node.js](https://nodejs.org/), at this time we use v8.9.1
+- [Node.js](https://nodejs.org/), at this time we use v18.20.1
 - [Yarn](https://yarnpkg.com/)
 
 **Note:** NPM v5 changed completely the way it builds local modules, breaking the Graylog web interface build. Please use Yarn instead of NPM v5.

@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/Graylog2/graylog-web-plugin#readme",
   "files": [
-    "lib/",
+    "src/",
     "templates/",
     "index.js",
     "plugin.js",
