@@ -1,8 +1,12 @@
-const create = (metadata, exports) => {
-  return {
-    metadata: metadata,
-    exports: exports,
-  };
-};
+class PluginManifest {
+  constructor(metadata, exports) {
+    this.metadata = metadata;
+    this.exports = exports;
+  }
 
-module.exports = create;
+  static create(metadata, exports) {
+    return new PluginManifest(metadata, exports);
+  }
+}
+
+module.exports = PluginManifest;
