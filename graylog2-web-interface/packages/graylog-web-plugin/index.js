@@ -1,2 +1,4 @@
-export { default as  PluginWebpackConfig } from './src/PluginWebpackConfig';
-export { default as loadBuildConfig } from './src/loadBuildConfig';
+module.exports = {
+  PluginWebpackConfig: require('./src/PluginWebpackConfig'),
+  loadBuildConfig: require('./src/loadBuildConfig'),
+};
