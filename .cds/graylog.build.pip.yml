@@ -29,4 +29,4 @@ jobs:
       tag: '{{.cds.version}}'
   requirements:
   - region: pcidss
-  - model: CDSPUBLIC/stash_build_ovh_net/cds/cds-ovh-contrib/debian12-vsphere@master
+  - model: CDSPUBLIC/stash_ovh_net/cds/cds-ovh-contrib/debian12-vsphere@master
