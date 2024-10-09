@@ -71,9 +71,7 @@ public class Messages {
 
     @SuppressWarnings("UnstableApiUsage")
     private static final Retryer<List<IndexingError>> BULK_REQUEST_RETRYER = RetryerBuilder.<List<IndexingError>>newBuilder()
-            .retryIfException(t -> t instanceof IOException
-                    || (t instanceof ElasticsearchException && ((ElasticsearchException)t).getErrorDetails().stream().anyMatch( s -> s.startsWith("no write index is defined")))
-                    || (t.getCause() != null && t.getCause().getCause() instanceof IOException ))
+            .retryIfException(t -> t instanceof Exception)
             .withWaitStrategy(WaitStrategies.exponentialWait(MAX_WAIT_TIME.getQuantity(), MAX_WAIT_TIME.getUnit()))
             .withRetryListener(new RetryListener() {
                 @Override
