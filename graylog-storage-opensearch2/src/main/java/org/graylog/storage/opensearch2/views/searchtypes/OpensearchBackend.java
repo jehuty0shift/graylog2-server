@@ -233,6 +233,8 @@ public class OpensearchBackend implements QueryBackend<OSGeneratedQueryContext> 
                 })
                 .collect(Collectors.toList());
 
+        LOG.trace("Searches sent to backend: {}", searches);
+
         final List<MultiSearchResponse.Item> results = client.msearch(searches, "Unable to perform search query: ");
 
         for (SearchType searchType : query.searchTypes()) {
