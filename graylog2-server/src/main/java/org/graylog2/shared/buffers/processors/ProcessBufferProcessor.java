@@ -115,11 +115,15 @@ public class ProcessBufferProcessor implements WorkHandler<MessageEvent> {
         currentMessage = msg;
         incomingMessages.mark();
 
-        LOG.debug("Starting to process message <{}>.", msg.getId());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Starting to process message <{}>.", msg.getId());
+        }
 
         try (final Timer.Context ignored = processTime.time()) {
             handleMessage(msg);
-            LOG.debug("Finished processing message <{}>. Writing to output buffer.", msg.getId());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Finished processing message <{}>. Writing to output buffer.", msg.getId());
+            }
         } catch (Exception e) {
             LOG.warn("Unable to process message <{}>: {}", msg.getId(), e);
         } finally {
@@ -135,13 +139,12 @@ public class ProcessBufferProcessor implements WorkHandler<MessageEvent> {
         for (MessageProcessor messageProcessor : orderedMessageProcessors) {
             messages = messageProcessor.process(messages);
         }
-        for (Message message : messages) {
-            // The processing time should only be set once all message processors have finished
-            message.setProcessingTime(Tools.nowUTC());
-            processingStatusRecorder.updatePostProcessingReceiveTime(message.getReceiveTime());
 
-            outputBuffer.insertBlocking(message);
-        }
+        // The processing time should only be set once all message processors have finished
+        msg.setProcessingTime(Tools.nowUTC());
+        processingStatusRecorder.updatePostProcessingReceiveTime(msg.getReceiveTime());
+        outputBuffer.insertBlocking(msg);
+
     }
 
     public interface Factory {
