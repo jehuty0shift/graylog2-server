@@ -183,7 +183,7 @@ public class Message implements Messages, Indexable {
     private static final Pattern VALID_KEY_CHARS = Pattern.compile("^[\\w\\.\\-@]*$");
     private static final char KEY_REPLACEMENT_CHAR = '_';
 
-    private static final ImmutableSet<String> GRAYLOG_FIELDS = ImmutableSet.of(
+    private static final Set<String> GRAYLOG_FIELDS = Set.of(
             FIELD_GL2_ORIGINAL_TIMESTAMP,
             FIELD_GL2_PROCESSING_ERROR,
             FIELD_GL2_PROCESSING_TIMESTAMP,
@@ -199,24 +199,16 @@ public class Message implements Messages, Indexable {
             FIELD_GL2_SOURCE_RADIO_INPUT
     );
 
-    // Graylog Illuminate Fields
-    private static final Set<String> ILLUMINATE_FIELDS = ImmutableSet.of(
-            FIELD_ILLUMINATE_EVENT_CATEGORY,
-            FIELD_ILLUMINATE_EVENT_SUBCATEGORY,
-            FIELD_ILLUMINATE_EVENT_TYPE,
-            FIELD_ILLUMINATE_EVENT_TYPE_CODE,
-            FIELD_ILLUMINATE_TAGS
-    );
-
-    private static final ImmutableSet<String> CORE_MESSAGE_FIELDS = ImmutableSet.of(
+    private static final Set<String> CORE_MESSAGE_FIELDS = Set.of(
             FIELD_MESSAGE,
             FIELD_SOURCE,
             FIELD_TIMESTAMP
     );
 
-    private static final ImmutableSet<String> ES_FIELDS = ImmutableSet.of(
+    private static final Set<String> ES_FIELDS = Set.of(
             // ElasticSearch fields.
             FIELD_ID,
+            "_version",
             "_ttl",
             "_source",
             "_all",
@@ -242,7 +234,7 @@ public class Message implements Messages, Indexable {
             .add(FIELD_FULL_MESSAGE)
             .build();
 
-    private static final ImmutableSet<String> REQUIRED_FIELDS = ImmutableSet.of(
+    private static final Set<String> REQUIRED_FIELDS = Set.of(
             FIELD_MESSAGE, FIELD_ID
     );
 
@@ -450,19 +442,24 @@ public class Message implements Messages, Indexable {
     }
 
     private void addRequiredField(final String key, final Object value) {
-        addField(key, value, true);
+        addField(key, value, true, true);
     }
 
     private void addField(final String key, final Object value, final boolean isRequiredField) {
+        addField(key, value, isRequiredField, false);
+    }
+
+    private void addField(final String key, final Object value, final boolean isRequiredField, final boolean bypassChecks) {
         final String trimmedKey = key.trim();
 
-        // Don't accept protected keys. (some are allowed though lol)
-        if ((RESERVED_FIELDS.contains(trimmedKey) && !RESERVED_SETTABLE_FIELDS.contains(trimmedKey)) || !validKey(trimmedKey)) {
+        // Don't accept protected keys. (some are allowed though lol) and allow some field to bypass checks.
+        if (!bypassChecks && ((RESERVED_FIELDS.contains(trimmedKey) && !RESERVED_SETTABLE_FIELDS.contains(trimmedKey)) || !validKey(trimmedKey))) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Ignoring invalid or reserved key {} for message {}", trimmedKey, getId());
             }
             return;
         }
+
 
         final boolean isTimestamp = FIELD_TIMESTAMP.equals(trimmedKey);
         if (isTimestamp && value instanceof Date) {
@@ -507,7 +504,16 @@ public class Message implements Messages, Indexable {
     }
 
     public static boolean validKey(final String key) {
-        return VALID_KEY_CHARS.matcher(key).matches();
+        for (int i = 0; i < key.length(); i++) {
+            char c = key.charAt(i);
+            if (!isAllowedCharacter(c)) {
+                return false;
+            }
+        }
+        return true;    }
+
+    private static boolean isAllowedCharacter(char c) {
+        return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == '-' || c == '@';
     }
 
     public void addFields(final Map<String, Object> fields) {
@@ -644,7 +650,7 @@ public class Message implements Messages, Indexable {
      * @return index sets
      */
     public Set<IndexSet> getIndexSets() {
-        return ImmutableSet.copyOf(this.indexSets);
+        return Collections.unmodifiableSet(this.indexSets);
     }
 
     @SuppressWarnings("unchecked")
@@ -753,7 +759,7 @@ public class Message implements Messages, Indexable {
     }
 
     public boolean hasRecordings() {
-        return recordings != null && recordings.size() > 0;
+        return recordings != null && !recordings.isEmpty();
     }
 
     private void lazyInitRecordings() {
