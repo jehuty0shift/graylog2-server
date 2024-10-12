@@ -28,6 +28,7 @@ import org.graylog2.buffers.OutputBuffer;
 import org.graylog2.messageprocessors.OrderedMessageProcessors;
 import org.graylog2.plugin.Message;
 import org.graylog2.plugin.Messages;
+import org.graylog2.plugin.SingletonMessages;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.buffers.MessageEvent;
 import org.graylog2.plugin.messageprocessors.MessageProcessor;
@@ -138,12 +139,17 @@ public class ProcessBufferProcessor implements WorkHandler<MessageEvent> {
 
         for (MessageProcessor messageProcessor : orderedMessageProcessors) {
             messages = messageProcessor.process(messages);
+            if (msg.getFilterOut()) {
+                break;
+            }
         }
 
         // The processing time should only be set once all message processors have finished
-        msg.setProcessingTime(Tools.nowUTC());
-        processingStatusRecorder.updatePostProcessingReceiveTime(msg.getReceiveTime());
-        outputBuffer.insertBlocking(msg);
+        if (!msg.getFilterOut()) {
+            msg.setProcessingTime(Tools.nowUTC());
+            processingStatusRecorder.updatePostProcessingReceiveTime(msg.getReceiveTime());
+            outputBuffer.insertBlocking(msg);
+        }
 
     }
 
