@@ -157,9 +157,9 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
 
     private BulkRequest createBulkRequest(List<IndexingRequest> chunk) {
         final BulkRequest bulkRequest = new BulkRequest();
-        chunk.forEach(request -> bulkRequest.add(
-                indexRequestFrom(request)
-        ));
+        for (IndexingRequest request: chunk) {
+            bulkRequest.add(indexRequestFrom(request));
+        }
         return bulkRequest;
     }
 

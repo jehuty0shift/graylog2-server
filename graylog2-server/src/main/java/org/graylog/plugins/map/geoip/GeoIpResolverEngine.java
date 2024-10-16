@@ -37,6 +37,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -73,16 +75,23 @@ public class GeoIpResolverEngine {
             return false;
         }
 
-        for (Map.Entry<String, Object> field : message.getFields().entrySet()) {
+        final List<Map.Entry<String, Object>> geoInfos = new ArrayList<>();
+        for (Map.Entry<String, Object> field : message.getFieldsEntries()) { //avoid copy and ConcurrentModificationException
             final String key = field.getKey();
             if ((key.endsWith("_ip") || key.endsWith("address")  || key.endsWith("Address")) && !key.startsWith(Message.INTERNAL_FIELD_PREFIX)) { //using _ip fieldName convention and use address for some friends
                 final Optional<GeoLocationInformation> geoLocationInformation = extractGeoLocationInformation(field.getValue());
                 geoLocationInformation.ifPresent(locationInformation -> {
                     // We will store the coordinates as a "lat,long" string
-                    message.addField(key + "_geolocation", locationInformation.latitude() + "," + locationInformation.longitude());
-                    message.addField(key + "_country_code", locationInformation.countryIsoCode());
-                    message.addField(key + "_city_name", locationInformation.cityName());
+                    geoInfos.add(Map.entry(key + "_geolocation", locationInformation.latitude() + "," + locationInformation.longitude()));
+                    geoInfos.add(Map.entry(key + "_country_code", locationInformation.countryIsoCode()));
+                    geoInfos.add(Map.entry(key + "_city_name", locationInformation.cityName()));
                 });
+            }
+        }
+
+        if (!geoInfos.isEmpty()) {
+            for (Map.Entry<String, Object> entry: geoInfos) {
+                message.addField(entry.getKey(),entry.getValue());
             }
         }
 
