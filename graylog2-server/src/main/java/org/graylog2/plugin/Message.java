@@ -603,7 +603,7 @@ public class Message implements Messages, Indexable {
      * @return an immutable copy of the current set of assigned streams, empty if no streams have been assigned
      */
     public Set<Stream> getStreams() {
-        return ImmutableSet.copyOf(this.streams);
+        return Collections.unmodifiableSet(this.streams);
     }
 
     /**
