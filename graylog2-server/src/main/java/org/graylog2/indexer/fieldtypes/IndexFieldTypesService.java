@@ -49,7 +49,7 @@ public class IndexFieldTypesService {
                                   StreamService streamService,
                                   MongoJackObjectMapperProvider objectMapperProvider) {
         this.streamService = streamService;
-        this.db = JacksonMongoCollection.builder().withObjectMapper(objectMapperProvider.get()).build(mongoConnection.getMongoDatabase(), "index_field_types", ,
+        this.db = JacksonMongoCollection.builder().withObjectMapper(objectMapperProvider.get()).build(mongoConnection.getMongoDatabase(), "index_field_types",
                 IndexFieldTypesDTO.class,
                 UuidRepresentation.STANDARD);
 
