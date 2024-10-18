@@ -118,10 +118,10 @@
             <artifactId>mongodb-driver-sync</artifactId>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-legacy</artifactId>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>org.mongojack</groupId>

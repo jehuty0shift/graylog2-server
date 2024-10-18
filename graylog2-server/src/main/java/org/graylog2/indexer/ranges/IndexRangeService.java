@@ -16,10 +16,9 @@
  */
 package org.graylog2.indexer.ranges;
 
-import org.bson.types.ObjectId;
+import com.mongodb.client.result.UpdateResult;
 import org.graylog2.database.NotFoundException;
 import org.joda.time.DateTime;
-import org.mongojack.WriteResult;
 
 import java.util.SortedSet;
 
@@ -30,7 +29,7 @@ public interface IndexRangeService {
 
     SortedSet<IndexRange> findAll();
 
-    WriteResult<MongoIndexRange, ObjectId> save(IndexRange indexRange);
+    UpdateResult save(IndexRange indexRange);
 
     boolean remove(String index);
 

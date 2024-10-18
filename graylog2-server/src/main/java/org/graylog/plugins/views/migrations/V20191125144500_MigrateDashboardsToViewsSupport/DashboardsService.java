@@ -17,30 +17,26 @@
 package org.graylog.plugins.views.migrations.V20191125144500_MigrateDashboardsToViewsSupport;
 
 import com.google.common.collect.Streams;
-import org.bson.types.ObjectId;
+import com.mongodb.client.FindIterable;
+import org.bson.UuidRepresentation;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
 import java.util.stream.Stream;
 
 class DashboardsService {
     private static final String COLLECTION_NAME = "dashboards";
-    private final JacksonDBCollection<Dashboard, ObjectId> db;
+    private final JacksonMongoCollection<Dashboard> db;
 
     @Inject
     DashboardsService(MongoConnection mongoConnection, MongoJackObjectMapperProvider mapper) {
-        this.db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
-                Dashboard.class,
-                ObjectId.class,
-                mapper.get());
+        this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), COLLECTION_NAME, Dashboard.class, UuidRepresentation.STANDARD);
     }
 
     Stream<Dashboard> streamAll() {
-        final DBCursor<Dashboard> cursor = db.find(DBQuery.empty());
-        return Streams.stream((Iterable<Dashboard>) cursor).onClose(cursor::close);
+        final FindIterable<Dashboard> cursor = db.find();
+        return Streams.stream(cursor);
     }
 }

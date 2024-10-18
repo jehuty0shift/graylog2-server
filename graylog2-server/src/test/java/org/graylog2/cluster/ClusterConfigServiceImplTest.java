@@ -23,6 +23,9 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoCollection;
+import one.util.streamex.StreamEx;
+import org.bson.Document;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -45,6 +48,7 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
@@ -322,27 +326,26 @@ public class ClusterConfigServiceImplTest {
     @Test
     public void prepareCollectionCreatesIndexesOnExistingCollection() throws Exception {
         @SuppressWarnings("deprecation")
-        DBCollection original = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
+        MongoCollection<Document> original = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME);
         original.dropIndexes();
-        assertThat(original.getName()).isEqualTo(COLLECTION_NAME);
-        assertThat(original.getIndexInfo()).hasSize(1);
+        assertThat(original.getNamespace().getCollectionName()).isEqualTo(COLLECTION_NAME);
+        assertThat(original.listIndexes().into(new ArrayList<>())).hasSize(1);
 
-        DBCollection collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
-        assertThat(collection.getName()).isEqualTo(COLLECTION_NAME);
-        assertThat(collection.getIndexInfo()).hasSize(2);
+        MongoCollection<ClusterConfig> collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
+        assertThat(collection.getNamespace().getCollectionName()).isEqualTo(COLLECTION_NAME);
+        assertThat(collection.listIndexes().into(new ArrayList<>())).hasSize(2);
         assertThat(collection.getWriteConcern()).isEqualTo(WriteConcern.JOURNALED);
     }
 
     @Test
     public void prepareCollectionCreatesCollectionIfItDoesNotExist() throws Exception {
         @SuppressWarnings("deprecation")
-        final DB database = mongoConnection.getDatabase();
-        database.getCollection(COLLECTION_NAME).drop();
-        assertThat(database.collectionExists(COLLECTION_NAME)).isFalse();
-        DBCollection collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
+        mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME).drop();
+        assertThat(StreamEx.of(mongoConnection.getMongoDatabase().listCollectionNames()).anyMatch(s -> s.equals(COLLECTION_NAME))).isFalse();
+        MongoCollection<ClusterConfig> collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
 
-        assertThat(collection.getName()).isEqualTo(COLLECTION_NAME);
-        assertThat(collection.getIndexInfo()).hasSize(2);
+        assertThat(collection.getNamespace().getCollectionName()).isEqualTo(COLLECTION_NAME);
+        assertThat(collection.listIndexes().into(new ArrayList<>())).hasSize(2);
         assertThat(collection.getWriteConcern()).isEqualTo(WriteConcern.JOURNALED);
     }
 

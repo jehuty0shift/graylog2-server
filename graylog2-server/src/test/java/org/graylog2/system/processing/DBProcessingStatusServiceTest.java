@@ -19,7 +19,8 @@ package org.graylog2.system.processing;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.joschi.jadconfig.util.Duration;
 import com.google.common.eventbus.EventBus;
-import org.bson.types.ObjectId;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog.events.JobSchedulerTestClock;
 import org.graylog.testing.mongodb.MongoDBFixtures;
 import org.graylog.testing.mongodb.MongoDBInstance;
@@ -37,9 +38,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,7 @@ public class DBProcessingStatusServiceTest {
     private DBProcessingStatusService dbService;
     private JobSchedulerTestClock clock;
     private Duration updateThreshold;
-    private JacksonDBCollection<ProcessingStatusDto, ObjectId> db;
+    private JacksonMongoCollection<ProcessingStatusDto> db;
 
     @Before
     public void setUp() throws Exception {
@@ -84,10 +85,9 @@ public class DBProcessingStatusServiceTest {
         clock = spy(new JobSchedulerTestClock(DateTime.parse("2019-01-01T00:00:00.000Z")));
         updateThreshold = spy(Duration.minutes(1));
         dbService = new DBProcessingStatusService(mongodb.mongoConnection(), nodeId, clock, updateThreshold, 1, mapperProvider, inputService, serverEventBus, baseConfiguration);
-        db = JacksonDBCollection.wrap(mongodb.mongoConnection().getDatabase().getCollection(DBProcessingStatusService.COLLECTION_NAME),
+        db = JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongodb.mongoConnection().getMongoDatabase(),DBProcessingStatusService.COLLECTION_NAME,
                 ProcessingStatusDto.class,
-                ObjectId.class,
-                mapperProvider.get());
+                UuidRepresentation.STANDARD);
     }
 
     @Test
@@ -259,15 +259,15 @@ public class DBProcessingStatusServiceTest {
     public void selectionQuery() {
         when(clock.nowUTC()).thenReturn(DateTime.parse("2019-01-01T00:03:00.000Z"));
 
-        final DBQuery.Query query1 = DBProcessingStatusService.getDataSelectionQuery(clock, Duration.hours(1), 1.0);
+        final Bson query1 = DBProcessingStatusService.getDataSelectionQuery(clock, Duration.hours(1), 1.0);
 
-        assertThat(db.find(query1).toArray().stream().map(ProcessingStatusDto::nodeId).collect(Collectors.toSet()))
+        assertThat(db.find(query1).into(new ArrayList<>()).stream().map(ProcessingStatusDto::nodeId).collect(Collectors.toSet()))
                 .containsOnly("abc-123", "abc-456", "abc-678");
 
         // With a higher journal write threshold there should only be two node IDs
-        final DBQuery.Query query2 = DBProcessingStatusService.getDataSelectionQuery(clock, Duration.hours(1), 2.0);
+        final Bson query2 = DBProcessingStatusService.getDataSelectionQuery(clock, Duration.hours(1), 2.0);
 
-        assertThat(db.find(query2).toArray().stream().map(ProcessingStatusDto::nodeId).collect(Collectors.toSet()))
+        assertThat(db.find(query2).into(new ArrayList<>()).stream().map(ProcessingStatusDto::nodeId).collect(Collectors.toSet()))
                 .containsOnly("abc-123", "abc-456");
     }
 

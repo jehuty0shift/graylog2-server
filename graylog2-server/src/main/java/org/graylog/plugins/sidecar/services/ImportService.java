@@ -16,6 +16,8 @@
  */
 package org.graylog.plugins.sidecar.services;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.graylog.plugins.sidecar.rest.models.CollectorUpload;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -24,8 +26,6 @@ import org.graylog2.database.PaginatedList;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -42,8 +42,8 @@ public class ImportService extends PaginatedDbService<CollectorUpload> {
     }
 
     public PaginatedList<CollectorUpload> findPaginated(int page, int perPage, String sortField, String order) {
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
-        return findPaginatedWithQueryAndSort(DBQuery.empty(), sortBuilder, page, perPage);
+        final Bson sortBuilder = getSortBuilder(order, sortField);
+        return findPaginatedWithQueryAndSort(Filters.empty(), sortBuilder, page, perPage);
     }
 
 
@@ -54,7 +54,7 @@ public class ImportService extends PaginatedDbService<CollectorUpload> {
     }
 
     public long count() {
-        return db.count();
+        return db.countDocuments();
     }
 
     public int destroyExpired(Period period) {

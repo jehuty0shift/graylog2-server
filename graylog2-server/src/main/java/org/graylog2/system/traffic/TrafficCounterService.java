@@ -22,20 +22,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import org.bson.types.ObjectId;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.system.NodeId;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.DBUpdate;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
-import org.mongojack.internal.update.SingleUpdateOperationValue;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,16 +48,15 @@ public class TrafficCounterService {
     private static final Logger LOG = LoggerFactory.getLogger(TrafficCounterService.class);
     private static final String BUCKET = "bucket";
 
-    private final JacksonDBCollection<TrafficDto, ObjectId> db;
+    private final JacksonMongoCollection<TrafficDto> db;
 
     @Inject
     public TrafficCounterService(MongoConnection mongoConnection,
                                  MongoJackObjectMapperProvider mapper) {
-        db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection("traffic"),
+        db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "traffic",
                 TrafficDto.class,
-                ObjectId.class,
-                mapper.get());
-        db.createIndex(new BasicDBObject(BUCKET, 1), new BasicDBObject("unique", true));
+                UuidRepresentation.STANDARD);
+        db.createIndex(new BasicDBObject(BUCKET, 1), new IndexOptions().unique(true));
     }
 
     private static DateTime getDayBucket(DateTime observationTime) {
@@ -72,17 +71,13 @@ public class TrafficCounterService {
             LOG.debug("Updating traffic for node {} at {}:  in/decoded/out {}/{}/{} bytes",
                     nodeId.toString(), dayBucket, inLastMinute, decodedLastMinute, outLastMinute);
         }
-        final WriteResult<TrafficDto, ObjectId> update = db.update(DBQuery.is("bucket", dayBucket),
+        final UpdateResult update = db.updateOne(Filters.eq("bucket", dayBucket),
                 // sigh DBUpdate.inc only takes integers, but we have a long.
-                new DBUpdate.Builder()
-                        .addOperation("$inc", "input." + nodeId.toString(),
-                                new SingleUpdateOperationValue(false, false, inLastMinute))
-                        .addOperation("$inc", "output." + nodeId.toString(),
-                                new SingleUpdateOperationValue(false, false, outLastMinute))
-                        .addOperation("$inc", "decoded." + nodeId.toString(),
-                                new SingleUpdateOperationValue(false, false, decodedLastMinute)),
-                true, false);
-        if (update.getN() == 0) {
+                Updates.combine(
+                        Updates.inc("input." + nodeId.toString(), inLastMinute),
+                        Updates.inc("output." + nodeId.toString(), outLastMinute),
+                        Updates.inc("decoded." + nodeId.toString(), decodedLastMinute)));
+        if (update.getModifiedCount() == 0) {
             LOG.warn("Unable to update traffic of node {}: {}", nodeId, update);
         }
     }
@@ -94,12 +89,12 @@ public class TrafficCounterService {
         final DateTime to = getDayBucket(Tools.nowUTC());
         final DateTime from = to.minus(duration);
 
-        final DBQuery.Query query = DBQuery.and(
-                DBQuery.lessThanEquals(BUCKET, to),
-                DBQuery.greaterThan(BUCKET, from)
+        final Bson query = Filters.and(
+                Filters.lte(BUCKET, to),
+                Filters.gt(BUCKET, from)
         );
 
-        try (DBCursor<TrafficDto> cursor = db.find(query)) {
+        FindIterable<TrafficDto> cursor = db.find(query);
             cursor.forEach(trafficDto -> {
                 inputBuilder.put(trafficDto.bucket(), trafficDto.input().values().stream().mapToLong(Long::valueOf).sum());
                 outputBuilder.put(trafficDto.bucket(), trafficDto.output().values().stream().mapToLong(Long::valueOf).sum());
@@ -116,13 +111,13 @@ public class TrafficCounterService {
                 decodedHistogram = aggregateToDaily(decodedHistogram);
             }
             return TrafficHistogram.create(from, to, inputHistogram, outputHistogram, decodedHistogram);
-        }
+
     }
 
     public long deleteSince(DateTime since) {
         final BasicDBObject query = new BasicDBObject(BUCKET, new BasicDBObject("$lte", since.toDate()));
 
-        return db.remove(query).getN();
+        return db.deleteMany(query).getDeletedCount();
     }
 
     private TreeMap<DateTime, Long> aggregateToDaily(Map<DateTime, Long> histogram) {

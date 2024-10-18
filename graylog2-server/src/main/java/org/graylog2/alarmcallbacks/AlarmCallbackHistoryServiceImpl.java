@@ -16,8 +16,10 @@
  */
 package org.graylog2.alarmcallbacks;
 
-import com.google.common.collect.Lists;
-import com.mongodb.DBCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.graylog2.alerts.Alert;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -26,28 +28,28 @@ import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.alarms.AlertCondition;
 import org.graylog2.rest.models.alarmcallbacks.AlarmCallbackError;
 import org.graylog2.rest.models.alarmcallbacks.AlarmCallbackSuccess;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class AlarmCallbackHistoryServiceImpl implements AlarmCallbackHistoryService {
-    private final JacksonDBCollection<AlarmCallbackHistoryImpl, String> coll;
+    private final JacksonMongoCollection<AlarmCallbackHistoryImpl> coll;
 
     @Inject
     public AlarmCallbackHistoryServiceImpl(MongoConnection mongoConnection,
                                            MongoJackObjectMapperProvider mapperProvider) {
         final String collectionName = AlarmCallbackHistoryImpl.class.getAnnotation(CollectionName.class).value();
-        final DBCollection dbCollection = mongoConnection.getDatabase().getCollection(collectionName);
-        this.coll = JacksonDBCollection.wrap(dbCollection, AlarmCallbackHistoryImpl.class, String.class, mapperProvider.get());
-        dbCollection.createIndex(AlarmCallbackHistoryImpl.FIELD_ALERTID);
+        this.coll = JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(), collectionName, AlarmCallbackHistoryImpl.class, UuidRepresentation.STANDARD);
+        coll.createIndex(Indexes.ascending(AlarmCallbackHistoryImpl.FIELD_ALERTID));
     }
 
     @Override
     public List<AlarmCallbackHistory> getForAlertId(String alertId) {
-        return toAbstractListType(coll.find(DBQuery.is(AlarmCallbackHistoryImpl.FIELD_ALERTID, alertId)).toArray());
+        return Collections.unmodifiableList(coll.find(Filters.eq(AlarmCallbackHistoryImpl.FIELD_ALERTID, alertId)).into(new ArrayList<>()));
     }
 
     @Override
@@ -63,16 +65,15 @@ public class AlarmCallbackHistoryServiceImpl implements AlarmCallbackHistoryServ
     @Override
     public AlarmCallbackHistory save(AlarmCallbackHistory alarmCallbackHistory) {
         final AlarmCallbackHistoryImpl historyImpl = implOrFail(alarmCallbackHistory);
-        final WriteResult<AlarmCallbackHistoryImpl, String> writeResult = coll.save(historyImpl);
-        return writeResult.getSavedObject();
+        final UpdateResult writeResult = coll.save(historyImpl);
+        return AlarmCallbackHistoryImpl.create(Objects.requireNonNull(writeResult.getUpsertedId()).asObjectId().getValue().toHexString(),
+                alarmCallbackHistory.alarmcallbackConfiguration(),
+                alarmCallbackHistory.alertId(),
+                alarmCallbackHistory.alertConditionId(),
+                alarmCallbackHistory.result(),
+                alarmCallbackHistory.createdAt());
     }
 
-    private List<AlarmCallbackHistory> toAbstractListType(List<AlarmCallbackHistoryImpl> histories) {
-        final List<AlarmCallbackHistory> result = Lists.newArrayListWithCapacity(histories.size());
-        result.addAll(histories);
-
-        return result;
-    }
 
     private AlarmCallbackHistoryImpl implOrFail(AlarmCallbackHistory history) {
         final AlarmCallbackHistoryImpl historyImpl;

@@ -17,17 +17,16 @@
 package org.graylog2.inputs.persistence;
 
 import com.google.common.eventbus.EventBus;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
+import com.mongodb.client.result.UpdateResult;
 import org.apache.shiro.event.Subscribe;
+import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.NotFoundException;
 import org.graylog2.inputs.InputService;
 import org.graylog2.rest.models.system.inputs.responses.InputDeleted;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +45,7 @@ public class MongoInputStatusService implements InputStatusService {
 
     public static final String COLLECTION_NAME = "input_status";
 
-    private final JacksonDBCollection<InputStatusRecord, ObjectId> statusCollection;
+    private final JacksonMongoCollection<InputStatusRecord> statusCollection;
     private final InputService inputService;
 
     @Inject
@@ -55,16 +54,13 @@ public class MongoInputStatusService implements InputStatusService {
                                    InputService inputService,
                                    EventBus eventBus) {
         this.inputService = inputService;
-        DB mongoDatabase = mongoConnection.getDatabase();
-        DBCollection collection = mongoDatabase.getCollection(COLLECTION_NAME);
-
         eventBus.register(this);
 
-        statusCollection = JacksonDBCollection.wrap(
-                collection,
+        statusCollection = JacksonMongoCollection.builder().withObjectMapper(objectMapperProvider.get()).build(
+                mongoConnection.getMongoDatabase(),
+                COLLECTION_NAME,
                 InputStatusRecord.class,
-                ObjectId.class,
-                objectMapperProvider.get());
+                UuidRepresentation.STANDARD);
     }
 
     @Override
@@ -74,14 +70,14 @@ public class MongoInputStatusService implements InputStatusService {
 
     @Override
     public InputStatusRecord save(InputStatusRecord statusRecord) {
-        final WriteResult<InputStatusRecord, ObjectId> save = statusCollection.save(statusRecord);
-        return save.getSavedObject();
+        final UpdateResult save = statusCollection.save(statusRecord);
+        InputStatusRecord isr = statusCollection.findOneById(save.getUpsertedId());
+        return isr;
     }
 
     @Override
     public int delete(String inputId) {
-        final WriteResult<InputStatusRecord, ObjectId> delete = statusCollection.removeById(new ObjectId(inputId));
-        return delete.getN();
+        return (int)statusCollection.removeById(new ObjectId(inputId)).getDeletedCount();
     }
 
     /**

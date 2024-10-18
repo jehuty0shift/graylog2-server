@@ -17,11 +17,16 @@
 package org.graylog2.users;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DuplicateKeyException;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.IndexOptions;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -31,9 +36,7 @@ import org.graylog2.plugin.database.ValidationException;
 import org.graylog2.shared.security.Permissions;
 import org.graylog2.shared.users.Role;
 import org.graylog2.shared.users.Roles;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,14 +44,10 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.mongojack.DBQuery.and;
-import static org.mongojack.DBQuery.is;
 
 public class RoleServiceImpl implements RoleService {
     private static final Logger log = LoggerFactory.getLogger(RoleServiceImpl.class);
@@ -61,7 +60,7 @@ public class RoleServiceImpl implements RoleService {
     public static final String ADMIN_ROLENAME = "Admin";
     public static final String READER_ROLENAME = "Reader";
 
-    private final JacksonDBCollection<RoleImpl, ObjectId> dbCollection;
+    private final JacksonMongoCollection<RoleImpl> dbCollection;
     private final Validator validator;
     private final String adminRoleObjectId;
     private final String readerRoleObjectId;
@@ -73,13 +72,10 @@ public class RoleServiceImpl implements RoleService {
                               Validator validator) {
         this.validator = validator;
 
-        dbCollection = JacksonDBCollection.wrap(
-                mongoConnection.getDatabase().getCollection(ROLES),
-                RoleImpl.class,
-                ObjectId.class,
-                mapper.get());
+        dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(
+                mongoConnection.getMongoDatabase(), ROLES,RoleImpl.class, UuidRepresentation.STANDARD);
         // lower case role names are unique, this allows arbitrary naming, but still uses an index
-        dbCollection.createIndex(new BasicDBObject(NAME_LOWER, 1), new BasicDBObject("unique", true));
+        dbCollection.createIndex(new BasicDBObject(NAME_LOWER, 1), new IndexOptions().unique(true));
 
         // make sure the two built-in roles actually exist
         adminRoleObjectId = checkNotNull(ensureBuiltinRole(ADMIN_ROLENAME, Sets.newHashSet("*"), "Admin",
@@ -140,7 +136,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleImpl load(String roleName) throws NotFoundException {
-        final RoleImpl role = dbCollection.findOne(is(NAME_LOWER, roleName.toLowerCase(Locale.ENGLISH)));
+        final RoleImpl role = dbCollection.findOne(Filters.eq(NAME_LOWER, roleName.toLowerCase(Locale.ENGLISH)));
 
         if (role == null) {
             throw new NotFoundException("No role found with name " + roleName);
@@ -150,35 +146,35 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public boolean exists(String roleName) {
-        return dbCollection.getCount(is(NAME_LOWER, roleName.toLowerCase(Locale.ENGLISH))) == 1;
+        return dbCollection.countDocuments(Filters.eq(NAME_LOWER, roleName.toLowerCase(Locale.ENGLISH))) == 1;
     }
 
     @Override
     public Set<Role> loadAll() {
-        try (DBCursor<RoleImpl> rolesCursor = dbCollection.find()) {
-            return ImmutableSet.copyOf((Iterable<? extends Role>) rolesCursor);
-        }
+            FindIterable<RoleImpl> rolesCursor = dbCollection.find();
+            return Collections.unmodifiableSet(rolesCursor.into(new HashSet<>()));
     }
 
     @Override
     public Map<String, Role> findIdMap(Set<String> roleIds) throws NotFoundException {
-        final DBQuery.Query query = DBQuery.in(ID, roleIds);
-        try (DBCursor<RoleImpl> rolesCursor = dbCollection.find(query)) {
-            ImmutableSet<Role> roles = ImmutableSet.copyOf((Iterable<? extends Role>) rolesCursor);
-            return Maps.uniqueIndex(roles, new Function<Role, String>() {
+        final Bson query = Filters.in(ID, roleIds.stream().map(ObjectId::new).collect(Collectors.toList()));
+
+            FindIterable<RoleImpl> rolesCursor = dbCollection.find(query);
+            List<Role> roles = rolesCursor.into(new ArrayList<>());
+            return Maps.uniqueIndex(roles, new Function<>() {
                 @Nullable
                 @Override
                 public String apply(Role input) {
                     return input.getId();
                 }
             });
-        }
+
     }
 
     @Override
     public Map<String, Role> loadAllIdMap() throws NotFoundException {
         final Set<Role> roles = loadAll();
-        return Maps.uniqueIndex(roles, new Function<Role, String>() {
+        return Maps.uniqueIndex(roles, new Function<>() {
             @Nullable
             @Override
             public String apply(Role input) {
@@ -205,7 +201,7 @@ public class RoleServiceImpl implements RoleService {
             throw new ValidationException("Validation failed.", violations.toString());
         }
         return MongoDBUpsertRetryer.run(() ->
-                dbCollection.findAndModify(is(NAME_LOWER, role.nameLower()), null, null, false, role, true, true));
+                dbCollection.findOneAndReplace(Filters.eq(NAME_LOWER, role.nameLower()),role, new FindOneAndReplaceOptions().upsert(true)));
     }
 
     @Override
@@ -215,8 +211,8 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public int delete(String roleName) {
-        final DBQuery.Query nameMatchesAndNotReadonly = and(is(READ_ONLY, false), is(NAME_LOWER, roleName.toLowerCase(Locale.ENGLISH)));
-        return dbCollection.remove(nameMatchesAndNotReadonly).getN();
+        final Bson nameMatchesAndNotReadonly = Filters.and(Filters.eq(READ_ONLY, false), Filters.eq(NAME_LOWER, roleName.toLowerCase(Locale.ENGLISH)));
+        return (int)dbCollection.deleteMany(nameMatchesAndNotReadonly).getDeletedCount();
     }
 
     @Override

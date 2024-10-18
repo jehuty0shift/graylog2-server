@@ -17,13 +17,12 @@
 package org.graylog2.grok;
 
 import com.google.inject.Inject;
+import org.bson.conversions.Bson;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 public class PaginatedGrokPatternService extends PaginatedDbService<GrokPattern> {
     private static final String COLLECTION_NAME = "grok_patterns";
@@ -36,12 +35,12 @@ public class PaginatedGrokPatternService extends PaginatedDbService<GrokPattern>
     }
 
     public long count() {
-        return db.count();
+        return db.countDocuments();
     }
 
     public PaginatedList<GrokPattern> findPaginated(SearchQuery searchQuery, int page, int perPage, String sortField, String order) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery();
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = searchQuery.toDBQuery();
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
     }
 }

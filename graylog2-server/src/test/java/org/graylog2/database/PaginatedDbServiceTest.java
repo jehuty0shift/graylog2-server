@@ -22,15 +22,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
+import org.bson.conversions.Bson;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 import org.mongojack.Id;
 import org.mongojack.ObjectId;
 
@@ -132,7 +132,7 @@ public class PaginatedDbServiceTest {
         dbService.save(newDto("hello4"));
         dbService.save(newDto("hello5"));
 
-        final PaginatedList<TestDTO> page1 = dbService.findPaginatedWithQueryAndSort(DBQuery.empty(), DBSort.asc("title"), 1, 2);
+        final PaginatedList<TestDTO> page1 = dbService.findPaginatedWithQueryAndSort(Filters.empty(), Sorts.ascending("title"), 1, 2);
 
         assertThat(page1.pagination().count()).isEqualTo(2);
         assertThat(page1.pagination().total()).isEqualTo(5);
@@ -140,7 +140,7 @@ public class PaginatedDbServiceTest {
                 .extracting("title")
                 .containsExactly("hello1", "hello2");
 
-        final PaginatedList<TestDTO> page2 = dbService.findPaginatedWithQueryAndSort(DBQuery.empty(), DBSort.asc("title"), 2, 2);
+        final PaginatedList<TestDTO> page2 = dbService.findPaginatedWithQueryAndSort(Filters.empty(), Sorts.ascending("title"), 2, 2);
 
         assertThat(page2.pagination().count()).isEqualTo(2);
         assertThat(page2.pagination().total()).isEqualTo(5);
@@ -148,7 +148,7 @@ public class PaginatedDbServiceTest {
                 .extracting("title")
                 .containsExactly("hello3", "hello4");
 
-        final PaginatedList<TestDTO> page3 = dbService.findPaginatedWithQueryAndSort(DBQuery.empty(), DBSort.asc("title"), 3, 2);
+        final PaginatedList<TestDTO> page3 = dbService.findPaginatedWithQueryAndSort(Filters.empty(), Sorts.ascending("title"), 3, 2);
 
         assertThat(page3.pagination().count()).isEqualTo(1);
         assertThat(page3.pagination().total()).isEqualTo(5);
@@ -156,7 +156,7 @@ public class PaginatedDbServiceTest {
                 .extracting("title")
                 .containsExactly("hello5");
 
-        final PaginatedList<TestDTO> page1reverse = dbService.findPaginatedWithQueryAndSort(DBQuery.empty(), DBSort.desc("title"), 1, 2);
+        final PaginatedList<TestDTO> page1reverse = dbService.findPaginatedWithQueryAndSort(Filters.empty(), Sorts.descending("title"), 1, 2);
 
         assertThat(page1reverse.pagination().count()).isEqualTo(2);
         assertThat(page1reverse.pagination().total()).isEqualTo(5);
@@ -177,7 +177,7 @@ public class PaginatedDbServiceTest {
 
         final Predicate<TestDTO> filter = view -> view.title.matches("hello[23456]");
 
-        final PaginatedList<TestDTO> page1 = dbService.findPaginatedWithQueryFilterAndSort(DBQuery.empty(), filter, DBSort.asc("title"), 1, 2);
+        final PaginatedList<TestDTO> page1 = dbService.findPaginatedWithQueryFilterAndSort(Filters.empty(), filter, Sorts.ascending("title"), 1, 2);
 
         assertThat(page1.pagination().count()).isEqualTo(2);
         assertThat(page1.pagination().total()).isEqualTo(5);
@@ -185,7 +185,7 @@ public class PaginatedDbServiceTest {
                 .extracting("title")
                 .containsExactly("hello2", "hello3");
 
-        final PaginatedList<TestDTO> page2 = dbService.findPaginatedWithQueryFilterAndSort(DBQuery.empty(), filter, DBSort.asc("title"), 2, 2);
+        final PaginatedList<TestDTO> page2 = dbService.findPaginatedWithQueryFilterAndSort(Filters.empty(), filter, Sorts.ascending("title"), 2, 2);
 
         assertThat(page2.pagination().count()).isEqualTo(2);
         assertThat(page2.pagination().total()).isEqualTo(5);
@@ -193,7 +193,7 @@ public class PaginatedDbServiceTest {
                 .extracting("title")
                 .containsExactly("hello4", "hello5");
 
-        final PaginatedList<TestDTO> page3 = dbService.findPaginatedWithQueryFilterAndSort(DBQuery.empty(), filter, DBSort.asc("title"), 3, 2);
+        final PaginatedList<TestDTO> page3 = dbService.findPaginatedWithQueryFilterAndSort(Filters.empty(), filter, Sorts.ascending("title"), 3, 2);
 
         assertThat(page3.pagination().count()).isEqualTo(1);
         assertThat(page3.pagination().total()).isEqualTo(5);
@@ -201,7 +201,7 @@ public class PaginatedDbServiceTest {
                 .extracting("title")
                 .containsExactly("hello6");
 
-        final PaginatedList<TestDTO> page4 = dbService.findPaginatedWithQueryFilterAndSort(DBQuery.empty(), filter, DBSort.asc("title"), 2, 4);
+        final PaginatedList<TestDTO> page4 = dbService.findPaginatedWithQueryFilterAndSort(Filters.empty(), filter, Sorts.ascending("title"), 2, 4);
 
         assertThat(page4.pagination().count()).isEqualTo(1);
         assertThat(page4.pagination().total()).isEqualTo(5);
@@ -209,7 +209,7 @@ public class PaginatedDbServiceTest {
                 .extracting("title")
                 .containsExactly("hello6");
 
-        final PaginatedList<TestDTO> page1reverse = dbService.findPaginatedWithQueryFilterAndSort(DBQuery.empty(), filter, DBSort.desc("title"), 1, 2);
+        final PaginatedList<TestDTO> page1reverse = dbService.findPaginatedWithQueryFilterAndSort(Filters.empty(), filter, Sorts.descending("title"), 1, 2);
 
         assertThat(page1reverse.pagination().count()).isEqualTo(2);
         assertThat(page1reverse.pagination().total()).isEqualTo(5);
@@ -259,7 +259,7 @@ public class PaginatedDbServiceTest {
         dbService.save(newDto("hello4"));
         dbService.save(newDto("hello5"));
 
-        final DBQuery.Query query = DBQuery.in("title", "hello1", "hello3", "hello4");
+        final Bson query = Filters.in("title", "hello1", "hello3", "hello4");
 
         try (final Stream<TestDTO> cursor = dbService.streamQuery(query)) {
             final List<TestDTO> list = cursor.collect(Collectors.toList());
@@ -279,8 +279,8 @@ public class PaginatedDbServiceTest {
         dbService.save(newDto("hello4"));
         dbService.save(newDto("hello5"));
 
-        final DBQuery.Query query = DBQuery.in("title", "hello5", "hello3", "hello1");
-        final DBSort.SortBuilder sort = DBSort.desc("title");
+        final Bson query = Filters.in("title", "hello5", "hello3", "hello1");
+        final Bson sort = Sorts.descending("title");
 
         try (final Stream<TestDTO> cursor = dbService.streamQueryWithSort(query, sort)) {
             final List<TestDTO> list = cursor.collect(Collectors.toList());
@@ -294,9 +294,9 @@ public class PaginatedDbServiceTest {
 
     @Test
     public void sortBuilder() {
-        assertThat(dbService.getSortBuilder("asc", "f")).isEqualTo(DBSort.asc("f"));
-        assertThat(dbService.getSortBuilder("aSc", "f")).isEqualTo(DBSort.asc("f"));
-        assertThat(dbService.getSortBuilder("desc", "f")).isEqualTo(DBSort.desc("f"));
-        assertThat(dbService.getSortBuilder("dEsC", "f")).isEqualTo(DBSort.desc("f"));
+        assertThat(dbService.getSortBuilder("asc", "f")).isEqualTo(Sorts.ascending("f"));
+        assertThat(dbService.getSortBuilder("aSc", "f")).isEqualTo(Sorts.ascending("f"));
+        assertThat(dbService.getSortBuilder("desc", "f")).isEqualTo(Sorts.descending("f"));
+        assertThat(dbService.getSortBuilder("dEsC", "f")).isEqualTo(Sorts.descending("f"));
     }
 }

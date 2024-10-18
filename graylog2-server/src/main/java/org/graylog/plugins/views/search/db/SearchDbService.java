@@ -18,22 +18,22 @@ package org.graylog.plugins.views.search.db;
 
 import com.google.common.collect.Streams;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.result.InsertOneResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog.plugins.views.search.Search;
 import org.graylog.plugins.views.search.SearchRequirements;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedList;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,7 +46,7 @@ import java.util.stream.Stream;
  * </p>
  */
 public class SearchDbService {
-    protected final JacksonDBCollection<Search, ObjectId> db;
+    protected final JacksonMongoCollection<Search> db;
     private final SearchRequirements.Factory searchRequirementsFactory;
 
     @Inject
@@ -54,11 +54,8 @@ public class SearchDbService {
                               MongoJackObjectMapperProvider mapper,
                               SearchRequirements.Factory searchRequirementsFactory) {
         this.searchRequirementsFactory = searchRequirementsFactory;
-        db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection("searches"),
-                Search.class,
-                ObjectId.class,
-                mapper.get());
-        db.createIndex(new BasicDBObject("created_at", 1), new BasicDBObject("unique", false));
+        db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "searches",Search.class, UuidRepresentation.STANDARD);
+        db.createIndex(new BasicDBObject("created_at", 1), new IndexOptions().unique(true));
     }
 
     public Optional<Search> get(String id) {
@@ -69,31 +66,28 @@ public class SearchDbService {
     public Search save(Search search) {
         final Search searchToSave = requirementsForSearch(search);
         if (searchToSave.id() != null) {
-            db.update(
-                    DBQuery.is("_id", search.id()),
-                    searchToSave,
-                    true,
-                    false
-            );
+            db.replaceOne(Filters.eq("_id", new ObjectId(search.id())),
+                    searchToSave,new ReplaceOptions().upsert(true));
 
             return searchToSave;
         }
 
-        final WriteResult<Search, ObjectId> save = db.insert(searchToSave);
+        final InsertOneResult save = db.insertOne(searchToSave);
+        final Search savedSearch = db.findOne(Filters.eq("_id", save.getInsertedId()));
 
-        return save.getSavedObject();
+        return savedSearch;
     }
 
-    public PaginatedList<Search> findPaginated(DBQuery.Query search, DBSort.SortBuilder sort, int page, int perPage) {
+    public PaginatedList<Search> findPaginated(Bson search, Bson sort, int page, int perPage) {
 
-        final DBCursor<Search> cursor = db.find(search)
+        final List<Search> paginated = db.find(search)
                 .sort(sort)
                 .limit(perPage)
-                .skip(perPage * Math.max(0, page - 1));
+                .skip(perPage * Math.max(0, page - 1)).into(new ArrayList<>());
 
         return new PaginatedList<>(
-                Streams.stream((Iterable<Search>) cursor).map(this::requirementsForSearch).collect(Collectors.toList()),
-                cursor.count(),
+                Collections.unmodifiableList(paginated),
+                paginated.size(),
                 page,
                 perPage
         );
@@ -104,13 +98,11 @@ public class SearchDbService {
     }
 
     public Collection<Search> findByIds(Set<String> idSet) {
-        return Streams.stream((Iterable<Search>) db.find(DBQuery.in("_id", idSet.stream().map(ObjectId::new).collect(Collectors.toList()))))
-                .map(this::requirementsForSearch)
-                .collect(Collectors.toList());
+        return Collections.unmodifiableList(db.find(Filters.in("_id", idSet.stream().map(ObjectId::new).collect(Collectors.toList()))).into(new ArrayList<>()));
     }
 
     public Stream<Search> streamAll() {
-        return Streams.stream((Iterable<Search>) db.find()).map(this::requirementsForSearch);
+        return Streams.stream(db.find()).map(this::requirementsForSearch);
     }
 
     private Search requirementsForSearch(Search search) {

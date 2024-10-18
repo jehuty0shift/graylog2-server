@@ -19,7 +19,7 @@ package org.graylog.events.event;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.mongodb.DBCollection;
+import org.bson.UuidRepresentation;
 import org.graylog.testing.mongodb.MongoDBFixtures;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mongojack.Id;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 import org.mongojack.ObjectId;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,8 +62,7 @@ public class ESMongoDateTimeDeserializerTest {
     @Test
     @MongoDBFixtures("DateTime.json")
     public void deserializeMongoDateTime() throws Exception {
-        final DBCollection date_collection = mongodb.mongoConnection().getDatabase().getCollection("date_collection");
-        final JacksonDBCollection<DTO, ObjectId> db = JacksonDBCollection.wrap(date_collection, DTO.class, ObjectId.class, objectMapper, null);
+        final JacksonMongoCollection<DTO> db = JacksonMongoCollection.builder().build(mongodb.mongoConnection().getMongoDatabase(),"date_collection", DTO.class, UuidRepresentation.STANDARD);
 
         final DTO value = db.findOne();
         assertThat(value.dateTime).isEqualTo(new DateTime(2019, 1, 13, 14, 0, DateTimeZone.UTC));

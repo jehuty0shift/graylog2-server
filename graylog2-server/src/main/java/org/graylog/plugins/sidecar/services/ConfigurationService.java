@@ -17,12 +17,16 @@
 package org.graylog.plugins.sidecar.services;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.graylog.plugins.sidecar.rest.models.Configuration;
 import org.graylog.plugins.sidecar.rest.models.ConfigurationVariable;
 import org.graylog.plugins.sidecar.rest.models.Sidecar;
@@ -34,8 +38,6 @@ import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,15 +84,15 @@ public class ConfigurationService extends PaginatedDbService<Configuration> {
     }
 
     public Configuration find(String id) {
-        return db.findOne(DBQuery.is("_id", id));
+        return db.findOne(Filters.eq("_id",new ObjectId(id)));
     }
 
     public Configuration findByName(String name) {
-        return db.findOne(DBQuery.is(Configuration.FIELD_NAME, name));
+        return db.findOne(Filters.eq(Configuration.FIELD_NAME, name));
     }
 
     public long count() {
-        return db.count();
+        return db.countDocuments();
     }
 
     public List<Configuration> all() {
@@ -100,36 +102,37 @@ public class ConfigurationService extends PaginatedDbService<Configuration> {
     }
 
     public PaginatedList<Configuration> findPaginated(SearchQuery searchQuery, int page, int perPage, String sortField, String order) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery();
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = searchQuery.toDBQuery();
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
     }
 
-    public List<Configuration> findByQuery(DBQuery.Query query) {
+    public List<Configuration> findByQuery(Bson query) {
         try (final Stream<Configuration> collectorConfigurationStream = streamQuery(query)) {
             return collectorConfigurationStream.collect(Collectors.toList());
         }
     }
 
     public List<Configuration> findByConfigurationVariable(ConfigurationVariable configurationVariable) {
-        final DBQuery.Query query = DBQuery.regex(Configuration.FIELD_TEMPLATE, Pattern.compile(Pattern.quote(configurationVariable.fullName())));
+        final Bson query = Filters.regex(Configuration.FIELD_TEMPLATE, Pattern.compile(Pattern.quote(configurationVariable.fullName())));
         return findByQuery(query);
     }
 
     public void replaceVariableNames(String oldName, String newName) {
-        final DBQuery.Query query = DBQuery.regex(Configuration.FIELD_TEMPLATE, Pattern.compile(Pattern.quote(oldName)));
+        final Bson query = Filters.regex(Configuration.FIELD_TEMPLATE, Pattern.compile(Pattern.quote(oldName)));
         List<Configuration> configurations = findByQuery(query);
+        FindOneAndReplaceOptions options = new FindOneAndReplaceOptions().upsert(true);
         for (Configuration config : configurations) {
             final String newTemplate = config.template().replace(oldName, newName);
-            db.findAndModify(DBQuery.is("_id", config.id()), new BasicDBObject(),
-                    new BasicDBObject(), false, config.toBuilder().template(newTemplate).build(), true, true);
+            db.findOneAndReplace(Filters.eq("_id", new ObjectId(config.id())),
+                    config.toBuilder().template(newTemplate).build(),
+                    options);
         }
     }
 
     @Override
     public Configuration save(Configuration configuration) {
-        return db.findAndModify(DBQuery.is("_id", configuration.id()), new BasicDBObject(),
-                new BasicDBObject(), false, configuration, true, true);
+        return db.findOneAndReplace(Filters.eq("_id", new ObjectId(configuration.id())),configuration,new FindOneAndReplaceOptions().upsert(true));
     }
 
     public Configuration copyConfiguration(String id, String name) {

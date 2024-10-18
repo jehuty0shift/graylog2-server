@@ -16,29 +16,28 @@
  */
 package org.graylog.plugins.views.migrations.V20191125144500_MigrateDashboardsToViewsSupport;
 
+import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import java.util.Objects;
 
 class SearchService {
-    protected final JacksonDBCollection<Search, ObjectId> db;
+    protected final JacksonMongoCollection<Search> db;
 
     @Inject
     SearchService(MongoConnection mongoConnection, MongoJackObjectMapperProvider mapper) {
-        db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection("searches"),
-                Search.class,
-                ObjectId.class,
-                mapper.get());
+        db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "searches",Search.class, UuidRepresentation.STANDARD);
     }
 
     public ObjectId save(Search search) {
-        return db.insert(search).getSavedId();
+        return Objects.requireNonNull(db.save(search).getUpsertedId()).asObjectId().getValue();
     }
 
     public void remove(ObjectId searchID) { db.removeById(searchID); }
 
-    long count() { return db.count(); }
+    long count() { return db.countDocuments(); }
 }
