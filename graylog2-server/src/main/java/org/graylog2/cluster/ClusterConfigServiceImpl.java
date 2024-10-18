@@ -20,8 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
-import com.mongodb.DBCollection;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Sorts;
+import com.mongodb.client.result.DeleteResult;
+import org.bson.UuidRepresentation;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.events.ClusterEventBus;
@@ -29,15 +35,10 @@ import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.system.NodeId;
 import org.graylog2.security.SafeChainingClassLoader;
 import org.graylog2.security.UnauthorizedClassLoadingException;
-import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.shared.utilities.AutoValueUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
     @VisibleForTesting
     static final String COLLECTION_NAME = "cluster_config";
 
-    private final JacksonDBCollection<ClusterConfig, String> dbCollection;
+    private final JacksonMongoCollection<ClusterConfig> dbCollection;
     private final NodeId nodeId;
     private final ObjectMapper objectMapper;
     private final SafeChainingClassLoader chainingClassLoader;
@@ -65,11 +66,11 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
                                     final NodeId nodeId,
                                     final SafeChainingClassLoader chainingClassLoader,
                                     final ClusterEventBus clusterEventBus) {
-        this(JacksonDBCollection.wrap(prepareCollection(mongoConnection), ClusterConfig.class, String.class, mapperProvider.get()),
+        this(JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(prepareCollection(mongoConnection), ClusterConfig.class, UuidRepresentation.STANDARD),
                 nodeId, mapperProvider.get(), chainingClassLoader, clusterEventBus);
     }
 
-    private ClusterConfigServiceImpl(final JacksonDBCollection<ClusterConfig, String> dbCollection,
+    private ClusterConfigServiceImpl(final JacksonMongoCollection<ClusterConfig> dbCollection,
                                      final NodeId nodeId,
                                      final ObjectMapper objectMapper,
                                      final SafeChainingClassLoader chainingClassLoader,
@@ -82,12 +83,14 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
     }
 
     @VisibleForTesting
-    static DBCollection prepareCollection(final MongoConnection mongoConnection) {
-        DBCollection coll = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        coll.createIndex(DBSort.asc("type"), "unique_type", true);
-        coll.setWriteConcern(WriteConcern.JOURNALED);
+    static MongoCollection<ClusterConfig> prepareCollection(final MongoConnection mongoConnection) {
 
-        return coll;
+        MongoCollection<ClusterConfig> mongoCollection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, ClusterConfig.class);
+
+        mongoCollection.createIndex(Sorts.ascending("type"), new IndexOptions().name("unique_type").unique(true));
+        mongoCollection.withWriteConcern(WriteConcern.JOURNALED);
+
+        return mongoCollection;
     }
 
     private <T> T extractPayload(Object payload, Class<T> type) {
@@ -101,7 +104,7 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
 
     @Override
     public <T> T get(String key, Class<T> type) {
-        ClusterConfig config = dbCollection.findOne(DBQuery.is("type", key));
+        ClusterConfig config = dbCollection.findOne(Filters.eq("type", key));
 
         if (config == null) {
             LOG.debug("Couldn't find cluster config of type {}", key);
@@ -146,7 +149,7 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
 
         ClusterConfig clusterConfig = ClusterConfig.create(key, payload, nodeId.toString());
 
-        dbCollection.update(DBQuery.is("type", key), clusterConfig, true, false, WriteConcern.JOURNALED);
+        dbCollection.findOneAndReplace(Filters.eq("type", key), clusterConfig, new FindOneAndReplaceOptions().upsert(true));
 
         ClusterConfigChangedEvent event = ClusterConfigChangedEvent.create(
                 DateTime.now(DateTimeZone.UTC), nodeId.toString(), key);
@@ -156,16 +159,16 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
     @Override
     public <T> int remove(Class<T> type) {
         final String canonicalName = type.getCanonicalName();
-        final WriteResult<ClusterConfig, String> result = dbCollection.remove(DBQuery.is("type", canonicalName));
-        return result.getN();
+        final DeleteResult result = dbCollection.deleteMany(Filters.eq("type", canonicalName));
+        return (int) result.getDeletedCount();
     }
 
     @Override
     public Set<Class<?>> list() {
         final ImmutableSet.Builder<Class<?>> classes = ImmutableSet.builder();
 
-        try (DBCursor<ClusterConfig> clusterConfigs = dbCollection.find()) {
-            for (ClusterConfig clusterConfig : clusterConfigs) {
+
+        for (ClusterConfig clusterConfig : dbCollection.find()) {
                 final String type = clusterConfig.type();
                 try {
                     final Class<?> cls = chainingClassLoader.loadClassSafely(type);
@@ -176,7 +179,7 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
                     LOG.error("Class {} is not allowed to be loaded",type);
                 }
             }
-        }
+
 
         return classes.build();
     }

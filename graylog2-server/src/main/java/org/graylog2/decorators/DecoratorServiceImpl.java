@@ -17,43 +17,41 @@
 package org.graylog2.decorators;
 
 import com.google.common.base.Strings;
-import com.mongodb.DBCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
+import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.CollectionName;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.NotFoundException;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class DecoratorServiceImpl implements DecoratorService {
-    private final JacksonDBCollection<DecoratorImpl, String> coll;
+    private final JacksonMongoCollection<DecoratorImpl> coll;
 
     @Inject
     public DecoratorServiceImpl(MongoConnection mongoConnection, MongoJackObjectMapperProvider mongoJackObjectMapperProvider) {
         final String collectionName = DecoratorImpl.class.getAnnotation(CollectionName.class).value();
-        final DBCollection dbCollection = mongoConnection.getDatabase().getCollection(collectionName);
-        this.coll = JacksonDBCollection.wrap(dbCollection, DecoratorImpl.class, String.class, mongoJackObjectMapperProvider.get());
+        this.coll = JacksonMongoCollection.builder().withObjectMapper(mongoJackObjectMapperProvider.get()).build(mongoConnection.getMongoDatabase(),collectionName, DecoratorImpl.class, UuidRepresentation.STANDARD);
     }
 
     @Override
     public List<Decorator> findForStream(String streamId) {
-        return toInterfaceList(coll.find(DBQuery.is(DecoratorImpl.FIELD_STREAM, Optional.of(streamId))).toArray());
+        return Collections.unmodifiableList(coll.find(Filters.eq(DecoratorImpl.FIELD_STREAM, Optional.of(streamId))).into(new ArrayList<>()));
     }
 
     @Override
     public List<Decorator> findForGlobal() {
-        return toInterfaceList(coll.find(DBQuery.or(
-            DBQuery.notExists(DecoratorImpl.FIELD_STREAM),
-            DBQuery.is(DecoratorImpl.FIELD_STREAM, Optional.empty())
-        )).toArray());
+        return Collections.unmodifiableList(coll.find(Filters.or(
+            Filters.exists(DecoratorImpl.FIELD_STREAM,false),
+            Filters.eq(DecoratorImpl.FIELD_STREAM, Optional.empty())
+        )).into(new ArrayList<>()));
     }
 
     @Override
@@ -68,7 +66,7 @@ public class DecoratorServiceImpl implements DecoratorService {
 
     @Override
     public List<Decorator> findAll() {
-        return toInterfaceList(coll.find().toArray());
+        return Collections.unmodifiableList(coll.find().into(new ArrayList<>()));
     }
 
     @Override
@@ -85,18 +83,15 @@ public class DecoratorServiceImpl implements DecoratorService {
     public Decorator save(Decorator decorator) {
         checkArgument(decorator instanceof DecoratorImpl, "Argument must be an instance of DecoratorImpl, not %s", decorator.getClass());
         if (!Strings.isNullOrEmpty(decorator.id())) {
-            this.coll.updateById(decorator.id(), (DecoratorImpl)decorator);
-            return this.coll.findOneById(decorator.id());
+            return this.coll.findOneAndReplace(Filters.eq("_id",new ObjectId(decorator.id())), (DecoratorImpl)decorator);
         }
-        return this.coll.save((DecoratorImpl) decorator).getSavedObject();
+        UpdateResult result = this.coll.save((DecoratorImpl) decorator);
+        return coll.findOneById(result.getUpsertedId());
     }
 
     @Override
     public int delete(String id) {
-        return this.coll.removeById(id).getN();
+        return (int)this.coll.removeById(id).getDeletedCount();
     }
 
-    private List<Decorator> toInterfaceList(List<DecoratorImpl> concreteList) {
-        return concreteList.stream().collect(Collectors.toList());
-    }
 }

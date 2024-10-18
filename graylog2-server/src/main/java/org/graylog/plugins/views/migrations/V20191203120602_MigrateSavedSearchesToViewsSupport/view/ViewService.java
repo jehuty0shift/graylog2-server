@@ -16,25 +16,24 @@
  */
 package org.graylog.plugins.views.migrations.V20191203120602_MigrateSavedSearchesToViewsSupport.view;
 
+import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import java.util.Objects;
 
 public class ViewService {
-    protected final JacksonDBCollection<View, ObjectId> db;
+    protected final JacksonMongoCollection<View> db;
 
     @Inject
     ViewService(MongoConnection mongoConnection, MongoJackObjectMapperProvider mapper) {
-        this.db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection("views"),
-                View.class,
-                ObjectId.class,
-                mapper.get());
+        this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "views", View.class, UuidRepresentation.STANDARD);
     }
 
     public ObjectId save(View view) {
-        return db.insert(view).getSavedId();
+        return Objects.requireNonNull(db.save(view).getUpsertedId()).asObjectId().getValue();
     }
 }

@@ -20,13 +20,13 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.types.ObjectId;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.NotFoundException;
 import org.graylog2.database.PersistedServiceImpl;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.mongojack.WriteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +100,7 @@ public class LegacyMongoIndexRangeService extends PersistedServiceImpl implement
     }
 
     @Override
-    public WriteResult<MongoIndexRange, ObjectId> save(IndexRange indexRange) {
+    public UpdateResult save(IndexRange indexRange) {
         throw new UnsupportedOperationException();
     }
 

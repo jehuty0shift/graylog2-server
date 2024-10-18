@@ -17,6 +17,11 @@
 package org.graylog.plugins.views.search.views;
 
 import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoException;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog.security.entities.EntityOwnershipService;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -26,14 +31,9 @@ import org.graylog2.database.PaginatedList;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.search.SearchQuery;
-import org.mongojack.DBQuery;
-import org.mongojack.WriteResult;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,7 +61,7 @@ public class ViewService extends PaginatedDbService<ViewDTO> {
         this.entityOwnerShipService = entityOwnerShipService;
     }
 
-    private PaginatedList<ViewDTO> searchPaginated(DBQuery.Query query,
+    private PaginatedList<ViewDTO> searchPaginated(Bson query,
                                                    Predicate<ViewDTO> filter,
                                                    String order,
                                                    String sortField,
@@ -93,8 +93,8 @@ public class ViewService extends PaginatedDbService<ViewDTO> {
                                                         int perPage) {
         checkNotNull(sortField);
         return searchPaginated(
-                DBQuery.and(
-                        DBQuery.or(DBQuery.is(ViewDTO.FIELD_TYPE, type), DBQuery.notExists(ViewDTO.FIELD_TYPE)),
+                Filters.and(
+                        Filters.or(Filters.eq(ViewDTO.FIELD_TYPE, type), Filters.exists(ViewDTO.FIELD_TYPE,false)),
                         query.toDBQuery()
                 ),
                 filter,
@@ -120,10 +120,9 @@ public class ViewService extends PaginatedDbService<ViewDTO> {
     }
 
     public Collection<ViewDTO> forSearch(String searchId) {
-        return this.db.find(DBQuery.is(ViewDTO.FIELD_SEARCH_ID, searchId)).toArray()
-                .stream()
+        return db.find(Filters.eq(ViewDTO.FIELD_SEARCH_ID, searchId))
                 .map(this::requirementsForView)
-                .collect(Collectors.toSet());
+                .into(new HashSet<>());
     }
 
     @Override
@@ -154,8 +153,12 @@ public class ViewService extends PaginatedDbService<ViewDTO> {
     @Override
     public ViewDTO save(ViewDTO viewDTO) {
         try {
-            final WriteResult<ViewDTO, ObjectId> save = db.insert(requirementsForView(viewDTO));
-            return save.getSavedObject();
+            final InsertOneResult save = db.insertOne(requirementsForView(viewDTO));
+           if (save.wasAcknowledged()) {
+               return db.findOne(Filters.eq("_id",save.getInsertedId()));
+           } else {
+               throw new MongoException("Unable to save view, request was not acknowledged");
+           }
         } catch (DuplicateKeyException e) {
             throw new IllegalStateException("Unable to save view, it already exists.");
         }
@@ -176,7 +179,10 @@ public class ViewService extends PaginatedDbService<ViewDTO> {
     public ViewDTO update(ViewDTO viewDTO) {
         checkArgument(viewDTO.id() != null, "Id of view must not be null.");
         final ViewDTO viewWithRequirements = requirementsForView(viewDTO);
-        db.updateById(new ObjectId(viewWithRequirements.id()), viewWithRequirements);
+        UpdateResult result = db.replaceOneById(new ObjectId(viewWithRequirements.id()), viewWithRequirements);
+        if (!result.wasAcknowledged()) {
+            throw new MongoException("Update was not acknowledged");
+        }
         return viewWithRequirements;
     }
 

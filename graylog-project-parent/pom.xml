@@ -130,11 +130,7 @@
                 <artifactId>mongodb-driver-sync</artifactId>
                 <version>${mongodb-driver.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver-legacy</artifactId>
-                <version>${mongodb-driver.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.mongojack</groupId>
                 <artifactId>mongojack</artifactId>
@@ -765,8 +761,6 @@
                     <suppressAnnotations>
                         <suppressAnnotation>org.graylog2.shared.SuppressForbidden</suppressAnnotation>
                     </suppressAnnotations>
-                    <!-- disallow undocumented classes like sun.misc.Unsafe: -->
-                    <internalRuntimeForbidden>false</internalRuntimeForbidden>
                     <!-- if the used Java version is too new, don't fail, just do nothing: -->
                     <failOnUnsupportedJava>false</failOnUnsupportedJava>
                     <failOnViolation>true</failOnViolation>

@@ -18,14 +18,10 @@ package org.graylog2.search;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import org.mongojack.DBQuery;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -48,37 +44,36 @@ public class SearchQuery {
         return queryMap;
     }
 
-    public DBQuery.Query toDBQuery() {
+    public Bson toDBQuery() {
         if (queryMap.isEmpty()) {
-            return DBQuery.empty();
+            return Filters.empty();
         }
 
-        final List<DBQuery.Query> dbQueries = new ArrayList<>();
+        final List<Bson> dbQueries = new ArrayList<>();
 
         for (Map.Entry<String, Collection<SearchQueryParser.FieldValue>> entry : queryMap.asMap().entrySet()) {
-            final List<DBQuery.Query> queries = new ArrayList<>();
+            final List<Bson> queries = new ArrayList<>();
 
             final List<SearchQueryParser.FieldValue> include = selectValues(entry.getValue(), value -> !value.isNegate());
             final List<SearchQueryParser.FieldValue> exclude = selectValues(entry.getValue(), SearchQueryParser.FieldValue::isNegate);
 
             if (!include.isEmpty()) {
-                queries.add(DBQuery.or(toQuery(entry.getKey(), include)));
+                queries.add(Filters.or(toQuery(entry.getKey(), include)));
             }
             if (!exclude.isEmpty()) {
-                queries.add(DBQuery.nor(toQuery(entry.getKey(), exclude)));
+                queries.add(Filters.nor(toQuery(entry.getKey(), exclude)));
             }
 
-            dbQueries.add(DBQuery.and(queries.toArray(new DBQuery.Query[0])));
+            dbQueries.add(Filters.and(queries));
         }
 
-        return DBQuery.and(dbQueries.toArray(new DBQuery.Query[0]));
+        return Filters.and(dbQueries);
     }
 
-    private DBQuery.Query[] toQuery(String field, List<SearchQueryParser.FieldValue> values) {
+    private List<Bson> toQuery(String field, List<SearchQueryParser.FieldValue> values) {
         return values.stream()
                 .map(value -> value.getOperator().buildQuery(field, value.getValue()))
-                .collect(Collectors.toList())
-                .toArray(new DBQuery.Query[0]);
+                .collect(Collectors.toList());
     }
 
     private List<SearchQueryParser.FieldValue> selectValues(Collection<SearchQueryParser.FieldValue> values,

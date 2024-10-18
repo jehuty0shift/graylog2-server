@@ -18,20 +18,16 @@ package org.graylog.scheduler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import one.util.streamex.StreamEx;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 public class DBJobDefinitionService extends PaginatedDbService<JobDefinitionDto> {
@@ -46,7 +42,7 @@ public class DBJobDefinitionService extends PaginatedDbService<JobDefinitionDto>
     }
 
     public PaginatedList<JobDefinitionDto> getAllPaginated(String sortByField, int page, int perPage) {
-        return findPaginatedWithQueryAndSort(DBQuery.empty(), DBSort.asc(sortByField), page, perPage);
+        return findPaginatedWithQueryAndSort(Filters.empty(), Sorts.ascending(sortByField), page, perPage);
     }
 
     /**
@@ -58,7 +54,7 @@ public class DBJobDefinitionService extends PaginatedDbService<JobDefinitionDto>
      */
     public Optional<JobDefinitionDto> getByConfigField(String configField, Object value) {
         final String field = String.format(Locale.US, "%s.%s", JobDefinitionDto.FIELD_CONFIG, configField);
-        return Optional.ofNullable(db.findOne(DBQuery.is(field, value)));
+        return Optional.ofNullable(db.findOne(Filters.eq(field, value)));
     }
 
     /**
@@ -71,7 +67,7 @@ public class DBJobDefinitionService extends PaginatedDbService<JobDefinitionDto>
     public Map<String, List<JobDefinitionDto>> getAllByConfigField(String configField, Collection<? extends Object> values) {
         final String field = String.format(Locale.US, "%s.%s", JobDefinitionDto.FIELD_CONFIG, configField);
 
-        return StreamEx.of(db.find(DBQuery.in(field, values))).groupingBy(configFieldGroup(configField));
+        return StreamEx.of(db.find(Filters.in(field, values)).spliterator()).groupingBy(configFieldGroup(configField));
     }
 
     private Function<JobDefinitionDto, String> configFieldGroup(final String key) {

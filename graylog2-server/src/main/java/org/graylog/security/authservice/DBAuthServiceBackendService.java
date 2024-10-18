@@ -17,14 +17,14 @@
 package org.graylog.security.authservice;
 
 import com.google.common.eventbus.EventBus;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
 import org.graylog.security.events.AuthServiceBackendDeletedEvent;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.rest.PaginationParameters;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.inject.Inject;
 import java.util.Map;
@@ -81,14 +81,14 @@ public class DBAuthServiceBackendService extends PaginatedDbService<AuthServiceB
     }
 
     public long countBackends() {
-        return db.count();
+        return db.countDocuments();
     }
 
     public PaginatedList<AuthServiceBackendDTO> findPaginated(PaginationParameters params,
                                                               Predicate<AuthServiceBackendDTO> filter) {
         final String sortBy = defaultIfBlank(params.getSortBy(), "title");
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(params.getOrder(), sortBy);
+        final Bson sortBuilder = getSortBuilder(params.getOrder(), sortBy);
 
-        return findPaginatedWithQueryFilterAndSort(DBQuery.empty(), filter, sortBuilder, params.getPage(), params.getPerPage());
+    return findPaginatedWithQueryFilterAndSort(Filters.empty(), filter, sortBuilder, params.getPage(), params.getPerPage());
     }
 }

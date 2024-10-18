@@ -18,7 +18,7 @@ package org.graylog2.inputs.persistence;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.EventBus;
-import org.bson.types.ObjectId;
+import org.bson.UuidRepresentation;
 import org.graylog.testing.mongodb.MongoDBFixtures;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -32,13 +32,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import java.util.Optional;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +56,7 @@ public class MongoInputStatusServiceTest {
     @Mock
     private InputService inputService;
 
-    private JacksonDBCollection<InputStatusRecord, ObjectId> db;
+    private JacksonMongoCollection<InputStatusRecord> db;
 
     @Before
     public void setUp() {
@@ -67,10 +65,9 @@ public class MongoInputStatusServiceTest {
 
         cut = new MongoInputStatusService(mongodb.mongoConnection(), mapperProvider, inputService, mockEventBus);
 
-        db = JacksonDBCollection.wrap(mongodb.mongoConnection().getDatabase().getCollection(MongoInputStatusService.COLLECTION_NAME),
+        db = JacksonMongoCollection.builder().withObjectMapper(objectMapper).build(mongodb.mongoConnection().getMongoDatabase(), MongoInputStatusService.COLLECTION_NAME,
                 InputStatusRecord.class,
-                ObjectId.class,
-                mapperProvider.get());
+                UuidRepresentation.STANDARD);
     }
 
     @Test

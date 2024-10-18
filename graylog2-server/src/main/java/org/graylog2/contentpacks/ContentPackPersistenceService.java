@@ -21,54 +21,52 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DuplicateKeyException;
-import org.bson.types.ObjectId;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertOneResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.contentpacks.model.ContentPack;
 import org.graylog2.contentpacks.model.Identified;
 import org.graylog2.contentpacks.model.ModelId;
 import org.graylog2.contentpacks.model.Revisioned;
 import org.graylog2.database.MongoConnection;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Singleton
 public class ContentPackPersistenceService {
     public static final String COLLECTION_NAME = "content_packs";
 
-    private final JacksonDBCollection<ContentPack, ObjectId> dbCollection;
+    private final JacksonMongoCollection<ContentPack> dbCollection;
     private static final Logger LOG = LoggerFactory.getLogger(ContentPackPersistenceService.class);
 
     @Inject
     public ContentPackPersistenceService(final MongoJackObjectMapperProvider mapperProvider,
                                          final MongoConnection mongoConnection) {
-        this(JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
-                ContentPack.class, ObjectId.class, mapperProvider.get()));
+        this(JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(), COLLECTION_NAME,
+                ContentPack.class, UuidRepresentation.STANDARD));
     }
 
-    ContentPackPersistenceService(final JacksonDBCollection<ContentPack, ObjectId> dbCollection) {
+    ContentPackPersistenceService(final JacksonMongoCollection<ContentPack> dbCollection) {
         this.dbCollection = dbCollection;
 
         try {
-            dbCollection.createIndex(new BasicDBObject(Identified.FIELD_META_ID, 1).append(Revisioned.FIELD_META_REVISION, 1), new BasicDBObject("unique", true));
+            dbCollection.createIndex(new BasicDBObject(Identified.FIELD_META_ID, 1).append(Revisioned.FIELD_META_REVISION, 1), new IndexOptions().unique(true));
         } catch (DuplicateKeyException e) {
             // Ignore - this can happen if this runs before the migration of old content packs
         }
     }
 
     public Set<ContentPack> loadAll() {
-        final DBCursor<ContentPack> contentPacks = dbCollection.find();
-        return ImmutableSet.copyOf((Iterable<ContentPack>) contentPacks);
+        return Collections.unmodifiableSet(dbCollection.find().into(new HashSet<>()));
     }
 
     public Set<ContentPack> loadAllLatest() {
@@ -90,12 +88,11 @@ public class ContentPackPersistenceService {
     }
 
     public Set<ContentPack> findAllById(ModelId id) {
-        final DBCursor<ContentPack> result = dbCollection.find(DBQuery.is(Identified.FIELD_META_ID, id));
-        return ImmutableSet.copyOf((Iterable<ContentPack>) result);
+        return Collections.unmodifiableSet(dbCollection.find(Filters.eq(Identified.FIELD_META_ID, id)).into(new HashSet<>()));
     }
 
     public Optional<ContentPack> findByIdAndRevision(ModelId id, int revision) {
-        final DBQuery.Query query = DBQuery.is(Identified.FIELD_META_ID, id).is(Revisioned.FIELD_META_REVISION, revision);
+        final Bson query = Filters.and(Filters.eq(Identified.FIELD_META_ID, id), Filters.eq(Revisioned.FIELD_META_REVISION, revision));
         return Optional.ofNullable(dbCollection.findOne(query));
     }
 
@@ -104,19 +101,19 @@ public class ContentPackPersistenceService {
             LOG.debug("Content pack already found: id: {} revision: {}. Did not insert!", pack.id(), pack.revision());
             return Optional.empty();
         }
-        final WriteResult<ContentPack, ObjectId> writeResult = dbCollection.insert(pack);
-        return Optional.of(writeResult.getSavedObject());
+        final InsertOneResult result = dbCollection.insertOne(pack);
+        return Optional.of(dbCollection.findOneById(result.getInsertedId()));
     }
 
     public int deleteById(ModelId id) {
-        final DBQuery.Query query = DBQuery.is(Identified.FIELD_META_ID, id);
-        final WriteResult<ContentPack, ObjectId> writeResult = dbCollection.remove(query);
-        return writeResult.getN();
+        final Bson query = Filters.eq(Identified.FIELD_META_ID, id);
+        final DeleteResult dr = dbCollection.deleteMany(query);
+        return (int) dr.getDeletedCount();
     }
 
     public int deleteByIdAndRevision(ModelId id, int revision) {
-        final DBQuery.Query query = DBQuery.is(Identified.FIELD_META_ID, id).is(Revisioned.FIELD_META_REVISION, revision);
-        final WriteResult<ContentPack, ObjectId> writeResult = dbCollection.remove(query);
-        return writeResult.getN();
+        final Bson query = Filters.and(Filters.eq(Identified.FIELD_META_ID, id), Filters.eq(Revisioned.FIELD_META_REVISION, revision));
+        final DeleteResult dr = dbCollection.deleteMany(query);
+        return (int) dr.getDeletedCount();
     }
 }
