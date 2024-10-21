@@ -26,9 +26,12 @@ import com.google.common.eventbus.EventBus;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.NotFoundException;
@@ -55,13 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,7 +69,7 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
     private final ConverterFactory converterFactory;
     private final MessageInputFactory messageInputFactory;
     private final EventBus clusterEventBus;
-    private final DBCollection dbCollection;
+    private final MongoCollection<BasicDBObject> dbCollection;
 
     @Inject
     public InputServiceImpl(MongoConnection mongoConnection,
@@ -90,7 +87,7 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
 
     @Override
     public List<Input> all() {
-        final List<DBObject> ownInputs = query(InputImpl.class, new BasicDBObject());
+        final List<DBObject> ownInputs = query(InputImpl.class, Filters.empty());
 
         final ImmutableList.Builder<Input> inputs = ImmutableList.builder();
         for (final DBObject o : ownInputs) {
@@ -102,10 +99,10 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
 
     @Override
     public List<Input> allOfThisNode(final String nodeId) {
-        final List<BasicDBObject> query = ImmutableList.of(
-                new BasicDBObject(MessageInput.FIELD_NODE_ID, nodeId),
-                new BasicDBObject(MessageInput.FIELD_GLOBAL, true));
-        final List<DBObject> ownInputs = query(InputImpl.class, new BasicDBObject("$or", query));
+        final Bson query = Filters.or(
+                Filters.eq(MessageInput.FIELD_NODE_ID, nodeId),
+                Filters.eq(MessageInput.FIELD_GLOBAL, true));
+        final List<DBObject> ownInputs = query(InputImpl.class, query);
 
         final ImmutableList.Builder<Input> inputs = ImmutableList.builder();
         for (final DBObject o : ownInputs) {
@@ -191,29 +188,29 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
 
     @Override
     public Input findForThisNodeOrGlobal(String nodeId, String id) throws NotFoundException {
-        final List<BasicDBObject> forThisNodeOrGlobal = ImmutableList.of(
-                new BasicDBObject(MessageInput.FIELD_NODE_ID, nodeId),
-                new BasicDBObject(MessageInput.FIELD_GLOBAL, true));
+        final Bson forThisNodeOrGlobal = Filters.or(
+                Filters.eq(MessageInput.FIELD_NODE_ID, nodeId),
+                Filters.eq(MessageInput.FIELD_GLOBAL, true));
 
-        final List<BasicDBObject> query = ImmutableList.of(
-                new BasicDBObject(InputImpl.FIELD_ID, new ObjectId(id)),
-                new BasicDBObject("$or", forThisNodeOrGlobal));
+        final Bson query = Filters.and(
+                Filters.eq(InputImpl.FIELD_ID, new ObjectId(id)),
+                forThisNodeOrGlobal);
 
-        final DBObject o = findOne(InputImpl.class, new BasicDBObject("$and", query));
+        final DBObject o = findOne(InputImpl.class, query);
         return new InputImpl((ObjectId) o.get(InputImpl.FIELD_ID), o.toMap());
     }
 
     @Override
     public Input findForThisNode(String nodeId, String id) throws NotFoundException, IllegalArgumentException {
-        final List<BasicDBObject> forThisNode = ImmutableList.of(
-                new BasicDBObject(MessageInput.FIELD_NODE_ID, nodeId),
-                new BasicDBObject(MessageInput.FIELD_GLOBAL, false));
+        final Bson forThisNode = Filters.and(
+                Filters.eq(MessageInput.FIELD_NODE_ID, nodeId),
+                Filters.eq(MessageInput.FIELD_GLOBAL, false));
 
-        final List<BasicDBObject> query = ImmutableList.of(
-                new BasicDBObject(InputImpl.FIELD_ID, new ObjectId(id)),
-                new BasicDBObject("$and", forThisNode));
+        final Bson query = Filters.and(
+                Filters.eq(InputImpl.FIELD_ID, new ObjectId(id)),
+                forThisNode);
 
-        final DBObject o = findOne(InputImpl.class, new BasicDBObject("$and", query));
+        final DBObject o = findOne(InputImpl.class, query);
         if (o == null) {
             throw new NotFoundException("Couldn't find input " + id + " on Graylog node " + nodeId);
         } else {
@@ -408,16 +405,16 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
     @Override
     public Map<String, Long> totalCountByType() {
         final Map<String, Long> inputCountByType = new HashMap<>();
-        try (DBCursor inputTypes = dbCollection.find(null, new BasicDBObject(MessageInput.FIELD_TYPE, 1))) {
-            for (DBObject inputType : inputTypes) {
-                final String type = (String) inputType.get(MessageInput.FIELD_TYPE);
-                if (type != null) {
-                    final Long oldValue = inputCountByType.get(type);
-                    final Long newValue = (oldValue == null) ? 1 : oldValue + 1;
-                    inputCountByType.put(type, newValue);
-                }
+        FindIterable<BasicDBObject> inputTypes = dbCollection.find(Filters.empty()).sort(Sorts.ascending(MessageInput.FIELD_TYPE));
+        for (DBObject inputType : inputTypes) {
+            final String type = (String) inputType.get(MessageInput.FIELD_TYPE);
+            if (type != null) {
+                final Long oldValue = inputCountByType.get(type);
+                final Long newValue = (oldValue == null) ? 1 : oldValue + 1;
+                inputCountByType.put(type, newValue);
             }
         }
+
 
         return inputCountByType;
     }
@@ -446,11 +443,11 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
     public long totalExtractorCount() {
         final DBObject query = new BasicDBObject(InputImpl.EMBEDDED_EXTRACTORS, new BasicDBObject("$exists", true));
         long extractorsCount = 0;
-        try (DBCursor inputs = dbCollection.find(query, new BasicDBObject(InputImpl.EMBEDDED_EXTRACTORS, 1))) {
-            for (DBObject input : inputs) {
-                final BasicDBList extractors = (BasicDBList) input.get(InputImpl.EMBEDDED_EXTRACTORS);
-                extractorsCount += extractors.size();
-            }
+
+        FindIterable<BasicDBObject> inputs = dbCollection.find(DBObjectToBson(query)).sort(Sorts.ascending(InputImpl.EMBEDDED_EXTRACTORS));
+        for (DBObject input : inputs) {
+            final BasicDBList extractors = (BasicDBList) input.get(InputImpl.EMBEDDED_EXTRACTORS);
+            extractorsCount += extractors.size();
         }
 
         return extractorsCount;
@@ -459,8 +456,8 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
     @Override
     public Map<Extractor.Type, Long> totalExtractorCountByType() {
         final DBObject query = new BasicDBObject(InputImpl.EMBEDDED_EXTRACTORS, new BasicDBObject("$exists", true));
-        try (DBCursor inputs = dbCollection.find(query, new BasicDBObject(InputImpl.EMBEDDED_EXTRACTORS, 1))) {
-            final Map<Extractor.Type, Long> extractorsCountByType = new HashMap<>();
+        FindIterable<BasicDBObject> inputs = dbCollection.find(DBObjectToBson(query)).sort(Sorts.ascending(InputImpl.EMBEDDED_EXTRACTORS));
+        final Map<Extractor.Type, Long> extractorsCountByType = new HashMap<>();
             for (DBObject input : inputs) {
                 final BasicDBList extractors = (BasicDBList) input.get(InputImpl.EMBEDDED_EXTRACTORS);
                 for (Object dbObject : extractors) {
@@ -473,8 +470,8 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
                     }
                 }
             }
-            return extractorsCountByType;
-        }
+        return extractorsCountByType;
+
     }
 
     private void publishChange(Object event) {

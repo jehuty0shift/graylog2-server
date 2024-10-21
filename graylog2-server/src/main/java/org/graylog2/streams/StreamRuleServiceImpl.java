@@ -20,8 +20,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import org.bson.types.ObjectId;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.NotFoundException;
@@ -35,11 +39,7 @@ import org.graylog2.streams.events.StreamsChangedEvent;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class StreamRuleServiceImpl extends PersistedServiceImpl implements StreamRuleService {
@@ -49,7 +49,7 @@ public class StreamRuleServiceImpl extends PersistedServiceImpl implements Strea
     public StreamRuleServiceImpl(MongoConnection mongoConnection,
                                  ClusterEventBus clusterEventBus) {
         super(mongoConnection);
-        collection(StreamRuleImpl.class).createIndex(StreamRuleImpl.FIELD_STREAM_ID);
+        collection(StreamRuleImpl.class).createIndex(Sorts.ascending(StreamRuleImpl.FIELD_STREAM_ID));
         this.clusterEventBus = clusterEventBus;
     }
 
@@ -144,8 +144,7 @@ public class StreamRuleServiceImpl extends PersistedServiceImpl implements Strea
         ObjectId id = new ObjectId(streamId);
         final List<StreamRule> streamRules = new ArrayList<>();
         final List<DBObject> respStreamRules = query(StreamRuleImpl.class,
-                new BasicDBObject(StreamRuleImpl.FIELD_STREAM_ID, id)
-        );
+                Filters.eq(StreamRuleImpl.FIELD_STREAM_ID, id));
 
         for (DBObject streamRule : respStreamRules) {
             streamRules.add(toStreamRule(streamRule));
@@ -161,8 +160,7 @@ public class StreamRuleServiceImpl extends PersistedServiceImpl implements Strea
             .collect(Collectors.toList());
 
         final List<DBObject> respStreamRules = query(StreamRuleImpl.class,
-            new BasicDBObject(StreamRuleImpl.FIELD_STREAM_ID, new BasicDBObject("$in", objectIds))
-        );
+            Filters.in(StreamRuleImpl.FIELD_STREAM_ID, objectIds));
 
         return respStreamRules.stream()
             .map(this::toStreamRule)
@@ -186,13 +184,12 @@ public class StreamRuleServiceImpl extends PersistedServiceImpl implements Strea
     @Override
     public Map<String, Long> streamRuleCountByStream() {
         final ImmutableMap.Builder<String, Long> streamRules = ImmutableMap.builder();
-        try(DBCursor streamIds = collection(StreamImpl.class).find(new BasicDBObject(), new BasicDBObject("_id", 1))) {
-            for (DBObject keys : streamIds) {
-                final ObjectId streamId = (ObjectId) keys.get("_id");
-                streamRules.put(streamId.toHexString(), streamRuleCount(streamId));
-            }
+        AggregateIterable<BasicDBObject> results = collection(StreamImpl.class).aggregate(List.of(Aggregates.group("$stream_id", Accumulators.sum("count",1))));
+        for(BasicDBObject result: results) {
+            ObjectId stream_id = result.getObjectId("_id");
+            int count = result.getInt("count");
+            streamRules.put(stream_id.toHexString(), Long.valueOf(count));
         }
-
         return streamRules.build();
     }
 

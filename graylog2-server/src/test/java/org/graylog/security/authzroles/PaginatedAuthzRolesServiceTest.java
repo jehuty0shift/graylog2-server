@@ -17,6 +17,7 @@
 package org.graylog.security.authzroles;
 
 import com.google.common.collect.ImmutableSet;
+import com.mongodb.client.model.Filters;
 import org.graylog.testing.mongodb.MongoDBExtension;
 import org.graylog.testing.mongodb.MongoDBFixtures;
 import org.graylog.testing.mongodb.MongoDBTestService;
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mongojack.DBQuery;
 
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +68,7 @@ class PaginatedAuthzRolesServiceTest {
         final String archiveManagerRoleId = "58dbaa158ae4923256dc6265";
         final Set<String> roleIds = ImmutableSet.of(testRoleId, readerRoleId, archiveManagerRoleId);
 
-        when(searchQuery.toDBQuery()).thenReturn(DBQuery.empty());
+        when(searchQuery.toDBQuery()).thenReturn(Filters.empty());
 
         final PaginatedList<AuthzRoleDTO> result = service.findPaginatedByIds(
                 searchQuery,
@@ -108,7 +108,7 @@ class PaginatedAuthzRolesServiceTest {
         final String archiveManagerRoleId = "58dbaa158ae4923256dc6265";
         final Set<String> roleIds = ImmutableSet.of(testRoleId, readerRoleId, archiveManagerRoleId);
 
-        when(searchQuery.toDBQuery()).thenReturn(DBQuery.empty());
+        when(searchQuery.toDBQuery()).thenReturn(Filters.empty());
 
         final PaginatedList<AuthzRoleDTO> result = service.findPaginatedByIdsWithFilter(
                 searchQuery,

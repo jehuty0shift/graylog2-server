@@ -1,5 +1,5 @@
 type: specs.openrewrite.org/v1beta/recipe
-name: ReplaceDBQueryAndDBSortWithMongoFiltersAndSorts
+name: org.ovh.mongoDB.ReplaceDBQueryAndDBSortWithMongoFiltersAndSorts
 recipeList:
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: "org.mongojack.DBQuery"

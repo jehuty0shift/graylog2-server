@@ -18,17 +18,23 @@ package org.graylog2.system.activities;
 
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Sorts;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PersistedServiceImpl;
 import org.joda.time.DateTime;
-import org.mongojack.DBSort;
 
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class SystemMessageServiceImpl extends PersistedServiceImpl implements SystemMessageService {
     private static final int PER_PAGE = 30;
@@ -37,20 +43,20 @@ public class SystemMessageServiceImpl extends PersistedServiceImpl implements Sy
     @Inject
     public SystemMessageServiceImpl(MongoConnection mongoConnection) {
         super(mongoConnection);
-        final DBCollection collection = this.collection(SystemMessageImpl.class);
+        final MongoCollection<BasicDBObject> collection = this.collection(SystemMessageImpl.class);
         if (!collectionTimestampIndexExists(collection)) {
-            collection.createIndex(DBSort.desc(TIMESTAMP_KEY), new BasicDBObject().append("background",1));
+            collection.createIndex(Sorts.descending(TIMESTAMP_KEY), new IndexOptions().background(true));
         }
     }
 
-    private boolean collectionTimestampIndexExists(DBCollection collection) {
-        List<DBObject> mongoIndices = collection.getIndexInfo();
+    private boolean collectionTimestampIndexExists(MongoCollection<BasicDBObject> collection) {
+        List<Document> mongoIndices = StreamSupport.stream(collection.listIndexes().spliterator(), false).collect(Collectors.toList());
         if (mongoIndices.isEmpty()) {
             return false;
         }
 
-        for (DBObject index: mongoIndices) {
-            if (index.containsField("name") && index.get("name").toString().contains(TIMESTAMP_KEY)) {
+        for (Document index: mongoIndices) {
+            if (index.containsKey("name") && index.get("name").toString().contains(TIMESTAMP_KEY)) {
                 return true;
             }
         }
@@ -75,9 +81,9 @@ public class SystemMessageServiceImpl extends PersistedServiceImpl implements Sy
 
     @Override
     public long destroySince(DateTime since) {
-        final BasicDBObject query = new BasicDBObject(TIMESTAMP_KEY, new BasicDBObject("$lte", since.toDate()));
+        final Bson query = Filters.lte(TIMESTAMP_KEY,  since.toDate());
 
-        return this.collection(SystemMessageImpl.class).remove(query).getN();
+        return (int)this.collection(SystemMessageImpl.class).deleteMany(query).getDeletedCount();
     }
 
     @Override

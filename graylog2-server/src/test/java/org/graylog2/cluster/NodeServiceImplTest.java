@@ -16,7 +16,8 @@
  */
 package org.graylog2.cluster;
 
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
 import org.graylog.testing.mongodb.MongoDBFixtures;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.Configuration;
@@ -88,9 +89,9 @@ public class NodeServiceImplTest {
         nodeService.registerServer(nodeId.toString(), true, TRANSPORT_URI, LOCAL_CANONICAL_HOSTNAME);
 
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongodb.mongoConnection().getDatabase().getCollection("nodes");
+        final MongoCollection<Document> collection = mongodb.mongoConnection().getMongoDatabase().getCollection("nodes");
 
-        assertThat(collection.count())
+        assertThat(collection.countDocuments())
                 .describedAs("There should only be one node")
                 .isEqualTo(1);
 

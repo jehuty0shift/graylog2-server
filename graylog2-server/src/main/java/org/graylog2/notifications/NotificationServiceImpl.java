@@ -19,6 +19,8 @@ package org.graylog2.notifications;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import org.bson.types.ObjectId;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditEventSender;
@@ -51,7 +53,7 @@ public class NotificationServiceImpl extends PersistedServiceImpl implements Not
         super(mongoConnection);
         this.nodeId = checkNotNull(nodeId);
         this.auditEventSender = auditEventSender;
-        collection(NotificationImpl.class).createIndex(NotificationImpl.FIELD_TYPE);
+        collection(NotificationImpl.class).createIndex(Sorts.ascending(NotificationImpl.FIELD_TYPE));
     }
 
     @Override
@@ -89,7 +91,7 @@ public class NotificationServiceImpl extends PersistedServiceImpl implements Not
 
     @Override
     public boolean isFirst(NotificationImpl.Type type) {
-        return findOne(NotificationImpl.class, new BasicDBObject(NotificationImpl.FIELD_TYPE, type.toString().toLowerCase(Locale.ENGLISH))) == null;
+        return findOne(NotificationImpl.class, Filters.eq(NotificationImpl.FIELD_TYPE, type.toString().toLowerCase(Locale.ENGLISH))) == null;
     }
 
     @Override

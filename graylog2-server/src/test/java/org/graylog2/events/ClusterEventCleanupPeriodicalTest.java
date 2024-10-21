@@ -17,9 +17,9 @@
 package org.graylog2.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -67,27 +67,27 @@ public class ClusterEventCleanupPeriodicalTest {
     }
 
     @Test
-    public void testDoRun() throws Exception {
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(ClusterEventPeriodical.COLLECTION_NAME);
+    public void testDoRun() {
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(ClusterEventPeriodical.COLLECTION_NAME, BasicDBObject.class);
         assertThat(insertEvent(collection, 0L)).isTrue();
         assertThat(insertEvent(collection, TIME.getMillis())).isTrue();
         assertThat(insertEvent(collection, TIME.minus(ClusterEventCleanupPeriodical.DEFAULT_MAX_EVENT_AGE).getMillis())).isTrue();
         assertThat(insertEvent(collection, TIME.minus(2 * ClusterEventCleanupPeriodical.DEFAULT_MAX_EVENT_AGE).getMillis())).isTrue();
-        assertThat(collection.count()).isEqualTo(4L);
+        assertThat(collection.countDocuments()).isEqualTo(4L);
 
         clusterEventCleanupPeriodical.run();
 
-        assertThat(collection.count()).isEqualTo(2L);
+        assertThat(collection.countDocuments()).isEqualTo(2L);
     }
 
-    private boolean insertEvent(DBCollection collection, long timestamp) {
-        DBObject event = new BasicDBObjectBuilder()
+    private boolean insertEvent(MongoCollection<BasicDBObject> collection, long timestamp) {
+        BasicDBObject event = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("timestamp", timestamp)
                 .add("producer", "TEST-PRODUCER")
                 .add("consumers", Collections.emptyList())
                 .add("event_class", String.class.getCanonicalName())
                 .add("payload", "Test" + timestamp)
                 .get();
-        return collection.save(event).wasAcknowledged();
+        return collection.insertOne(event).wasAcknowledged();
     }
 }

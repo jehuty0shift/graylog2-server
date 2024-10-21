@@ -20,9 +20,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
+import com.mongodb.client.model.Filters;
 import org.apache.shiro.authz.permission.WildcardPermission;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog.grn.GRN;
 import org.graylog.grn.GRNRegistry;
@@ -218,9 +221,9 @@ public class UserServiceImplTest {
         user.setPermissions(Collections.<String>emptyList());
 
         final String id = userService.save(user);
-        final DBObject query = BasicDBObjectBuilder.start("_id", new ObjectId(id)).get();
+        final Bson query = Filters.eq("_id", new ObjectId(id));
         @SuppressWarnings("deprecation")
-        final DBObject dbObject = mongoConnection.getDatabase().getCollection(UserImpl.COLLECTION_NAME).findOne(query);
+        final DBObject dbObject = mongoConnection.getMongoDatabase().getCollection(UserImpl.COLLECTION_NAME, BasicDBObject.class).find(query).first();
         assertThat(dbObject.get("username")).isEqualTo("test");
         assertThat(dbObject.get("full_name")).isEqualTo("TEST");
         assertThat(dbObject.get("email")).isEqualTo("test@example.com");

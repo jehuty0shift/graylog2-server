@@ -22,11 +22,6 @@ import com.github.joschi.jadconfig.ValidatorMethod;
 import com.github.joschi.jadconfig.validators.PositiveIntegerValidator;
 import com.github.joschi.jadconfig.validators.StringNotBlankValidator;
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoClients;
-import com.mongodb.connection.TransportSettings;
 
 public class MongoDbConfiguration {
     @Parameter(value = "mongodb_max_connections", validator = PositiveIntegerValidator.class)

@@ -19,28 +19,18 @@ package org.graylog2.rest.resources.system.lookup;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import com.mongodb.DuplicateKeyException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import com.mongodb.client.model.Sorts;
+import io.swagger.annotations.*;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.bson.conversions.Bson;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.audit.jersey.AuditEvent;
 import org.graylog2.audit.jersey.NoAuditEvent;
 import org.graylog2.database.PaginatedList;
-import org.graylog2.lookup.CachePurge;
-import org.graylog2.lookup.LookupDefaultMultiValue;
-import org.graylog2.lookup.LookupDefaultSingleValue;
-import org.graylog2.lookup.LookupTable;
-import org.graylog2.lookup.LookupTableService;
+import org.graylog2.lookup.*;
 import org.graylog2.lookup.adapters.LookupDataAdapterValidationContext;
 import org.graylog2.lookup.db.DBCacheService;
 import org.graylog2.lookup.db.DBDataAdapterService;
@@ -52,42 +42,19 @@ import org.graylog2.plugin.lookup.LookupCache;
 import org.graylog2.plugin.lookup.LookupDataAdapter;
 import org.graylog2.plugin.lookup.LookupResult;
 import org.graylog2.plugin.rest.ValidationResult;
-import org.graylog2.rest.models.system.lookup.CacheApi;
-import org.graylog2.rest.models.system.lookup.DataAdapterApi;
-import org.graylog2.rest.models.system.lookup.ErrorStates;
-import org.graylog2.rest.models.system.lookup.ErrorStatesRequest;
-import org.graylog2.rest.models.system.lookup.LookupTableApi;
+import org.graylog2.rest.models.system.lookup.*;
 import org.graylog2.search.SearchQuery;
 import org.graylog2.search.SearchQueryField;
 import org.graylog2.search.SearchQueryParser;
 import org.graylog2.shared.rest.resources.RestResource;
 import org.graylog2.shared.security.RestPermissions;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import javax.ws.rs.*;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -245,16 +212,16 @@ public class LookupTableResource extends RestResource {
         if (!LUT_ALLOWABLE_SORT_FIELDS.contains(sort.toLowerCase(Locale.ENGLISH))) {
             sort = LookupTableDto.FIELD_TITLE;
         }
-        DBSort.SortBuilder sortBuilder;
+        Bson sortBuilder;
         if ("desc".equalsIgnoreCase(order)) {
-            sortBuilder = DBSort.desc(sort);
+            sortBuilder = Sorts.descending(sort);
         } else {
-            sortBuilder = DBSort.asc(sort);
+            sortBuilder = Sorts.ascending(sort);
         }
 
         try {
             final SearchQuery searchQuery = lutSearchQueryParser.parse(query);
-            final DBQuery.Query dbQuery = searchQuery.toDBQuery();
+            final Bson dbQuery = searchQuery.toDBQuery();
 
             PaginatedList<LookupTableDto> paginated = dbTableService.findPaginated(dbQuery, sortBuilder, page, perPage);
 
@@ -441,16 +408,16 @@ public class LookupTableResource extends RestResource {
         if (!ADAPTER_ALLOWABLE_SORT_FIELDS.contains(sort.toLowerCase(Locale.ENGLISH))) {
             sort = DataAdapterDto.FIELD_TITLE;
         }
-        DBSort.SortBuilder sortBuilder;
+        Bson sortBuilder;
         if ("desc".equalsIgnoreCase(order)) {
-            sortBuilder = DBSort.desc(sort);
+            sortBuilder = Sorts.descending(sort);
         } else {
-            sortBuilder = DBSort.asc(sort);
+            sortBuilder = Sorts.ascending(sort);
         }
 
         try {
             final SearchQuery searchQuery = adapterSearchQueryParser.parse(query);
-            final DBQuery.Query dbQuery = searchQuery.toDBQuery();
+            final Bson dbQuery = searchQuery.toDBQuery();
 
             PaginatedList<DataAdapterDto> paginated = dbDataAdapterService.findPaginated(dbQuery, sortBuilder, page, perPage);
             return new DataAdapterPage(query,
@@ -644,16 +611,16 @@ public class LookupTableResource extends RestResource {
         if (!CACHE_ALLOWABLE_SORT_FIELDS.contains(sort.toLowerCase(Locale.ENGLISH))) {
             sort = CacheDto.FIELD_TITLE;
         }
-        DBSort.SortBuilder sortBuilder;
+        Bson sortBuilder;
         if ("desc".equalsIgnoreCase(order)) {
-            sortBuilder = DBSort.desc(sort);
+            sortBuilder = Sorts.descending(sort);
         } else {
-            sortBuilder = DBSort.asc(sort);
+            sortBuilder = Sorts.ascending(sort);
         }
 
         try {
             final SearchQuery searchQuery = cacheSearchQueryParser.parse(query);
-            final DBQuery.Query dbQuery = searchQuery.toDBQuery();
+            final Bson dbQuery = searchQuery.toDBQuery();
 
 
             PaginatedList<CacheDto> paginated = dbCacheService.findPaginated(dbQuery, sortBuilder, page, perPage);

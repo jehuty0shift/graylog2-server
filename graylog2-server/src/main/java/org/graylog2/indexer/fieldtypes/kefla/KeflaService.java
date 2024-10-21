@@ -1,6 +1,6 @@
 package org.graylog2.indexer.fieldtypes.kefla;
 
-import com.mongodb.MongoClient;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -36,7 +35,7 @@ public class KeflaService {
     @Inject
     public KeflaService(MongoConnection mongoConnection) {
 
-        CodecRegistry cRegistry = CodecRegistries.fromRegistries(CodecRegistries.fromProviders(new KeflaCodecProvider()), MongoClient.getDefaultCodecRegistry());
+        CodecRegistry cRegistry = CodecRegistries.fromRegistries(CodecRegistries.fromProviders(new KeflaCodecProvider()), MongoClientSettings.getDefaultCodecRegistry());
         kIMCollection = checkNotNull(mongoConnection).getMongoDatabase()
                 .getCollection(KEFLA_MASTER_MAPPINGS)
                 .withWriteConcern(WriteConcern.JOURNALED)
@@ -83,7 +82,7 @@ public class KeflaService {
     public Map<String, KIndexMapping> getKeflaFieldList(Collection<String> streamIds) {
         List<KIndexMapping> kIMList = new ArrayList<>();
         DateTime dt = DateTime.now(DateTimeZone.UTC);
-        LOG.info("trying to find fields for streamIds {} at {}", streamIds, dt.toString());
+        LOG.info("trying to find fields for streamIds {} at {}", streamIds, dt);
         if (kIMCollection.countDocuments() > 2000) {
             kIMCollection.find(Filters.in("stream_fields.stream_id", streamIds)).batchSize(2000).into(kIMList);
         } else {
