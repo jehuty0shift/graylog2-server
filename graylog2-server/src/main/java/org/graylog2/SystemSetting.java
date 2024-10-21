@@ -17,9 +17,10 @@
 package org.graylog2;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PersistedServiceImpl;
 
@@ -27,43 +28,44 @@ import org.graylog2.database.PersistedServiceImpl;
  *  @author Lennart Koopmann <lennart@socketfeed.com>
  */
 public class SystemSetting extends PersistedServiceImpl {
-    
+
     private static final String COLLECTION_NAME = "system_settings";
 
     public SystemSetting(MongoConnection mongoConnection) {
         super(mongoConnection);
     }
-    
+
     public boolean getBoolean(String key) {
-        DBCollection coll = getCollection();
-        
-        DBObject query = new BasicDBObject();
-        query.put("key", key);
-        
-        DBObject result = coll.findOne(query);
+        MongoCollection<Document> coll = getCollection();
+
+        Bson query = Filters.eq("key", key);
+
+        Document result = coll.find(query).limit(1).first();
         if (result == null) {
             return false;
         }
-        
-        if (result.get("value").equals(true)) {
+
+        if (result.getBoolean("value", false)) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     public BasicDBList getList(String key) {
-        DBCollection coll = getCollection();
-        DBObject query = new BasicDBObject();
-        query.put("key", key);
+        MongoCollection<Document> coll = getCollection();
+        Bson query = Filters.eq("key", key);
 
-        DBObject result = coll.findOne(query);
+        Document result = coll.find(query).limit(1).first();
+        if (result == null) {
+            return new BasicDBList();
+        }
 
-        return (BasicDBList) result.get("value");
+        return new BasicDBList();
     }
 
-    private DBCollection getCollection() {
-        return mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
+    private MongoCollection<Document> getCollection() {
+        return mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME);
     }
-    
+
 }

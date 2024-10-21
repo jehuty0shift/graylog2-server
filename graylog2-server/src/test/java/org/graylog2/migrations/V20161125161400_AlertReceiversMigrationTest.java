@@ -19,15 +19,13 @@ package org.graylog2.migrations;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.WriteResult;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.BsonObjectId;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.graylog2.alarmcallbacks.AlarmCallbackConfiguration;
-import org.graylog2.alarmcallbacks.AlarmCallbackConfigurationImpl;
-import org.graylog2.alarmcallbacks.AlarmCallbackConfigurationService;
-import org.graylog2.alarmcallbacks.EmailAlarmCallback;
-import org.graylog2.alarmcallbacks.HTTPAlarmCallback;
+import org.graylog2.alarmcallbacks.*;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.alarms.AlertCondition;
 import org.graylog2.plugin.cluster.ClusterConfigService;
@@ -42,21 +40,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class V20161125161400_AlertReceiversMigrationTest {
     @Rule
@@ -74,14 +63,14 @@ public class V20161125161400_AlertReceiversMigrationTest {
     private AlarmCallbackConfigurationService alarmCallbackConfigurationService;
 
     @Mock
-    private DBCollection dbCollection;
+    private MongoCollection dbCollection;
 
     @Before
     @SuppressWarnings("deprecation")
     public void setUp() throws Exception {
         final MongoConnection mongoConnection = mock(MongoConnection.class);
-        final DB database = mock(DB.class);
-        when(mongoConnection.getDatabase()).thenReturn(database);
+        final MongoDatabase database = mock(MongoDatabase.class);
+        when(mongoConnection.getMongoDatabase()).thenReturn(database);
 
         when(database.getCollection(eq("streams"))).thenReturn(dbCollection);
 
@@ -98,8 +87,12 @@ public class V20161125161400_AlertReceiversMigrationTest {
         this.alertReceiversMigration.upgrade();
 
         verify(this.alarmCallbackConfigurationService, never()).getForStream(any());
-        verify(this.dbCollection, never()).update(any(), any());
+        verify(this.dbCollection, never()).updateOne(any(), (Bson) any());
         verifyMigrationCompletedWasPosted();
+    }
+
+    private UpdateResult buildUpdateResult(int modifiedCount, int matchedCount,  String objectId) {
+        return UpdateResult.acknowledged(modifiedCount,(long)matchedCount, new BsonObjectId(new ObjectId(objectId)));
     }
 
     @Test
@@ -118,7 +111,7 @@ public class V20161125161400_AlertReceiversMigrationTest {
         verify(this.streamService, never()).getAlertConditions(any());
         verify(this.alarmCallbackConfigurationService, never()).getForStream(any());
         verify(this.alarmCallbackConfigurationService, never()).save(any());
-        verify(this.dbCollection, never()).update(any(), any());
+        verify(this.dbCollection, never()).updateOne(any(), (Bson) any());
         verifyMigrationCompletedWasPosted();
     }
 
@@ -151,8 +144,7 @@ public class V20161125161400_AlertReceiversMigrationTest {
         when(alarmCallbackConfigurationService.getForStream(eq(stream2))).thenReturn(ImmutableList.of(alarmCallback));
         when(alarmCallbackConfigurationService.save(eq(alarmCallback))).thenReturn(alarmCallbackId);
 
-        when(this.dbCollection.update(any(BasicDBObject.class), any(BasicDBObject.class))).thenReturn(new WriteResult(1, true, matchingStreamId));
-
+        when(this.dbCollection.updateOne(any(BasicDBObject.class), any(BasicDBObject.class))).thenReturn(UpdateResult.acknowledged(1, 1L, new BsonObjectId(new ObjectId(matchingStreamId))));
         this.alertReceiversMigration.upgrade();
 
         final ArgumentCaptor<AlarmCallbackConfiguration> configurationArgumentCaptor = ArgumentCaptor.forClass(AlarmCallbackConfiguration.class);
@@ -167,7 +159,7 @@ public class V20161125161400_AlertReceiversMigrationTest {
 
         final ArgumentCaptor<BasicDBObject> queryCaptor = ArgumentCaptor.forClass(BasicDBObject.class);
         final ArgumentCaptor<BasicDBObject> updateCaptor = ArgumentCaptor.forClass(BasicDBObject.class);
-        verify(this.dbCollection, times(1)).update(queryCaptor.capture(), updateCaptor.capture());
+        verify(this.dbCollection, times(1)).updateOne(queryCaptor.capture(), updateCaptor.capture());
         assertThat(queryCaptor.getValue().toJson()).isEqualTo("{\"_id\": {\"$oid\": \"" + matchingStreamId + "\"}}");
         assertThat(updateCaptor.getValue().toJson()).isEqualTo("{\"$unset\": {\"" + StreamImpl.FIELD_ALERT_RECEIVERS + "\": \"\"}}");
 
@@ -249,8 +241,8 @@ public class V20161125161400_AlertReceiversMigrationTest {
         when(alarmCallbackConfigurationService.save(eq(alarmCallback3))).thenReturn(alarmCallbackId3);
 
 
-        when(this.dbCollection.update(any(BasicDBObject.class), any(BasicDBObject.class))).thenReturn(new WriteResult(1, true, matchingStreamId1));
-        when(this.dbCollection.update(any(BasicDBObject.class), any(BasicDBObject.class))).thenReturn(new WriteResult(1, true, matchingStreamId2));
+        when(this.dbCollection.updateOne(any(BasicDBObject.class), any(BasicDBObject.class))).thenReturn(buildUpdateResult(1, 1, matchingStreamId1));
+        when(this.dbCollection.updateOne(any(BasicDBObject.class), any(BasicDBObject.class))).thenReturn(buildUpdateResult(1, 1, matchingStreamId2));
 
         this.alertReceiversMigration.upgrade();
 
@@ -282,7 +274,7 @@ public class V20161125161400_AlertReceiversMigrationTest {
 
         final ArgumentCaptor<BasicDBObject> queryCaptor = ArgumentCaptor.forClass(BasicDBObject.class);
         final ArgumentCaptor<BasicDBObject> updateCaptor = ArgumentCaptor.forClass(BasicDBObject.class);
-        verify(this.dbCollection, times(2)).update(queryCaptor.capture(), updateCaptor.capture());
+        verify(this.dbCollection, times(2)).updateOne(queryCaptor.capture(), updateCaptor.capture());
         final List<BasicDBObject> queries = queryCaptor.getAllValues();
         for (BasicDBObject query : queries) {
             final String streamId = (queries.indexOf(query) == 0 ? matchingStreamId1 : matchingStreamId2);

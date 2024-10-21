@@ -22,6 +22,7 @@ import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.plugin.database.EmbeddedPersistable;
 import org.graylog2.plugin.database.Persisted;
@@ -64,7 +65,15 @@ public class PersistedServiceImpl implements PersistedService {
         return collection.find(new BasicDBObject(query.toMap())).into(new ArrayList<>());
     }
 
+    protected List<DBObject> query(Bson query, MongoCollection<BasicDBObject> collection) {
+        return collection.find(query).into(new ArrayList<>());
+    }
+
     protected <T extends Persisted> List<DBObject> query(Class<T> modelClass, DBObject query) {
+        return query(query, collection(modelClass));
+    }
+
+    protected <T extends Persisted> List<DBObject> query(Class<T> modelClass, Bson query) {
         return query(query, collection(modelClass));
     }
 
@@ -113,6 +122,10 @@ public class PersistedServiceImpl implements PersistedService {
 
     protected <T extends Persisted> DBObject findOne(Class<T> model, DBObject query) {
         return collection(model).find(DBObjectToBson(query)).first();
+    }
+
+    protected <T extends Persisted> DBObject findOne(Class<T> model, Bson query) {
+        return collection(model).find(query).first();
     }
 
     protected <T extends Persisted> DBObject findOne(Class<T> model, DBObject query, DBObject sort) {

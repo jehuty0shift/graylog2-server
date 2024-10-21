@@ -1,6 +1,6 @@
 package org.graylog2.indexer.fieldtypes.kefla.codec;
 
-import com.mongodb.MongoClient;
+import com.mongodb.MongoClientSettings;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
@@ -32,7 +32,7 @@ public class KIndexMappingCodec implements Codec<KIndexMapping> {
     private Codec<Document> documentCodec;
 
     public KIndexMappingCodec() {
-        CodecRegistry cRegistry = CodecRegistries.fromRegistries(CodecRegistries.fromProviders(new KeflaCodecProvider()), MongoClient.getDefaultCodecRegistry());
+        CodecRegistry cRegistry = CodecRegistries.fromRegistries(CodecRegistries.fromProviders(new KeflaCodecProvider()), MongoClientSettings.getDefaultCodecRegistry());
         documentCodec = new DocumentCodec(cRegistry);
     }
 

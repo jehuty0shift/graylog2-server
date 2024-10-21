@@ -743,6 +743,11 @@
                 <groupId>org.openrewrite.maven</groupId>
                 <artifactId>rewrite-maven-plugin</artifactId>
                 <version>5.42.0</version>
+                <configuration>
+                    <activeRecipes>
+                        <recipe>org.ovh.mongoDB.ReplaceDBQueryAndDBSortWithMongoFiltersAndSorts</recipe>
+                    </activeRecipes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
