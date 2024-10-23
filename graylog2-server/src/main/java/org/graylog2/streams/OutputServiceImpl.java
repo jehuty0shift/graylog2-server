@@ -19,9 +19,7 @@ package org.graylog2.streams;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.*;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.UuidRepresentation;
@@ -108,7 +106,7 @@ public class OutputServiceImpl implements OutputService {
             updates.add(Updates.set(fields.getKey(), fields.getValue()));
         }
 
-        return coll.findOneAndUpdate(Filters.eq(OutputImpl.FIELD_ID, new ObjectId(id)), updates, new FindOneAndUpdateOptions().upsert(false));
+        return coll.findOneAndUpdate(Filters.eq(OutputImpl.FIELD_ID, new ObjectId(id)), Updates.combine(updates), new FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER).upsert(false));
     }
 
     @Override
@@ -119,7 +117,7 @@ public class OutputServiceImpl implements OutputService {
     @Override
     public Map<String, Long> countByType() {
         final Map<String, Long> outputsCountByType = new HashMap<>();
-        FindIterable<Document> outputTypes = dbCollection.find(new BasicDBObject(OutputImpl.FIELD_TYPE, 1));
+        FindIterable<Document> outputTypes = dbCollection.find(Filters.empty());
         for (Document outputType : outputTypes) {
                 final String type = (String) outputType.get(OutputImpl.FIELD_TYPE);
                 if (type != null) {

@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -65,11 +65,11 @@ public abstract class PaginatedDbService<DTO> {
                                  Class<DTO> dtoClass,
                                  String collectionName,
                                  Class<?> view) {
-        JacksonMongoCollection.JacksonMongoCollectionBuilder jackSonBuilder =JacksonMongoCollection.builder().withObjectMapper(mapper.get());
+        JacksonMongoCollection.JacksonMongoCollectionBuilder jackSonBuilder = JacksonMongoCollection.builder().withObjectMapper(mapper.get());
         if (view != null) {
             jackSonBuilder = jackSonBuilder.withView(view);
         }
-        this.db = jackSonBuilder.build(mongoConnection.getMongoDatabase(),collectionName,dtoClass, UuidRepresentation.STANDARD);
+        this.db = jackSonBuilder.build(mongoConnection.getMongoDatabase(), collectionName, dtoClass, UuidRepresentation.STANDARD);
     }
 
     /**
@@ -91,7 +91,13 @@ public abstract class PaginatedDbService<DTO> {
     public DTO save(DTO dto) {
         final UpdateResult save = db.save(dto);
         if (save.wasAcknowledged()) {
-            return db.find(Filters.eq("_id", save.getUpsertedId().asObjectId())).first();
+            if (save.getUpsertedId() != null) {
+                return db.find(Filters.eq("_id", save.getUpsertedId().asObjectId())).first();
+            } else if (save.getModifiedCount() == 1) {
+                return dto;
+            } else {
+                throw new MongoException("Object does not exist and no upsert has been made");
+            }
         } else {
             throw new MongoException("Cannot find saved object");
         }
@@ -104,7 +110,7 @@ public abstract class PaginatedDbService<DTO> {
      * @return the number of deleted documents
      */
     public int delete(String id) {
-        return (int)db.removeById(new ObjectId(id)).getDeletedCount();
+        return (int) db.removeById(new ObjectId(id)).getDeletedCount();
     }
 
     /**
@@ -120,14 +126,14 @@ public abstract class PaginatedDbService<DTO> {
      * @return the paginated list
      */
     protected PaginatedList<DTO> findPaginatedWithQueryAndSort(Bson query, Bson sort, int page, int perPage) {
-            FindIterable<DTO> cursor = db.find(query)
-                    .sort(sort)
-                    .limit(perPage)
-                    .skip(perPage * Math.max(0, page - 1));
-            final long grandTotal = db.countDocuments();
-            List<DTO> elements = cursor.into(new ArrayList<>());
+        FindIterable<DTO> cursor = db.find(query)
+                .sort(sort)
+                .limit(perPage)
+                .skip(perPage * Math.max(0, page - 1));
+        final long grandTotal = db.countDocuments();
+        List<DTO> elements = cursor.into(new ArrayList<>());
 
-            return new PaginatedList<>(Collections.unmodifiableList(elements), elements.size(), page, perPage, grandTotal);
+        return new PaginatedList<>(Collections.unmodifiableList(elements), elements.size(), page, perPage, grandTotal);
     }
 
     protected ImmutableList<DTO> asImmutableList(Iterator<? extends DTO> cursor) {

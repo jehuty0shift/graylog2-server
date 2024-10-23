@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -201,6 +202,8 @@ public class CEFCodecFixturesTest {
                     assertFieldContent.isEqualTo(((Number) extensions.get(extension.getKey())).doubleValue());
                 } else if (fieldContent instanceof DateTime) {
                     assertFieldContent.isEqualTo(DateTime.parse((String) extensions.get(extension.getKey())));
+                } else if (fieldContent instanceof Instant) {
+                    assertFieldContent.isEqualTo(Instant.parse((String) extension.getValue()));
                 } else {
                     assertFieldContent.isEqualTo(extensions.get(extension.getKey()));
                 }

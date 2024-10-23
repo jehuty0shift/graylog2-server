@@ -39,6 +39,6 @@ public class VersionDeserializer extends StdDeserializer<Version> {
             case JsonTokenId.ID_NUMBER_INT:
                 return Version.forIntegers(p.getIntValue());
         }
-        throw ctxt.wrongTokenException(p, JsonToken.VALUE_STRING, "expected String or Number");
+        throw ctxt.wrongTokenException(p, JsonToken.VALUE_STRING.getClass(),p.currentToken(), "expected String or Number");
     }
 }
