@@ -20,10 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndUpdateOptions;
-import com.mongodb.client.model.Sorts;
-import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.*;
 import com.mongodb.client.result.InsertOneResult;
 import one.util.streamex.StreamEx;
 import org.bson.UuidRepresentation;
@@ -314,7 +311,7 @@ public class DBJobTriggerService {
         // Atomically update, lock and return the next runnable trigger
         final JobTriggerDto trigger = db.findOneAndUpdate(
                 query,
-                lockUpdate, new FindOneAndUpdateOptions().sort(sort));
+                lockUpdate, new FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER).sort(sort));
 
         return Optional.ofNullable(trigger);
     }

@@ -32,7 +32,7 @@ import java.util.Locale;
  * Creates an OpenLDAP server container configured with users and (nested) groups.
  */
 public class OpenLDAPContainer extends GenericContainer<OpenLDAPContainer> {
-    private static final String IMAGE_NAME = "osixia/openldap:1.4.0";
+    private static final String IMAGE_NAME = "osixia/openldap:1.5.0";
     private static final String CONTAINER_CERTS_PATH = "/container/service/slapd/assets/certs";
     private static final int PORT = 389;
     private static final int TLS_PORT = 636;

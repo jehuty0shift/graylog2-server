@@ -47,10 +47,10 @@ public class SemverDeserializer extends StdDeserializer<Semver> {
                 try {
                     return buildSemver(str);
                 } catch (SemverException e) {
-                    ctxt.reportMappingException(e.getMessage());
+                    ctxt.reportInputMismatch(Semver.class, e.getMessage());
                 }
             default:
-                throw ctxt.wrongTokenException(p, JsonToken.VALUE_STRING, "expected String or Number");
+                throw ctxt.wrongTokenException(p, JsonToken.VALUE_STRING.getClass(), p.currentToken(), "expected String or Number");
         }
     }
 

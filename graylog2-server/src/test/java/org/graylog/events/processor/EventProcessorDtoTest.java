@@ -44,7 +44,7 @@ public class EventProcessorDtoTest {
                 .title("Test")
                 .description("Test")
                 .priority(1)
-                .config(new EventProcessorConfig.FallbackConfig())
+                .config(new EventProcessorFallbackConfig())
                 .keySpec(ImmutableList.of())
                 .alert(false)
                 .notificationSettings(EventNotificationSettings.withGracePeriod(60000))

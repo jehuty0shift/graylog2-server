@@ -128,7 +128,7 @@ public class CEFCodec implements Codec {
             final MappedMessage cef = new MappedMessage(parser.parse(s, timezone.toTimeZone(), locale), useFullNames);
 
             // Build standard message.
-            Message result = new Message(buildMessageSummary(cef), decideSource(cef, rawMessage), cef.timestamp().toInstant());
+            Message result = new Message(buildMessageSummary(cef), decideSource(cef, rawMessage), cef.timestamp()!=null?cef.timestamp().toInstant():rawMessage.getTimestamp().toDate().toInstant());
 
             // Add all extensions.
             result.addFields(cef.mappedExtensions());

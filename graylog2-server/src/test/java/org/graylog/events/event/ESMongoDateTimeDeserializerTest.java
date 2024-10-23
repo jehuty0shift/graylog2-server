@@ -62,7 +62,7 @@ public class ESMongoDateTimeDeserializerTest {
     @Test
     @MongoDBFixtures("DateTime.json")
     public void deserializeMongoDateTime() throws Exception {
-        final JacksonMongoCollection<DTO> db = JacksonMongoCollection.builder().build(mongodb.mongoConnection().getMongoDatabase(),"date_collection", DTO.class, UuidRepresentation.STANDARD);
+        final JacksonMongoCollection<DTO> db = JacksonMongoCollection.builder().withObjectMapper(objectMapper).build(mongodb.mongoConnection().getMongoDatabase(),"date_collection", DTO.class, UuidRepresentation.STANDARD);
 
         final DTO value = db.findOne();
         assertThat(value.dateTime).isEqualTo(new DateTime(2019, 1, 13, 14, 0, DateTimeZone.UTC));
@@ -71,7 +71,7 @@ public class ESMongoDateTimeDeserializerTest {
     private static class DTO {
         @Id
         @ObjectId
-        @JsonProperty
+        @JsonProperty("_id")
         String id;
 
         @JsonProperty

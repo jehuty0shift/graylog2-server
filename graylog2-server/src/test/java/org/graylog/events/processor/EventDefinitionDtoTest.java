@@ -63,7 +63,7 @@ public class EventDefinitionDtoTest {
     @Test
     public void testValidateWithEmptyConfigType() {
         final EventDefinitionDto invalidEventDefinition = testSubject.toBuilder()
-            .config(new EventProcessorConfig.FallbackConfig())
+            .config(new EventProcessorFallbackConfig())
             .build();
         final ValidationResult validationResult = invalidEventDefinition.validate();
         assertThat(validationResult.failed()).isTrue();

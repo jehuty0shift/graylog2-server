@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.Graph;
+import org.graylog.events.TestEventProcessorConfig;
 import org.graylog.events.conditions.Expr;
 import org.graylog.events.contentpack.entities.AggregationEventProcessorConfigEntity;
 import org.graylog.events.contentpack.entities.EventDefinitionEntity;
@@ -34,10 +35,7 @@ import org.graylog.events.fields.providers.TemplateFieldValueProvider;
 import org.graylog.events.notifications.EventNotificationSettings;
 import org.graylog.events.notifications.NotificationDto;
 import org.graylog.events.notifications.types.HTTPEventNotificationConfig;
-import org.graylog.events.processor.DBEventDefinitionService;
-import org.graylog.events.processor.DBEventProcessorStateService;
-import org.graylog.events.processor.EventDefinitionDto;
-import org.graylog.events.processor.EventDefinitionHandler;
+import org.graylog.events.processor.*;
 import org.graylog.events.processor.aggregation.AggregationConditions;
 import org.graylog.events.processor.aggregation.AggregationEventProcessorConfig;
 import org.graylog.events.processor.aggregation.AggregationFunction;
@@ -125,6 +123,8 @@ public class EventDefinitionFacadeTest {
     @SuppressForbidden("Using Executors.newSingleThreadExecutor() is okay in tests")
     public void setUp() throws Exception {
         objectMapper.registerSubtypes(
+                EventProcessorFallbackConfig.class,
+                TestEventProcessorConfig.class,
                 AggregationEventProcessorConfig.class,
                 PersistToStreamsStorageHandler.Config.class,
                 TemplateFieldValueProvider.Config.class,

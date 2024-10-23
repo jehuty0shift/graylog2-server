@@ -49,12 +49,12 @@ public class AsValueReferenceTypeDeserializer extends AsWrapperTypeDeserializer 
         final TreeNode typeNode = treeNode.path("type");
         if (!typeNode.isObject()) {
 
-            ctxt.reportWrongTokenException(typeNode.traverse(), JsonToken.START_OBJECT, "expected START_OBJECT before the type information and deserialized value");
+            ctxt.reportInputMismatch(TreeNode.class, "expected START_OBJECT before the type information and deserialized value");
         }
 
         final TreeNode valueNode = typeNode.path("@value");
         if (!valueNode.isValueNode()) {
-            ctxt.reportWrongTokenException(typeNode.traverse(), JsonToken.VALUE_STRING, "expected VALUE_STRING as type information and deserialized value");
+            ctxt.reportInputMismatch(TreeNode.class, "expected VALUE_STRING as type information and deserialized value");
         }
 
         final JsonParser jsonParser = valueNode.traverse();
@@ -63,7 +63,7 @@ public class AsValueReferenceTypeDeserializer extends AsWrapperTypeDeserializer 
 
         final JsonParser newParser = treeNode.traverse();
         if (newParser.nextToken() != JsonToken.START_OBJECT) {
-            ctxt.reportWrongTokenException(newParser, JsonToken.START_OBJECT, "expected START_OBJECT");
+            ctxt.reportInputMismatch(TreeNode.class,"expected START_OBJECT");
         }
         return deser.deserialize(newParser, ctxt);
     }
