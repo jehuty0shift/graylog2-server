@@ -18,6 +18,7 @@ package org.graylog.events;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import org.graylog.events.contentpack.entities.EventProcessorConfigEntity;
@@ -36,6 +37,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @AutoValue
+@JsonTypeName(TestEventProcessorConfig.TYPE_NAME)
 @JsonDeserialize(builder = TestEventProcessorConfig.Builder.class)
 public abstract class TestEventProcessorConfig implements EventProcessorConfig {
     public static final String TYPE_NAME = "__test_event_processor_config__";

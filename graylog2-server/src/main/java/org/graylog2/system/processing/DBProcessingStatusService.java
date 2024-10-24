@@ -22,10 +22,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
 import org.graylog.scheduler.clock.JobSchedulerClock;
@@ -257,6 +254,6 @@ public class DBProcessingStatusService {
         return MongoDBUpsertRetryer.run(() -> db.findOneAndReplace(
                 Filters.eq(ProcessingStatusDto.FIELD_NODE_ID, nodeId),
                 ProcessingStatusDto.of(nodeId, processingStatusRecorder, updatedAt, baseConfiguration.isMessageJournalEnabled()),
-                new FindOneAndReplaceOptions().upsert(true)));
+                new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true)));
     }
 }

@@ -25,6 +25,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.ReturnDocument;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -201,7 +202,7 @@ public class RoleServiceImpl implements RoleService {
             throw new ValidationException("Validation failed.", violations.toString());
         }
         return MongoDBUpsertRetryer.run(() ->
-                dbCollection.findOneAndReplace(Filters.eq(NAME_LOWER, role.nameLower()),role, new FindOneAndReplaceOptions().upsert(true)));
+                dbCollection.findOneAndReplace(Filters.eq(NAME_LOWER, role.nameLower()),role, new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true)));
     }
 
     @Override

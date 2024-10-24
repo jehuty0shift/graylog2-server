@@ -64,7 +64,7 @@ public class MongoIndexSetServiceTest {
     public final MockitoRule mockitoRule = MockitoJUnit.rule();
 
     private final ObjectMapper objectMapper = new ObjectMapperProvider().get();
-    private final MongoJackObjectMapperProvider objectMapperProvider = new MongoJackObjectMapperProvider(objectMapper);
+    private MongoJackObjectMapperProvider objectMapperProvider = new MongoJackObjectMapperProvider(objectMapper);
 
     private ClusterEventBus clusterEventBus;
     private MongoIndexSetService indexSetService;
@@ -77,6 +77,8 @@ public class MongoIndexSetServiceTest {
 
     @Before
     public void setUp() throws Exception {
+        objectMapperProvider = new MongoJackObjectMapperProvider(objectMapper);
+
         clusterEventBus = new ClusterEventBus();
         clusterConfigService = new ClusterConfigServiceImpl(objectMapperProvider, mongodb.mongoConnection(),
                 nodeId, new SafeChainingClassLoader(new ChainingClassLoader(getClass().getClassLoader()), SafeClassesProvider.allLdpInternal()), clusterEventBus);

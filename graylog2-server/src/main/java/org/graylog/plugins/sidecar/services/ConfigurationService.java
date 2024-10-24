@@ -19,6 +19,7 @@ package org.graylog.plugins.sidecar.services;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReturnDocument;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.cache.TemplateLoader;
@@ -121,7 +122,7 @@ public class ConfigurationService extends PaginatedDbService<Configuration> {
     public void replaceVariableNames(String oldName, String newName) {
         final Bson query = Filters.regex(Configuration.FIELD_TEMPLATE, Pattern.compile(Pattern.quote(oldName)));
         List<Configuration> configurations = findByQuery(query);
-        FindOneAndReplaceOptions options = new FindOneAndReplaceOptions().upsert(true);
+        FindOneAndReplaceOptions options = new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true);
         for (Configuration config : configurations) {
             final String newTemplate = config.template().replace(oldName, newName);
             db.findOneAndReplace(Filters.eq("_id", new ObjectId(config.id())),
@@ -132,7 +133,7 @@ public class ConfigurationService extends PaginatedDbService<Configuration> {
 
     @Override
     public Configuration save(Configuration configuration) {
-        return db.findOneAndReplace(Filters.eq("_id", new ObjectId(configuration.id())),configuration,new FindOneAndReplaceOptions().upsert(true));
+        return db.findOneAndReplace(Filters.eq("_id", new ObjectId(configuration.id())),configuration,new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
     }
 
     public Configuration copyConfiguration(String id, String name) {

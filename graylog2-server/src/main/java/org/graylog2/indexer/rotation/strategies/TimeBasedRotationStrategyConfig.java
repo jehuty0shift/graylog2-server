@@ -20,6 +20,7 @@ package org.graylog2.indexer.rotation.strategies;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import org.graylog.autovalue.WithBeanGetter;
 import org.graylog2.plugin.indexer.rotation.RotationStrategyConfig;
@@ -29,6 +30,7 @@ import javax.validation.constraints.NotNull;
 
 @JsonAutoDetect
 @AutoValue
+@JsonDeserialize(builder = TimeBasedRotationStrategyConfig.Builder.class)
 @WithBeanGetter
 public abstract class TimeBasedRotationStrategyConfig implements RotationStrategyConfig {
     private static final Period DEFAULT_DAYS = Period.days(1);
@@ -39,7 +41,7 @@ public abstract class TimeBasedRotationStrategyConfig implements RotationStrateg
     @JsonCreator
     public static TimeBasedRotationStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                          @JsonProperty("rotation_period") @NotNull Period maxTimePerIndex) {
-        return new AutoValue_TimeBasedRotationStrategyConfig(type, maxTimePerIndex);
+        return TimeBasedRotationStrategyConfig.Builder.builder().type(type).rotationPeriod(maxTimePerIndex).build();
     }
 
     @JsonCreator
@@ -50,4 +52,22 @@ public abstract class TimeBasedRotationStrategyConfig implements RotationStrateg
     public static TimeBasedRotationStrategyConfig createDefault() {
         return create(DEFAULT_DAYS);
     }
+
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+        @JsonCreator
+        public static Builder builder() {
+            return new AutoValue_TimeBasedRotationStrategyConfig.Builder();
+        }
+
+        @JsonProperty(TYPE_FIELD)
+        public abstract Builder type(String type);
+
+        @JsonProperty("rotation_period")
+        public abstract Builder rotationPeriod(Period rotationPeriod);
+
+        public abstract TimeBasedRotationStrategyConfig build();
+    }
+
 }

@@ -45,7 +45,7 @@ public class DBDataAdapterService {
     public DBDataAdapterService(MongoConnection mongoConnection,
                                 MongoJackObjectMapperProvider mapper,
                                 ClusterEventBus clusterEventBus) {
-        this.db = JacksonMongoCollection.builder().build(mongoConnection.getMongoDatabase(), "lut_data_adapters",
+        this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "lut_data_adapters",
                 DataAdapterDto.class,
                 UuidRepresentation.STANDARD);
         this.clusterEventBus = clusterEventBus;

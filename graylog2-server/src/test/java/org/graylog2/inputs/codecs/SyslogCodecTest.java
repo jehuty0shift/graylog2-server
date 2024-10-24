@@ -81,7 +81,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("BOMAn application event log entry", message.getMessage());
-        assertEquals(new DateTime("2012-12-25T22:14:15.003Z", DateTimeZone.UTC), ((DateTime) message.getField("timestamp")).withZone(DateTimeZone.UTC));
+        assertEquals(new DateTime("2012-12-25T22:14:15.003Z", DateTimeZone.UTC).toDate().toInstant(), message.getField("timestamp"));
         assertEquals("mymachine.example.com", message.getField("source"));
         assertEquals(5, message.getField("level"));
         assertEquals("local4", message.getField("facility"));
@@ -98,7 +98,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("User page 13 requested", message.getMessage());
-        assertEquals(new DateTime("2015-01-06T20:56:33.287Z", DateTimeZone.UTC), ((DateTime) message.getField("timestamp")).withZone(DateTimeZone.UTC));
+        assertEquals(new DateTime("2015-01-06T20:56:33.287Z", DateTimeZone.UTC).toDate().toInstant(), message.getField("timestamp"));
         assertEquals("app-1", message.getField("source"));
         assertEquals(6, message.getField("level"));
         assertEquals("local7", message.getField("facility"));
@@ -120,7 +120,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("User page 13 requested", message.getMessage());
-        assertEquals(new DateTime("2015-01-06T20:56:33.287Z", DateTimeZone.UTC), ((DateTime) message.getField("timestamp")).withZone(DateTimeZone.UTC));
+        assertEquals(new DateTime("2015-01-06T20:56:33.287Z", DateTimeZone.UTC).toDate().toInstant(),  message.getField("timestamp"));
         assertEquals("app-1", message.getField("source"));
         assertEquals(6, message.getField("level"));
         assertEquals("local7", message.getField("facility"));
@@ -139,7 +139,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("tralala", message.getMessage());
-        assertEquals(new DateTime("2015-01-11T15:35:21.335797Z", DateTimeZone.UTC), ((DateTime) message.getField("timestamp")).withZone(DateTimeZone.UTC));
+        assertEquals(new DateTime("2015-01-11T15:35:21.335797Z", DateTimeZone.UTC).toDate().toInstant(), message.getField("timestamp"));
         assertEquals("s000000.example.com", message.getField("source"));
         assertEquals(0, message.getField("level"));
         assertEquals("local0", message.getField("facility"));
@@ -154,7 +154,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("BOMAn application event log entry", message.getMessage());
-        assertEquals(new DateTime("2012-12-25T22:14:15.003Z", DateTimeZone.UTC), ((DateTime) message.getField("timestamp")).withZone(DateTimeZone.UTC));
+        assertEquals(new DateTime("2012-12-25T22:14:15.003Z", DateTimeZone.UTC).toDate().toInstant(), message.getField("timestamp"));
         assertEquals("mymachine.example.com", message.getField("source"));
         assertEquals(5, message.getField("level"));
         assertEquals("local4", message.getField("facility"));
@@ -172,7 +172,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("RT_FLOW_SESSION_DENY [junos@2636.1.1.1.2.39 source-address=\"1.2.3.4\" source-port=\"56639\" destination-address=\"5.6.7.8\" destination-port=\"2003\" service-name=\"None\" protocol-id=\"6\" icmp-type=\"0\" policy-name=\"log-all-else\" source-zone-name=\"campus\" destination-zone-name=\"mngmt\" application=\"UNKNOWN\" nested-application=\"UNKNOWN\" username=\"N/A\" roles=\"N/A\" packet-incoming-interface=\"reth6.0\" encrypted=\"No\"]", message.getMessage());
-        assertEquals(new DateTime("2014-05-01T08:26:51.179Z", DateTimeZone.UTC), ((DateTime) message.getField("timestamp")).withZone(DateTimeZone.UTC));
+        assertEquals(new DateTime("2014-05-01T08:26:51.179Z", DateTimeZone.UTC).toDate().toInstant(), message.getField("timestamp"));
         assertEquals("1.2.3.4", message.getField("source-address"));
         assertEquals("56639", message.getField("source-port"));
         assertEquals("5.6.7.8", message.getField("destination-address"));
@@ -198,7 +198,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("c4dc57ba1ebb syslog-ng[7208]: syslog-ng starting up; version='3.5.3'", message.getMessage());
-        assertEquals(new DateTime(YEAR + "-10-21T12:09:37"), message.getField("timestamp"));
+        assertEquals(new DateTime(YEAR + "-10-21T12:09:37").toDate().toInstant(), message.getField("timestamp"));
         assertEquals("c4dc57ba1ebb", message.getField("source"));
         assertEquals(5, message.getField("level"));
         assertEquals("syslogd", message.getField("facility"));
@@ -214,7 +214,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("c4dc57ba1ebb syslog-ng[7208]: syslog-ng starting up; version='3.5.3'", message.getMessage());
-        assertEquals(new DateTime(YEAR + "-10-21T12:09:37"), message.getField("timestamp"));
+        assertEquals(new DateTime(YEAR + "-10-21T12:09:37").toDate().toInstant(), message.getField("timestamp"));
         assertEquals("c4dc57ba1ebb", message.getField("source"));
         assertEquals(5, message.getField("level"));
         assertEquals("syslogd", message.getField("facility"));
@@ -228,7 +228,7 @@ public class SyslogCodecTest {
         final Map<String, Map<String, Object>> rfc3164messages = ImmutableMap.of(
             "<34>Oct 11 22:14:15 mymachine su: 'su root' failed for lonvick on /dev/pts/8",
             ImmutableMap.of(
-                "timestamp", new DateTime(YEAR + "-10-11T22:14:15"),
+                "timestamp", new DateTime(YEAR + "-10-11T22:14:15").toDate().toInstant(),
                 "source", "mymachine",
                 "level", 2,
                 "facility", "security/authorization",
@@ -236,7 +236,7 @@ public class SyslogCodecTest {
 
             "<13>Feb  5 17:32:18 10.0.0.99 Use the BFG!",
             ImmutableMap.of(
-                "timestamp", new DateTime(YEAR + "-02-05T17:32:18"),
+                "timestamp", new DateTime(YEAR + "-02-05T17:32:18").toDate().toInstant(),
                 "source", "10.0.0.99",
                 "level", 5,
                 "facility", "user-level",
@@ -277,7 +277,7 @@ public class SyslogCodecTest {
         final Map<String, Map<String, Object>> rfc3164messages = ImmutableMap.of(
             "<34>1 2003-10-11T22:14:15.003Z mymachine.example.com su - ID47 - BOM'su root' failed for lonvick on /dev/pts/8",
             ImmutableMap.<String, Object>builder()
-                .put("timestamp", new DateTime("2003-10-11T22:14:15.003", DateTimeZone.UTC).withZone(DateTimeZone.getDefault()))
+                .put("timestamp", new DateTime("2003-10-11T22:14:15.003", DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                 .put("source", "mymachine.example.com")
                 .put("level", 2)
                 .put("facility", "security/authorization")
@@ -287,7 +287,7 @@ public class SyslogCodecTest {
 
             "<165>1 2003-08-24T05:14:15.000003-07:00 192.0.2.1 myproc 8710 - - %% It's time to make the do-nuts.",
             ImmutableMap.<String, Object>builder()
-                .put("timestamp", new DateTime("2003-08-24T05:14:15.000", DateTimeZone.forOffsetHours(-7)).withZone(DateTimeZone.getDefault()))
+                .put("timestamp", new DateTime("2003-08-24T05:14:15.000", DateTimeZone.forOffsetHours(-7)).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                 .put("source", "192.0.2.1")
                 .put("level", 5)
                 .put("facility", "local4")
@@ -298,7 +298,7 @@ public class SyslogCodecTest {
 
             "<165>1 2003-10-11T22:14:15.003Z mymachine.example.com evntslog - ID47 [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"] An application event log entry...",
             ImmutableMap.<String, Object>builder()
-                .put("timestamp", new DateTime("2003-10-11T22:14:15.003", DateTimeZone.UTC).withZone(DateTimeZone.getDefault()))
+                .put("timestamp", new DateTime("2003-10-11T22:14:15.003", DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                 .put("source", "mymachine.example.com")
                 .put("level", 5)
                 .put("facility", "local4")
@@ -311,7 +311,7 @@ public class SyslogCodecTest {
 
             "<165>1 2003-10-11T22:14:15.003Z mymachine.example.com evntslog - ID47 [exampleSDID@32473 iut=\"3\" eventSource=\"Application\" eventID=\"1011\"][examplePriority@32473 class=\"high\"]",
             ImmutableMap.<String, Object>builder()
-                .put("timestamp", new DateTime("2003-10-11T22:14:15.003", DateTimeZone.UTC).withZone(DateTimeZone.getDefault()))
+                .put("timestamp", new DateTime("2003-10-11T22:14:15.003", DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                 .put("source", "mymachine.example.com")
                 .put("level", 5)
                 .put("facility", "local4")
@@ -338,7 +338,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("hostname testmsg[20]: Test", message.getMessage());
-        assertEquals(new DateTime(2016, 10, 12, 14, 10, 18, DateTimeZone.UTC), message.getTimestamp());
+        assertEquals(new DateTime(2016, 10, 12, 14, 10, 18, DateTimeZone.UTC).toDate().toInstant(), message.getTimestamp());
         assertEquals("hostname", message.getSource());
         assertEquals(6, message.getField("level"));
         assertEquals("kernel", message.getField("facility"));
@@ -353,7 +353,7 @@ public class SyslogCodecTest {
 
         assertNotNull(message);
         assertEquals("test 4", message.getMessage());
-        assertEquals(new DateTime(2017, 2, 15, 15, 1, 7, DateTimeZone.UTC), message.getTimestamp());
+        assertEquals(new DateTime(2017, 2, 15, 15, 1, 7, DateTimeZone.UTC).toDate().toInstant(), message.getTimestamp());
         assertEquals("hostname", message.getSource());
         assertEquals(6, message.getField("level"));
         assertEquals("kernel", message.getField("facility"));
@@ -369,7 +369,7 @@ public class SyslogCodecTest {
                 .put(
                         "<186>1541800: Feb 27 06:08:59.485: %HARDWARE-2-FAN_ERROR: Fan Failure",
                         ImmutableMap.<String, Object>builder()
-                                .put("timestamp", new DateTime(year, 2, 27, 6, 8, 59, 485, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()))
+                                .put("timestamp", new DateTime(year, 2, 27, 6, 8, 59, 485, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                                 .put("source", "127.0.0.1")
                                 .put("level", 2)
                                 .put("facility", "local7")
@@ -379,7 +379,7 @@ public class SyslogCodecTest {
                 .put(
                         "<189>148093: Feb 27 06:07:28.713: %LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet1/0/15, changed state to down",
                         ImmutableMap.<String, Object>builder()
-                                .put("timestamp", new DateTime(year, 2, 27, 6, 7, 28, 713, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()))
+                                .put("timestamp", new DateTime(year, 2, 27, 6, 7, 28, 713, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                                 .put("source", "127.0.0.1")
                                 .put("level", 5)
                                 .put("facility", "local7")
@@ -388,7 +388,7 @@ public class SyslogCodecTest {
                 .put(
                         "<190>530470: *Sep 28 17:13:35.098: %SEC-6-IPACCESSLOGP: list MGMT_IN denied udp IP(49964) -> IP(161), 11 packets",
                         ImmutableMap.<String, Object>builder()
-                                .put("timestamp", new DateTime(year, 9, 28, 17, 13, 35, 98, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()))
+                                .put("timestamp", new DateTime(year, 9, 28, 17, 13, 35, 98, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                                 .put("source", "127.0.0.1")
                                 .put("level", 6)
                                 .put("facility", "local7")
@@ -397,7 +397,7 @@ public class SyslogCodecTest {
                 .put(
                         "<190>: 2017 Mar 06 09:22:34 CET: %AUTHPRIV-6-SYSTEM_MSG: START: rsync pid=4311 from=::ffff:IP - xinetd[6219]",
                         ImmutableMap.<String, Object>builder()
-                                .put("timestamp", new DateTime(2017, 3, 6, 9, 22, 34, DateTimeZone.forID("CET")).withZone(DateTimeZone.getDefault()))
+                                .put("timestamp", new DateTime(2017, 3, 6, 9, 22, 34, DateTimeZone.forID("CET")).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                                 .put("source", "127.0.0.1")
                                 .put("level", 6)
                                 .put("facility", "local7")
@@ -406,7 +406,7 @@ public class SyslogCodecTest {
                 .put(
                         "<134>: 2017 Mar  6 12:53:10 UTC: %POLICY_ENGINE-6-POLICY_LOOKUP_EVENT: policy=POLICYNAME rule=RULENAME action=Permit direction=egress src.net.ip-address=IP src.net.port=38321 dst.net.ip-address=IP dst.net.port=5666 net.protocol=6 net.ethertype=800 net.service=\"protocol 6 port 5666\"",
                         ImmutableMap.<String, Object>builder()
-                                .put("timestamp", new DateTime(2017, 3, 6, 12, 53, 10, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()))
+                                .put("timestamp", new DateTime(2017, 3, 6, 12, 53, 10, DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDate().toInstant())
                                 .put("source", "127.0.0.1")
                                 .put("level", 6)
                                 .put("facility", "local0")
@@ -428,7 +428,7 @@ public class SyslogCodecTest {
 
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("date=2017-03-06 time=12:53:10 devname=DEVICENAME devid=DEVICEID logid=0000000013 type=traffic subtype=forward level=notice vd=ALIAS srcip=IP srcport=45748 srcintf=\"IF\" dstip=IP dstport=443 dstintf=\"IF\" sessionid=1122686199 status=close policyid=77 dstcountry=\"COUNTRY\" srccountry=\"COUNTRY\" trandisp=dnat tranip=IP tranport=443 service=HTTPS proto=6 appid=41540 app=\"SSL_TLSv1.2\" appcat=\"Network.Service\" applist=\"ACLNAME\" appact=detected duration=1 sentbyte=2313 rcvdbyte=14883 sentpkt=19 rcvdpkt=19 utmaction=passthrough utmevent=app-ctrl attack=\"SSL\" hostname=\"HOSTNAME\"");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2017, 3, 6, 12, 53, 10, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2017, 3, 6, 12, 53, 10, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("source")).isEqualTo("DEVICENAME");
         assertThat(message.getField("level")).isEqualTo(5);
         assertThat(message.getField("facility")).isEqualTo("syslogd");

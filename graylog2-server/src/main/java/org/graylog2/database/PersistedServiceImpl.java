@@ -22,6 +22,7 @@ import com.mongodb.DBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReturnDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.plugin.database.EmbeddedPersistable;
@@ -189,7 +190,7 @@ public class PersistedServiceImpl implements PersistedService {
 		 * a new document will be created if it doesn't.
 		 */
         BasicDBObject q = new BasicDBObject("_id", new ObjectId(model.getId()));
-        collection(model).findOneAndReplace(q, doc, new FindOneAndReplaceOptions().upsert(true));
+        collection(model).findOneAndReplace(q, doc, new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
 
         return model.getId();
     }

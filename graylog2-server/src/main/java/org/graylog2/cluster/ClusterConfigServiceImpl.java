@@ -22,10 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.UuidRepresentation;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -149,7 +146,7 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
 
         ClusterConfig clusterConfig = ClusterConfig.create(key, payload, nodeId.toString());
 
-        dbCollection.findOneAndReplace(Filters.eq("type", key), clusterConfig, new FindOneAndReplaceOptions().upsert(true));
+        dbCollection.findOneAndReplace(Filters.eq("type", key), clusterConfig, new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
 
         ClusterConfigChangedEvent event = ClusterConfigChangedEvent.create(
                 DateTime.now(DateTimeZone.UTC), nodeId.toString(), key);

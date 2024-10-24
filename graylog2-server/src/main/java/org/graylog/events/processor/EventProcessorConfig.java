@@ -31,7 +31,7 @@ import java.util.Set;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        include = JsonTypeInfo.As.PROPERTY,
         property = EventProcessorConfig.TYPE_FIELD,
         visible = true,
         defaultImpl = EventProcessorFallbackConfig.class)
