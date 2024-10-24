@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -119,14 +119,16 @@ public abstract class RestResource {
         final List<String> instancePermissions = Arrays.stream(permissions)
                 .map(permission -> permission + ":" + instanceId)
                 .collect(Collectors.toList());
-        return isAnyPermitted(instancePermissions.toArray(new String[0]));
+        return isAnyPermitted(instancePermissions.toArray(String[]::new));
     }
 
     protected boolean isAnyPermitted(String... permissions) {
         final boolean[] permitted = getSubject().isPermitted(permissions);
-        for (boolean p : permitted) {
-            if (p) {
-                return true;
+        if (permitted != null) {
+            for (boolean p : permitted) {
+                if (p) {
+                    return true;
+                }
             }
         }
         return false;

@@ -27,11 +27,7 @@ import org.graylog2.system.urlwhitelist.UrlWhitelist;
 import org.graylog2.system.urlwhitelist.UrlWhitelistService;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
+import org.mockito.*;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -61,13 +57,14 @@ public class V20191129134600_CreateInitialUrlWhitelistTest {
     @Spy
     private RegexHelper regexHelper;
 
-    @InjectMocks
     private V20191129134600_CreateInitialUrlWhitelist migration;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.openMocks(this).close();
-        whitelistService = new TestUrlWhitelistService(eventBus, clusterConfigService);
+        whitelistService = Mockito.spy(new TestUrlWhitelistService(eventBus, clusterConfigService));
+        migration = Mockito.spy(new V20191129134600_CreateInitialUrlWhitelist(clusterConfigService,whitelistService,dataAdapterService,notificationService,regexHelper));
+
     }
 
     @Test
@@ -81,7 +78,7 @@ public class V20191129134600_CreateInitialUrlWhitelistTest {
         migration.upgrade();
 
         final ArgumentCaptor<UrlWhitelist> captor = ArgumentCaptor.forClass(UrlWhitelist.class);
-        assertThat(whitelistService.containsWhiteList(captor.capture())).isTrue();
+        verify(whitelistService).saveWhitelist(captor.capture());
 
         final UrlWhitelist whitelist = captor.getValue();
 

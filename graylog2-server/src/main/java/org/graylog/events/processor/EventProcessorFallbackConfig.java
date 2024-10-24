@@ -11,7 +11,6 @@ public class EventProcessorFallbackConfig implements EventProcessorConfig {
 
     public static final String TYPE_NAME = "fallback";
 
-    @JsonIgnore
     @Override
     public String type() {
         throw new UnsupportedOperationException();

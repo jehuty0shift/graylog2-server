@@ -42,7 +42,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class V20191219090834_AddSourcesPageTest {
@@ -70,7 +70,7 @@ public class V20191219090834_AddSourcesPageTest {
 
         migration.upgrade();
 
-        verifyZeroInteractions(contentPackService);
+        verifyNoMoreInteractions(contentPackService);
     }
 
     @Test
@@ -134,6 +134,6 @@ public class V20191219090834_AddSourcesPageTest {
         when(contentPackPersistenceService.insert(contentPack)).thenReturn(Optional.empty());
         assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> migration.upgrade()).withMessage("Could not install Source Page Content Pack.");
         verify(configService).write(V20191219090834_AddSourcesPage.MigrationCompleted.create("04fcf179-49e0-4e8f-9c02-0ff13062efbe"));
-        verifyZeroInteractions(contentPackService);
+        verifyNoMoreInteractions(contentPackService);
     }
 }

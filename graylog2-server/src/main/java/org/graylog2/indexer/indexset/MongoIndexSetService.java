@@ -122,7 +122,7 @@ public class MongoIndexSetService implements IndexSetService {
      */
     @Override
     public List<IndexSetConfig> findAll() {
-        return ImmutableList.copyOf((Iterator<? extends IndexSetConfig>) collection.find().sort(Sorts.ascending("title")));
+        return Collections.unmodifiableList(collection.find().sort(Sorts.ascending("title")).into(new ArrayList<>()));
     }
 
     @Override

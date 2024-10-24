@@ -22,21 +22,25 @@ import com.google.common.collect.Multimap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.BSONObject;
 import org.bson.BsonArray;
+import org.bson.BsonDocument;
 import org.bson.BsonValue;
 import org.bson.conversions.Bson;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Test;
+import scala.compat.java8.StreamExtensions;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -131,6 +135,7 @@ public class SearchQueryParserTest {
     private Collection<String> extractFieldNames(Map<String, BsonValue> conditions) {
         final ImmutableSet.Builder<String> names = ImmutableSet.builder();
 
+        Random rand = new Random();
         // recurse into the tree, conveniently there's no visitor we can use, so it's manual
         conditions.entrySet().forEach(entry -> {
             final String op = entry.getKey();
@@ -142,11 +147,11 @@ public class SearchQueryParserTest {
             if (queryCondition instanceof BsonArray) {
                 names.addAll(
                         extractFieldNames(((BsonArray) queryCondition).getValues().stream()
-                                .collect(Collectors.toMap(qc -> "$dummy", Function.identity())))
+                                .collect(Collectors.toMap(qc -> "$dummy_"+rand.nextInt(), Function.identity())))
                 );
-            } else if (queryCondition instanceof BSONObject) {
+            } else if (queryCondition instanceof BsonDocument) {
                 names.addAll(
-                        extractFieldNames(((BSONObject) queryCondition).toMap())
+                        extractFieldNames((BsonDocument)queryCondition)
                 );
             }
         });

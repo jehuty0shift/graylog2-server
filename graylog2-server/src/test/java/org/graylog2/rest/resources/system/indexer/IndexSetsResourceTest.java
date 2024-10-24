@@ -60,16 +60,8 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public class IndexSetsResourceTest {
     @Rule
@@ -251,7 +243,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.get("id");
         } finally {
-            verifyZeroInteractions(indexSetService);
+            verifyNoMoreInteractions(indexSetService);
         }
     }
 
@@ -291,7 +283,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.indexSetStatistics("id");
         } finally {
-            verifyZeroInteractions(indexSetRegistry);
+            verifyNoMoreInteractions(indexSetRegistry);
         }
     }
 
@@ -359,7 +351,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.save(IndexSetSummary.fromIndexSetConfig(indexSetConfig, false));
         } finally {
-            verifyZeroInteractions(indexSetService);
+            verifyNoMoreInteractions(indexSetService);
         }
     }
 
@@ -434,7 +426,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.update("wrong-id", IndexSetUpdateRequest.fromIndexSetConfig(indexSetConfig));
         } finally {
-            verifyZeroInteractions(indexSetService);
+            verifyNoMoreInteractions(indexSetService);
         }
     }
 
@@ -549,7 +541,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.delete("id", false);
         } finally {
-            verifyZeroInteractions(indexSetService);
+            verifyNoMoreInteractions(indexSetService);
         }
     }
 
@@ -619,7 +611,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.globalStats();
         } finally {
-            verifyZeroInteractions(indexSetService);
+            verifyNoMoreInteractions(indexSetService);
         }
     }
 
@@ -670,8 +662,8 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.setDefault("someIndexSetId");
         } finally {
-            verifyZeroInteractions(indexSetService);
-            verifyZeroInteractions(clusterConfigService);
+            verifyNoMoreInteractions(indexSetService);
+            verifyNoMoreInteractions(clusterConfigService);
         }
     }
 
@@ -687,7 +679,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.setDefault(nonExistingIndexSetId);
         } finally {
-            verifyZeroInteractions(clusterConfigService);
+            verifyNoMoreInteractions(clusterConfigService);
         }
     }
 
@@ -724,7 +716,7 @@ public class IndexSetsResourceTest {
         try {
             indexSetsResource.setDefault(readOnlyIndexSetId);
         } finally {
-            verifyZeroInteractions(clusterConfigService);
+            verifyNoMoreInteractions(clusterConfigService);
         }
     }
 

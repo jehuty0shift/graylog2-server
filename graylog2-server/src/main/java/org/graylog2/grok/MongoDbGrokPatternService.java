@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -101,7 +101,7 @@ public class MongoDbGrokPatternService implements GrokPatternService {
 
     @Override
     public Set<GrokPattern> loadAll() {
-            return Collections.unmodifiableSet(dbCollection.find().into(new HashSet<>()));
+        return Collections.unmodifiableSet(dbCollection.find().into(new HashSet<>()));
     }
 
     @Override
@@ -174,9 +174,15 @@ public class MongoDbGrokPatternService implements GrokPatternService {
         final ImmutableSet.Builder<String> patternNames = ImmutableSet.builder();
         for (final GrokPattern pattern : patterns) {
             final UpdateResult result = dbCollection.save(pattern);
-            final GrokPattern savedGrokPattern = dbCollection.findOneById(result.getUpsertedId());
-            savedPatterns.add(savedGrokPattern);
-            patternNames.add(savedGrokPattern.name());
+            GrokPattern savedGrokPattern = pattern;
+            if (result.getUpsertedId() != null) {
+                savedGrokPattern = dbCollection.findOneById(result.getUpsertedId());
+                savedPatterns.add(savedGrokPattern);
+                patternNames.add(savedGrokPattern.name());
+            } else if (result.getModifiedCount() > 0) {
+                savedPatterns.add(savedGrokPattern);
+                patternNames.add(savedGrokPattern.name());
+            }
         }
 
         clusterBus.post(GrokPatternsUpdatedEvent.create(patternNames.build()));
@@ -188,7 +194,7 @@ public class MongoDbGrokPatternService implements GrokPatternService {
     public Map<String, Object> match(GrokPattern pattern, String sampleData) throws GrokException {
         final Set<GrokPattern> patterns = loadAll();
         final GrokCompiler grokCompiler = GrokCompiler.newInstance();
-        for(GrokPattern storedPattern : patterns) {
+        for (GrokPattern storedPattern : patterns) {
             grokCompiler.register(storedPattern.name(), storedPattern.pattern());
         }
         grokCompiler.register(pattern.name(), pattern.pattern());
@@ -202,7 +208,7 @@ public class MongoDbGrokPatternService implements GrokPatternService {
         final Set<GrokPattern> patterns = loadAll();
         final boolean fieldsMissing = Strings.isNullOrEmpty(pattern.name()) || Strings.isNullOrEmpty(pattern.pattern());
         final GrokCompiler grokCompiler = GrokCompiler.newInstance();
-        for(GrokPattern storedPattern : patterns) {
+        for (GrokPattern storedPattern : patterns) {
             grokCompiler.register(storedPattern.name(), storedPattern.pattern());
         }
         grokCompiler.register(pattern.name(), pattern.pattern());
@@ -215,17 +221,17 @@ public class MongoDbGrokPatternService implements GrokPatternService {
         final Set<GrokPattern> patterns = loadAll();
         final GrokCompiler grokCompiler = GrokCompiler.newInstance();
 
-        for(GrokPattern newPattern : newPatterns) {
+        for (GrokPattern newPattern : newPatterns) {
             final boolean fieldsMissing = Strings.isNullOrEmpty(newPattern.name()) || Strings.isNullOrEmpty(newPattern.pattern());
             if (fieldsMissing) {
                 return false;
             }
             grokCompiler.register(newPattern.name(), newPattern.pattern());
         }
-        for(GrokPattern storedPattern : patterns) {
+        for (GrokPattern storedPattern : patterns) {
             grokCompiler.register(storedPattern.name(), storedPattern.pattern());
         }
-        for(GrokPattern newPattern : newPatterns) {
+        for (GrokPattern newPattern : newPatterns) {
             grokCompiler.compile("%{" + newPattern.name() + "}");
         }
         return true;
@@ -244,7 +250,7 @@ public class MongoDbGrokPatternService implements GrokPatternService {
         final ObjectId id = new ObjectId(patternId);
         final String name = grokPattern.name();
 
-        final int deletedPatterns = (int)dbCollection.removeById(id).getDeletedCount();
+        final int deletedPatterns = (int) dbCollection.removeById(id).getDeletedCount();
         clusterBus.post(GrokPatternsDeletedEvent.create(ImmutableSet.of(name)));
 
         return deletedPatterns;
@@ -257,7 +263,7 @@ public class MongoDbGrokPatternService implements GrokPatternService {
                 .map(GrokPattern::name)
                 .collect(Collectors.toSet());
 
-        final int deletedPatterns = (int)dbCollection.deleteMany(Filters.empty()).getDeletedCount();
+        final int deletedPatterns = (int) dbCollection.deleteMany(Filters.empty()).getDeletedCount();
         clusterBus.post(GrokPatternsDeletedEvent.create(patternNames));
 
         return deletedPatterns;

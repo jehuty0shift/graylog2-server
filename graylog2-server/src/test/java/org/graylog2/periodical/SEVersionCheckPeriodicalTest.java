@@ -109,7 +109,7 @@ class SEVersionCheckPeriodicalTest {
     }
 
     private void returnProbedVersion(@Nullable Version probedVersion) {
-        when(versionProbe.probe(anyCollection())).thenReturn(Optional.ofNullable(BackendVersion.fromES(probedVersion)));
+        when(versionProbe.probe(anyCollection())).thenReturn(Optional.ofNullable(probedVersion==null?null:BackendVersion.fromES(probedVersion)));
     }
 
     private Periodical createPeriodical(Version initialVersion) {

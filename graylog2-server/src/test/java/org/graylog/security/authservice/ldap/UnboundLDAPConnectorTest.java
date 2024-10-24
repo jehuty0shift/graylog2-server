@@ -21,26 +21,21 @@ import com.unboundid.ldap.sdk.LDAPConnection;
 import com.unboundid.ldap.sdk.LDAPException;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
-import org.apache.directory.server.core.annotations.ApplyLdifFiles;
-import org.apache.directory.server.core.annotations.ContextEntry;
-import org.apache.directory.server.core.annotations.CreateDS;
-import org.apache.directory.server.core.annotations.CreateIndex;
-import org.apache.directory.server.core.annotations.CreatePartition;
-import org.apache.directory.server.core.annotations.LoadSchema;
+import org.apache.directory.server.core.annotations.*;
 import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
-import org.apache.directory.server.core.integ.FrameworkRunner;
-import org.apache.directory.server.core.partition.impl.avl.AvlPartition;
+import org.apache.directory.server.core.integ.ApacheDSTestExtension;
 import org.apache.directory.server.ldap.LdapServer;
 import org.graylog.testing.ldap.LDAPTestUtils;
 import org.graylog2.ApacheDirectoryTestServiceFactory;
 import org.graylog2.security.encryption.EncryptedValue;
 import org.graylog2.security.encryption.EncryptedValueService;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -49,8 +44,9 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(FrameworkRunner.class)
-@CreateLdapServer(transports = {
+
+@ExtendWith(ApacheDSTestExtension.class)
+@CreateLdapServer(name ="UnboundLDAP", transports = {
         @CreateTransport(protocol = "LDAP")
 })
 @CreateDS(
@@ -59,7 +55,6 @@ import static org.assertj.core.api.Assertions.assertThat;
         partitions = {
                 @CreatePartition(
                         name = "example.com",
-                        type = AvlPartition.class,
                         suffix = "dc=example,dc=com",
                         contextEntry = @ContextEntry(
                                 entryLdif = "dn: dc=example,dc=com\n" +
@@ -86,14 +81,11 @@ public class UnboundLDAPConnectorTest extends AbstractLdapTestUnit {
     private static final String ADMIN_DN = "uid=admin,ou=system";
     private static final String ADMIN_PASSWORD = "secret";
 
-    @Rule
-    public final ExpectedException expectedException = ExpectedException.none();
-
     private UnboundLDAPConnector connector;
     private LDAPConnection connection;
     private final EncryptedValueService encryptedValueService = new EncryptedValueService("1234567890abcdef");
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         final LdapServer server = getLdapServer();
         final LDAPConnectorConfig.LDAPServer ldapServer = LDAPConnectorConfig.LDAPServer.create("localhost", server.getPort());
@@ -109,7 +101,7 @@ public class UnboundLDAPConnectorTest extends AbstractLdapTestUnit {
         connection = connector.connect(connectorConfig);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         connection.close();
     }
@@ -147,30 +139,22 @@ public class UnboundLDAPConnectorTest extends AbstractLdapTestUnit {
     }
 
     @Test
-    public void authenticateThrowsIllegalArgumentExceptionIfPrincipalIsNull() throws LDAPException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Binding with empty principal is forbidden.");
-        connector.authenticate(connection, null, encryptedValueService.encrypt("secret"));
+    public void authenticateThrowsIllegalArgumentExceptionIfPrincipalIsNull() {
+        Assert.assertThrows("Binding with empty principal is forbidden.", IllegalArgumentException.class, () -> connector.authenticate(connection, null, encryptedValueService.encrypt("secret")));
     }
 
     @Test
-    public void authenticateThrowsIllegalArgumentExceptionIfPrincipalIsEmpty() throws LDAPException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Binding with empty principal is forbidden.");
-        connector.authenticate(connection, "", encryptedValueService.encrypt("secret"));
+    public void authenticateThrowsIllegalArgumentExceptionIfPrincipalIsEmpty() {
+        Assert.assertThrows("Binding with empty principal is forbidden.", IllegalArgumentException.class, () -> connector.authenticate(connection, "", encryptedValueService.encrypt("secret")));
     }
 
     @Test
-    public void authenticateThrowsIllegalArgumentExceptionIfCredentialsAreNull() throws LDAPException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Binding with null credentials is forbidden.");
-        connector.authenticate(connection, "principal", null);
+    public void authenticateThrowsIllegalArgumentExceptionIfCredentialsAreNull() {
+        Assert.assertThrows("Binding with null credentials is forbidden.", IllegalArgumentException.class, () -> connector.authenticate(connection, "principal", null));
     }
 
     @Test
-    public void authenticateThrowsIllegalArgumentExceptionIfCredentialsAreEmpty() throws LDAPException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Binding with empty credentials is forbidden.");
-        connector.authenticate(connection, "principal", EncryptedValue.createUnset());
+    public void authenticateThrowsIllegalArgumentExceptionIfCredentialsAreEmpty()  {
+        Assert.assertThrows("Binding with empty credentials is forbidden.", IllegalArgumentException.class,() ->  connector.authenticate(connection, "principal", EncryptedValue.createUnset()));
     }
 }

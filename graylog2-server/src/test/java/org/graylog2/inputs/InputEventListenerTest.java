@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class InputEventListenerTest {
@@ -68,7 +68,7 @@ public class InputEventListenerTest {
 
         listener.inputCreated(InputCreated.create(inputId));
 
-        verifyZeroInteractions(inputLauncher, inputRegistry, nodeId);
+        verifyNoMoreInteractions(inputLauncher, inputRegistry, nodeId);
     }
 
     @Test
@@ -155,7 +155,7 @@ public class InputEventListenerTest {
 
         listener.inputUpdated(InputUpdated.create(inputId));
 
-        verifyZeroInteractions(inputLauncher, inputRegistry, nodeId);
+        verifyNoMoreInteractions(inputLauncher, inputRegistry, nodeId);
     }
 
     @Test

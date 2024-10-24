@@ -100,7 +100,7 @@ public class EventDefinitionFacadeTest {
     @Rule
     public final MockitoRule mockitoRule = MockitoJUnit.rule();
 
-    private MongoJackObjectMapperProvider mapperProvider = new MongoJackObjectMapperProvider(objectMapper);
+    private MongoJackObjectMapperProvider mapperProvider;
 
     @Mock
     private DBEventProcessorStateService stateService;
@@ -133,6 +133,7 @@ public class EventDefinitionFacadeTest {
         jobDefinitionService = mock(DBJobDefinitionService.class);
         jobTriggerService = mock(DBJobTriggerService.class);
         jobSchedulerClock = mock(JobSchedulerClock.class);
+        mapperProvider = new MongoJackObjectMapperProvider(objectMapper);
         eventDefinitionService = new DBEventDefinitionService(mongodb.mongoConnection(), mapperProvider, stateService, entityOwnershipService);
         eventDefinitionHandler = new EventDefinitionHandler(
                 eventDefinitionService, jobDefinitionService, jobTriggerService, jobSchedulerClock);

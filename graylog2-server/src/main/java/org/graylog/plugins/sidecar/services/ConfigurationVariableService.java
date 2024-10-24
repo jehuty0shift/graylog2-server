@@ -21,6 +21,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.ReturnDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog.plugins.sidecar.rest.models.ConfigurationVariable;
@@ -94,6 +95,6 @@ public class ConfigurationVariableService extends PaginatedDbService<Configurati
 
     @Override
     public ConfigurationVariable save(ConfigurationVariable configurationVariable) {
-        return db.findOneAndReplace(Filters.eq("_id", new ObjectId(configurationVariable.id())), configurationVariable, new FindOneAndReplaceOptions().upsert(true));
+        return db.findOneAndReplace(Filters.eq("_id", new ObjectId(configurationVariable.id())), configurationVariable, new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
     }
 }

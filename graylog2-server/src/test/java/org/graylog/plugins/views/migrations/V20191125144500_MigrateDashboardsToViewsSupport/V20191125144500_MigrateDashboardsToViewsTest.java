@@ -40,6 +40,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,23 +79,86 @@ public class V20191125144500_MigrateDashboardsToViewsTest {
     private final ObjectMapper objectMapper = new ObjectMapperProvider().get();
 
     static class StaticRandomObjectIdProvider extends RandomObjectIdProvider {
+        private static final char[] HEX_CHARS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
         private final Date date;
         private AtomicInteger counter;
+        private static final int RANDOM_1 = 16777200;
+        private static final short RANDOM_2 = 32700;
         StaticRandomObjectIdProvider(Date date) {
             super(date);
             this.date = date;
             this.counter = new AtomicInteger(0);
         }
+        private static byte int3(int x) {
+            return (byte)(x >> 24);
+        }
+
+        private static byte int2(int x) {
+            return (byte)(x >> 16);
+        }
+
+        private static byte int1(int x) {
+            return (byte)(x >> 8);
+        }
+
+        private static byte int0(int x) {
+            return (byte)x;
+        }
+
+        private static byte short1(short x) {
+            return (byte)(x >> 8);
+        }
+
+        private static byte short0(short x) {
+            return (byte)x;
+        }
+
+        public String toHexString(byte[] byteArray) {
+            char[] chars = new char[24];
+            int i = 0;
+
+            for(byte b : byteArray) {
+                chars[i++] = HEX_CHARS[b >> 4 & 15];
+                chars[i++] = HEX_CHARS[b & 15];
+            }
+
+            return new String(chars);
+        }
+
+        private static int dateToTimestampSeconds(Date time) {
+            return (int)(time.getTime() / 1000L);
+        }
+
+        private byte[] makeByteArray() {
+            ByteBuffer buffer = ByteBuffer.allocate(12);
+            int timestamp = (int)(this.date.getTime() / 1000L);
+            int counterValue = this.counter.incrementAndGet();
+            buffer.put(int3(timestamp));
+            buffer.put(int2(timestamp));
+            buffer.put(int1(timestamp));
+            buffer.put(int0(timestamp));
+            buffer.put(int2(RANDOM_1));
+            buffer.put(int1(RANDOM_1));
+            buffer.put(int0(RANDOM_1));
+            buffer.put(short1(RANDOM_2));
+            buffer.put(short0(RANDOM_2));
+            buffer.put(int2(counterValue));
+            buffer.put(int1(counterValue));
+            buffer.put(int0(counterValue));
+
+            return buffer.array();
+        }
 
         @Override
         public String get() {
-            return new ObjectId(date, counter.incrementAndGet()).toHexString();
+            return toHexString(makeByteArray());
         }
     }
 
     @Before
     public void setUp() throws Exception {
-        final MongoJackObjectMapperProvider mapperProvider = new MongoJackObjectMapperProvider(new ObjectMapper());
+        final MongoJackObjectMapperProvider mapperProvider = new MongoJackObjectMapperProvider(objectMapper);
         final DashboardsService dashboardsService = new DashboardsService(mongodb.mongoConnection(), mapperProvider);
 
         final RandomObjectIdProvider randomObjectIdProvider = new StaticRandomObjectIdProvider(new Date(1575020937839L));

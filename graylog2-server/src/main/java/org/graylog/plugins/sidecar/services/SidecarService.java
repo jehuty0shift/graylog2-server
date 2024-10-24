@@ -21,6 +21,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.ReturnDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog.plugins.sidecar.rest.models.*;
@@ -78,7 +79,7 @@ public class SidecarService extends PaginatedDbService<Sidecar> {
                 return db.findOneAndReplace(
                         Filters.eq(Sidecar.FIELD_NODE_ID, sidecar.nodeId()),
                         sidecar,
-                        new FindOneAndReplaceOptions().upsert(true));
+                        new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
             } else {
                 throw new IllegalArgumentException("Specified object failed validation: " + violations);
             }

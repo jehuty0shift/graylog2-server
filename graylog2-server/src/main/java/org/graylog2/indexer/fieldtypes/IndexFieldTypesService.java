@@ -21,6 +21,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.ReturnDocument;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
@@ -87,7 +88,7 @@ public class IndexFieldTypesService {
                         Filters.eq(IndexFieldTypesDTO.FIELD_INDEX_NAME, dto.indexName()),
                         Filters.eq(IndexFieldTypesDTO.FIELD_INDEX_SET_ID, dto.indexSetId())
                 ),
-                dto, new FindOneAndReplaceOptions().upsert(true)));
+                dto, new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true)));
 
 
         return Optional.ofNullable(update);

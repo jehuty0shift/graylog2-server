@@ -60,7 +60,7 @@ public class MongoDbRuleService implements RuleService {
     public MongoDbRuleService(MongoConnection mongoConnection,
                               MongoJackObjectMapperProvider mapper,
                               ClusterEventBus clusterBus) {
-        this.dbCollection = JacksonMongoCollection.builder().build(mongoConnection.getMongoDatabase(), COLLECTION, RuleDao.class, UuidRepresentation.STANDARD);
+        this.dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), COLLECTION, RuleDao.class, UuidRepresentation.STANDARD);
         this.clusterBus = clusterBus;
         dbCollection.createIndex(Indexes.ascending("title"), new IndexOptions().unique(true));
     }

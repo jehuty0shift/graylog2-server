@@ -20,13 +20,17 @@ package org.graylog2.indexer.retention.strategies;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
 import org.graylog.autovalue.WithBeanGetter;
+import org.graylog2.indexer.rotation.strategies.MessageCountRotationStrategyConfig;
 import org.graylog2.plugin.indexer.retention.RetentionStrategyConfig;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @JsonAutoDetect
+@JsonDeserialize(builder = NoopRetentionStrategyConfig.Builder.class)
 @AutoValue
 @WithBeanGetter
 public abstract class NoopRetentionStrategyConfig implements RetentionStrategyConfig {
@@ -38,15 +42,35 @@ public abstract class NoopRetentionStrategyConfig implements RetentionStrategyCo
     @JsonCreator
     public static NoopRetentionStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                      @JsonProperty("max_number_of_indices") @Min(1) int maxNumberOfIndices) {
-        return new AutoValue_NoopRetentionStrategyConfig(type, maxNumberOfIndices);
+        return NoopRetentionStrategyConfig.Builder.builder().type(type).maxNumberOfIndices(maxNumberOfIndices).build();
     }
 
     @JsonCreator
     public static NoopRetentionStrategyConfig create(@JsonProperty("max_number_of_indices") @Min(1) int maxNumberOfIndices) {
-        return new AutoValue_NoopRetentionStrategyConfig(NoopRetentionStrategyConfig.class.getCanonicalName(), maxNumberOfIndices);
+        return create(NoopRetentionStrategyConfig.class.getCanonicalName(), maxNumberOfIndices);
     }
 
     public static NoopRetentionStrategyConfig createDefault() {
         return create(DEFAULT_MAX_NUMBER_OF_INDICES);
     }
+
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+        @JsonProperty("max_number_of_indices")
+        @Min(1)
+        public abstract Builder maxNumberOfIndices(int maxNumberOfIndices);
+
+        @NotNull
+        @JsonProperty("type")
+        public abstract Builder type(@NotNull String type);
+
+        @JsonCreator
+        public static Builder builder() {
+            return new AutoValue_NoopRetentionStrategyConfig.Builder();
+        }
+
+        public abstract NoopRetentionStrategyConfig build();
+    }
+
 }
