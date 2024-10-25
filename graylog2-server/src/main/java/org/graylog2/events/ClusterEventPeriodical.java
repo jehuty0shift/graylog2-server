@@ -194,7 +194,7 @@ public class ClusterEventPeriodical extends Periodical {
         // Resorting to ugly MongoDB Java Client because of https://github.com/devbliss/mongojack/issues/88
         final BasicDBList consumersList = new BasicDBList();
         consumersList.add(nodeId.toString());
-        final Bson query = Filters.in("consumers", consumersList);
+        final Bson query = Filters.nin("consumers", consumersList);
 
         return dbCollection.find(query).sort(Sorts.ascending("timestamp"));
     }

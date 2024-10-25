@@ -102,8 +102,8 @@ public class MessageTest {
         assertNull(m.getField("somethin$g"));
 
         m = new Message("foo", "bar", Instant.now());
-        m.addField("someäthing", "bar");
-        assertNull(m.getField("someäthing"));
+        m.addField("some☮\uFE0Fthing", "bar");
+        assertNull(m.getField("some☮\uFE0Fthing"));
     }
 
     @Test
@@ -256,14 +256,14 @@ public class MessageTest {
 
         message.addStream(stream1);
 
-        final Set<Stream> onlyWithStream1 = message.getStreams();
-        assertThat(onlyWithStream1).containsOnly(stream1);
+        final Set<Stream> viewOfStream1 = message.getStreams();
+        assertThat(viewOfStream1).containsOnly(stream1);
 
         message.addStreams(Sets.newHashSet(stream3, stream2));
         assertThat(message.getStreams()).containsOnly(stream1, stream2, stream3);
 
-        // getStreams is a copy and doesn't change after mutations
-        assertThat(onlyWithStream1).containsOnly(stream1);
+        // getStreams is not a copy and doesn't change after mutations
+        assertThat(viewOfStream1).containsAll(List.of(stream1,stream2, stream3));
 
         // stream2 was assigned
         assertThat(message.removeStream(stream2)).isTrue();
@@ -300,8 +300,8 @@ public class MessageTest {
 
         message.addStream(stream3);
 
-        // getIndexSets is a copy and doesn't change after mutations
-        assertThat(indexSets).containsOnly(indexSet1);
+        // getIndexSets is not anymore a copy and reflect the change after mutations
+        assertThat(indexSets).containsAll(List.of(indexSet1, indexSet2));
     }
 
     @Test

@@ -126,10 +126,6 @@ public class V20191125144500_MigrateDashboardsToViewsTest {
             return new String(chars);
         }
 
-        private static int dateToTimestampSeconds(Date time) {
-            return (int)(time.getTime() / 1000L);
-        }
-
         private byte[] makeByteArray() {
             ByteBuffer buffer = ByteBuffer.allocate(12);
             int timestamp = (int)(this.date.getTime() / 1000L);

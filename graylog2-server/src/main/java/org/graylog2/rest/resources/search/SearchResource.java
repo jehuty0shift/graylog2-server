@@ -226,7 +226,7 @@ public abstract class SearchResource extends RestResource {
         if (config == null || Period.ZERO.equals(config.queryTimeRangeLimit())) {
             from = originalFrom;
         } else {
-            final Instant limitedFrom = to.minus(config.queryTimeRangeLimit().getMillis(), ChronoUnit.MILLIS);
+            final Instant limitedFrom = to.minus(config.queryTimeRangeLimit().toStandardDuration().getMillis(), ChronoUnit.MILLIS);
             from = limitedFrom.isAfter(originalFrom) ? limitedFrom : originalFrom;
         }
 

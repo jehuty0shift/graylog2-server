@@ -82,10 +82,9 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
     @VisibleForTesting
     static MongoCollection<ClusterConfig> prepareCollection(final MongoConnection mongoConnection) {
 
-        MongoCollection<ClusterConfig> mongoCollection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, ClusterConfig.class);
+        MongoCollection<ClusterConfig> mongoCollection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, ClusterConfig.class).withWriteConcern(WriteConcern.JOURNALED);
 
         mongoCollection.createIndex(Sorts.ascending("type"), new IndexOptions().name("unique_type").unique(true));
-        mongoCollection.withWriteConcern(WriteConcern.JOURNALED);
 
         return mongoCollection;
     }

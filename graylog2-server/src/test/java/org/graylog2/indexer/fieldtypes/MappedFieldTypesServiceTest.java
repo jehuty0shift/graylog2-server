@@ -26,6 +26,7 @@ import org.graylog2.indexer.IndexSetRegistry;
 import org.graylog2.indexer.fieldtypes.kefla.KeflaService;
 import org.graylog2.streams.StreamService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -65,6 +66,7 @@ public class MappedFieldTypesServiceTest {
     }
 
     @Test
+    @Ignore("We do not support compound type in LDP")
     public void fieldsOfSameTypeDoNotReturnCompoundTypeIfPropertiesAreDifferent() {
         final List<IndexFieldTypesDTO> fieldTypes = ImmutableList.of(
                 createIndexTypes(
@@ -99,6 +101,7 @@ public class MappedFieldTypesServiceTest {
     }
 
     @Test
+    @Ignore("We do not support compound type in LDP")
     public void fieldsOfDifferentTypesDoReturnCompoundType() {
         final List<IndexFieldTypesDTO> fieldTypes = ImmutableList.of(
                 createIndexTypes(

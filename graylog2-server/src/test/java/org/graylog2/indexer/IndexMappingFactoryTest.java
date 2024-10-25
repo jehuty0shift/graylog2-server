@@ -45,10 +45,6 @@ public class IndexMappingFactoryTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "1.7.3",
-            "2.0.0",
-            "3.0.0",
-            "4.0.0",
             "8.0.0",
             "9.0.0"
     })
@@ -58,10 +54,6 @@ public class IndexMappingFactoryTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "1.7.3",
-            "2.0.0",
-            "3.0.0",
-            "4.0.0",
             "8.0.0",
             "9.0.0"
     })
@@ -74,7 +66,8 @@ public class IndexMappingFactoryTest {
 
         assertThatThrownBy(() -> sut.createIndexMapping(templateType))
                 .isInstanceOf(ElasticsearchException.class)
-                .hasMessageStartingWith("Unsupported Elasticsearch version: " + version)
+                .hasMessageStartingWith("Unsupported")
+                .hasMessageContaining(version)
                 .hasNoCause();
     }
 
@@ -87,7 +80,11 @@ public class IndexMappingFactoryTest {
             "5.4.0, IndexMapping5",
             "6.3.1, IndexMapping6",
             "6.8.1, IndexMapping6",
-            "7.8.0, IndexMapping7"
+            "7.8.0, IndexMapping7",
+            "1.7.3, IndexMapping7",
+            "2.0.0, IndexMapping7",
+            "3.0.0, IndexMapping7",
+            "4.0.0, IndexMapping7",
     })
     void createsMessageIndexMappings(String version, String expectedMappingClass) throws ClassNotFoundException {
         testForIndexMappingType(version, expectedMappingClass, IndexSetConfig.TemplateType.MESSAGES);

@@ -281,7 +281,7 @@ public class ToolsTest {
 
     @Test
     public void testElasticSearchTimeFormatToISO8601() {
-        assertTrue(Tools.elasticSearchTimeFormatToISO8601("2014-07-31 14:21:02.000").equals("2014-07-31T14:21:02.000Z"));
+        assertEquals("2014-07-31T14:21:02.003Z", Tools.elasticSearchTimeFormatToISO8601("2014-07-31 14:21:02.003"));
     }
 
     @Test
