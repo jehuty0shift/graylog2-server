@@ -46,7 +46,12 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -310,13 +315,23 @@ public class AggregationEventProcessorTest {
     @Test
     public void createEventsWithFilter() throws Exception {
         when(eventProcessorDependencyCheck.hasMessagesIndexedUpTo(any(DateTime.class))).thenReturn(true);
-
+        when(streamService.loadByIds(any(ImmutableSet.class))).thenAnswer((invocation) -> {
+            Set<StreamMock> result = List.of(
+                new StreamMock(Collections.singletonMap("_id", "stream-1"), Collections.emptyList()),
+                new StreamMock(Collections.singletonMap("_id", "stream-2"), Collections.emptyList()),
+                new StreamMock(Collections.singletonMap("_id", "stream-3"), Collections.emptyList()),
+                new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_STREAM_ID), Collections.emptyList()),
+                new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_EVENTS_STREAM_ID), Collections.emptyList()),
+                new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_SYSTEM_EVENTS_STREAM_ID), Collections.emptyList())
+        ).stream().filter(s -> invocation.getArgument(0,ImmutableSet.class).contains(s.getId())).collect(Collectors.toSet());
+            return result;
+        });
         final DateTime now = DateTime.now(DateTimeZone.UTC);
         final AbsoluteRange timerange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
 
         final AggregationEventProcessorConfig config = AggregationEventProcessorConfig.builder()
                 .query("")
-                .streams(ImmutableSet.of())
+                .streams(ImmutableSet.of("stream-1"))
                 .groupBy(ImmutableList.of())
                 .series(ImmutableList.of())
                 .conditions(null)
@@ -356,10 +371,22 @@ public class AggregationEventProcessorTest {
     public void createEventsWithoutRequiredMessagesBeingIndexed() throws Exception {
         final DateTime now = DateTime.now(DateTimeZone.UTC);
         final AbsoluteRange timerange = AbsoluteRange.create(now.minusHours(1), now.plusHours(1));
+        when(streamService.loadByIds(any(ImmutableSet.class))).thenAnswer((invocation) -> {
+            Set<StreamMock> result = List.of(
+                    new StreamMock(Collections.singletonMap("_id", "stream-1"), Collections.emptyList()),
+                    new StreamMock(Collections.singletonMap("_id", "stream-2"), Collections.emptyList()),
+                    new StreamMock(Collections.singletonMap("_id", "stream-3"), Collections.emptyList()),
+                    new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_STREAM_ID), Collections.emptyList()),
+                    new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_EVENTS_STREAM_ID), Collections.emptyList()),
+                    new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_SYSTEM_EVENTS_STREAM_ID), Collections.emptyList())
+            ).stream().filter(s -> invocation.getArgument(0, ImmutableSet.class).contains(s.getId())).collect(Collectors.toSet());
+
+            return result;
+        });
 
         final AggregationEventProcessorConfig config = AggregationEventProcessorConfig.builder()
                 .query("")
-                .streams(ImmutableSet.of())
+                .streams(ImmutableSet.of("stream-1"))
                 .groupBy(ImmutableList.of())
                 .series(ImmutableList.of())
                 .conditions(null)
@@ -524,6 +551,7 @@ public class AggregationEventProcessorTest {
                 new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_EVENTS_STREAM_ID), Collections.emptyList()),
                 new StreamMock(Collections.singletonMap("_id", StreamImpl.DEFAULT_SYSTEM_EVENTS_STREAM_ID), Collections.emptyList())
         ));
+
 
         final EventDefinitionDto eventDefinitionDto = EventDefinitionDto.builder()
                 .id("dto-id-1")

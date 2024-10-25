@@ -69,7 +69,7 @@ public final class AccessTokenAuthToken implements HostAuthenticationToken, Audi
 
     @Override
     public int hashCode() {
-        return Objects.hash(token, host, token);
+        return Objects.hash(token, host, token, mustAudit);
     }
 
     @Override

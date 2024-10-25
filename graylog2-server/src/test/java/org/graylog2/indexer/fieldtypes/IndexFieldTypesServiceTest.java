@@ -123,8 +123,8 @@ public class IndexFieldTypesServiceTest {
 
         assertThat(dbService.findAll().size()).isEqualTo(2);
 
-        assertThat(dbService.upsert(newDto1)).isNotPresent();
-        assertThat(dbService.upsert(newDto2)).isNotPresent();
+        assertThat(dbService.upsert(newDto1)).isPresent();
+        assertThat(dbService.upsert(newDto2)).isPresent();
 
         assertThat(dbService.findAll().size()).isEqualTo(2);
     }

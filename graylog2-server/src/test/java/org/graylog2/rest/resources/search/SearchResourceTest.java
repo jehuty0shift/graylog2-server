@@ -24,6 +24,7 @@ import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.indexer.searches.timeranges.AbsoluteRange;
 import org.graylog2.plugin.indexer.searches.timeranges.TimeRange;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeFieldType;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.junit.Before;
@@ -74,7 +75,7 @@ public class SearchResourceTest {
                 .build());
 
         final DateTime from = new DateTime(2015, 1, 15, 12, 0, DateTimeZone.UTC);
-        final DateTime to = from.plusHours(1);
+        final DateTime to = new DateTime(from).plusHours(1);
         final TimeRange timeRange = AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()), Instant.ofEpochMilli(to.getMillis()));
 
         final TimeRange restrictedTimeRange = searchResource.restrictTimeRange(timeRange);
@@ -111,12 +112,12 @@ public class SearchResourceTest {
                 .build());
 
         final DateTime from = new DateTime(2015, 1, 15, 12, 0, DateTimeZone.UTC);
-        final DateTime to = from.plus(queryLimitPeriod.multipliedBy(2));
+        final DateTime to = new DateTime(from).plus(queryLimitPeriod.multipliedBy(2));
         final TimeRange timeRange = AbsoluteRange.create(Instant.ofEpochMilli(from.getMillis()),Instant.ofEpochMilli(to.getMillis()));
         final TimeRange restrictedTimeRange = searchResource.restrictTimeRange(timeRange);
 
         assertThat(restrictedTimeRange).isNotNull();
-        assertThat(restrictedTimeRange.getFrom()).isEqualTo(to.minus(queryLimitPeriod));
-        assertThat(restrictedTimeRange.getTo()).isEqualTo(to);
+        assertThat(restrictedTimeRange.getFrom()).isEqualTo(Instant.ofEpochMilli(to.minus(queryLimitPeriod).getMillis()));
+        assertThat(restrictedTimeRange.getTo()).isEqualTo(Instant.ofEpochMilli(to.getMillis()));
     }
 }

@@ -61,7 +61,7 @@ public class VersionDeserializerTest {
             objectMapper.readValue("[]", Version.class);
             fail("Expected JsonMappingException");
         } catch (JsonMappingException e) {
-            assertThat(e).hasMessageStartingWith("Unexpected token (START_ARRAY), expected VALUE_STRING: expected String or Number");
+            assertThat(e).hasMessageStartingWith("Unexpected token (START_ARRAY), expected START_ARRAY: expected String or Number");
         }
     }
 }

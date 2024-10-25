@@ -126,14 +126,14 @@ public abstract class PaginatedDbService<DTO> {
      * @return the paginated list
      */
     protected PaginatedList<DTO> findPaginatedWithQueryAndSort(Bson query, Bson sort, int page, int perPage) {
+        final int total = (int)db.countDocuments(query);
         FindIterable<DTO> cursor = db.find(query)
                 .sort(sort)
                 .limit(perPage)
                 .skip(perPage * Math.max(0, page - 1));
         final long grandTotal = db.countDocuments();
         List<DTO> elements = cursor.into(new ArrayList<>());
-
-        return new PaginatedList<>(Collections.unmodifiableList(elements), elements.size(), page, perPage, grandTotal);
+        return new PaginatedList<>(Collections.unmodifiableList(elements), total, page, perPage, grandTotal);
     }
 
     protected ImmutableList<DTO> asImmutableList(Iterator<? extends DTO> cursor) {
