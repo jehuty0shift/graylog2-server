@@ -37,6 +37,7 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class HttpConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(HttpConfiguration.class);
@@ -85,6 +86,9 @@ public class HttpConfiguration {
 
     @Parameter(value= "http_enable_csp")
     private boolean httpEnableCSP = true;
+
+    @Parameter(value = "http_content_security_policy")
+    private String httpContentSecurityPolicy;
 
     public HostAndPort getHttpBindAddress() {
         return httpBindAddress
@@ -219,6 +223,8 @@ public class HttpConfiguration {
     }
 
     public boolean isHttpEnableCSP(){ return httpEnableCSP;}
+
+    public Optional<String> getHttpContentSecurityPolicy() { return Optional.ofNullable(httpContentSecurityPolicy);}
 
     @ValidatorMethod
     @SuppressWarnings("unused")
