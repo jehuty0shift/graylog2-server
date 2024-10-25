@@ -16,12 +16,15 @@ public class CSPHeaderFilter implements ContainerRequestFilter, ContainerRespons
     public static final String CSP_NONCE = "cspNonce";
     private boolean isCSPEnabled;
     private SecureRandom secureRandom;
+    private static final String DEFAULT_CSP_STRING = "default-src 'self' ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'nonce-%NONCE%'; img-src https://*.openstreetmap.org/ https://*.tile.openstreetmap.org/ 'self' data:";
+    private final String httpContentSecurityPolicy;
 
     @Inject
     public CSPHeaderFilter(HttpConfiguration httpConfiguration) {
 
         this.isCSPEnabled = httpConfiguration.isHttpEnableCSP();
         secureRandom = new SecureRandom();
+        this.httpContentSecurityPolicy = httpConfiguration.getHttpContentSecurityPolicy().orElse(DEFAULT_CSP_STRING);
     }
 
     @Override
@@ -41,11 +44,15 @@ public class CSPHeaderFilter implements ContainerRequestFilter, ContainerRespons
         if (!isCSPEnabled) {
             return;
         }
-        
+
         String nonce = requestContext.getHeaders().getFirst(CSP_NONCE);
 
         responseContext.getHeaders().add(
                 "Content-Security-Policy",
-                "default-src 'self' ; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'nonce-" + nonce + "'; img-src https://*.openstreetmap.org/ https://*.tile.openstreetmap.org/ 'self' data:");
+                replaceNonce(httpContentSecurityPolicy,nonce));
+    }
+
+    private String replaceNonce(final String csPolicy, final String nonce) {
+        return csPolicy.replace("%NONCE%", nonce);
     }
 }
