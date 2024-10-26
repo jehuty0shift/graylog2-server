@@ -78,6 +78,11 @@ public class StreamImpl extends PersistedImpl implements Stream {
         this.streamRules = null;
         this.outputs = null;
         this.indexSet = indexSet;
+        if( indexSet == null) {
+            RuntimeException ex = new IllegalStateException("Index Set cannot be null");
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     protected StreamImpl(ObjectId id, Map<String, Object> fields) {
@@ -92,6 +97,11 @@ public class StreamImpl extends PersistedImpl implements Stream {
 
         this.streamRules = streamRules;
         this.outputs = outputs;
+        if( indexSet == null) {
+            RuntimeException ex = new IllegalStateException("Index Set cannot be null");
+            ex.printStackTrace();
+            throw ex;
+        }
         this.indexSet = indexSet;
     }
 

@@ -25,6 +25,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.UuidRepresentation;
@@ -76,8 +77,8 @@ public class TrafficCounterService {
                 Updates.combine(
                         Updates.inc("input." + nodeId.toString(), inLastMinute),
                         Updates.inc("output." + nodeId.toString(), outLastMinute),
-                        Updates.inc("decoded." + nodeId.toString(), decodedLastMinute)));
-        if (update.getModifiedCount() == 0) {
+                        Updates.inc("decoded." + nodeId.toString(), decodedLastMinute)), new UpdateOptions().upsert(true));
+        if (update.getModifiedCount() == 0 || update.getUpsertedId() == null) {
             LOG.warn("Unable to update traffic of node {}: {}", nodeId, update);
         }
     }

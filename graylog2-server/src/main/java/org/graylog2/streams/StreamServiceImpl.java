@@ -204,13 +204,11 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
         }
 
         final Map<String, IndexSet> indexSets = indexSetsForStreams(results);
-
         final Map<String, Output> outputsById = outputService.loadAll() //outputs are not numerous
                 .stream()
                 .collect(Collectors.toMap(Output::getId, Function.identity()));
 
         final Map<String, List<StreamRule>> allStreamRules = streamRuleService.loadForStreamIds(streamIds);
-
         final List<Stream> streams = new ArrayList<>(results.size());
         for (DBObject o : results) {
             final ObjectId objectId = (ObjectId) o.get("_id");
@@ -235,7 +233,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
             @SuppressWarnings("unchecked")
             final Map<String, Object> fields = o.toMap();
 
-            final String indexSetId = (String) fields.get(StreamImpl.FIELD_INDEX_SET_ID);
+            final String indexSetId = (String) o.get(StreamImpl.FIELD_INDEX_SET_ID);
 
             streams.add(new StreamImpl(objectId, fields, streamRules, outputs, indexSets.get(indexSetId)));
         }

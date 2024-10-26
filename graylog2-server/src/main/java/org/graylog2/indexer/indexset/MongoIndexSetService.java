@@ -127,7 +127,11 @@ public class MongoIndexSetService implements IndexSetService {
 
     @Override
     public List<IndexSetConfig> findByIds(Set<String> ids) {
-        return Collections.unmodifiableList(collection.find(Filters.in("_id", ids.stream().map(ObjectId::new))).into(new ArrayList<>()));
+        return Collections.unmodifiableList(collection.find(Filters.in("_id",
+                        ids.stream()
+                                .map(ObjectId::new)
+                                .collect(Collectors.toList())))
+                .into(new ArrayList<>()));
     }
 
     /**
