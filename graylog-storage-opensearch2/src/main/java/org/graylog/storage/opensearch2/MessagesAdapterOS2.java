@@ -2,23 +2,27 @@ package org.graylog.storage.opensearch2;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.google.common.collect.Iterables;
+import org.graylog2.indexer.IndexNotFoundException;
 import org.graylog2.indexer.messages.*;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.Version;
 import org.opensearch.OpenSearchException;
-import org.opensearch.action.bulk.BulkItemResponse;
-import org.opensearch.action.bulk.BulkRequest;
-import org.opensearch.action.bulk.BulkResponse;
-import org.opensearch.action.get.GetRequest;
-import org.opensearch.action.get.GetResponse;
-import org.opensearch.action.index.IndexRequest;
-import org.opensearch.client.indices.AnalyzeRequest;
-import org.opensearch.client.indices.AnalyzeResponse;
-import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch.core.BulkRequest;
+import org.opensearch.client.opensearch.core.BulkResponse;
+import org.opensearch.client.opensearch.core.GetRequest;
+import org.opensearch.client.opensearch.core.GetResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkOperation;
+import org.opensearch.client.opensearch.core.bulk.BulkResponseItem;
+import org.opensearch.client.opensearch.core.bulk.IndexOperation;
+import org.opensearch.client.opensearch.indices.AnalyzeRequest;
+import org.opensearch.client.opensearch.indices.AnalyzeResponse;
+import org.opensearch.client.opensearch.indices.analyze.AnalyzeToken;
 import org.opensearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,14 +43,14 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     static final String UNAVAILABLE_SHARDS_EXCEPTION = "unavailable_shards_exception";
     static final String PRIMARY_SHARD_NOT_ACTIVE_REASON = "primary shard is not active";
 
-    private final OpensearchClient client;
+    private final OpenSearchClient client;
     private final Meter invalidTimestampMeter;
     private final ChunkedBulkIndexer chunkedBulkIndexer;
     private final ObjectMapper objectMapper;
 
     @Inject
-    public MessagesAdapterOS2(OpensearchClient opensearchClient, MetricRegistry metricRegistry, ChunkedBulkIndexer chunkedBulkIndexer, ObjectMapper objectMapper) {
-        this.client = opensearchClient;
+    public MessagesAdapterOS2(OpenSearchClient openSearchClient, MetricRegistry metricRegistry, ChunkedBulkIndexer chunkedBulkIndexer, ObjectMapper objectMapper) {
+        this.client = openSearchClient;
         this.invalidTimestampMeter = metricRegistry.meter(name(Messages.class, "invalid-timestamps"));
         this.chunkedBulkIndexer = chunkedBulkIndexer;
         this.objectMapper = objectMapper;
@@ -54,25 +58,48 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
 
     @Override
     public ResultMessage get(String messageId, String index) throws DocumentNotFoundException {
-        final GetRequest getRequest = new GetRequest(index, messageId);
+        final GetRequest getRequest = new GetRequest.Builder().index(index).id(messageId).build();
 
-        final GetResponse result = this.client.execute((c, requestOptions) -> c.get(getRequest, requestOptions));
+        try {
+            GetResponse<Map> response = client.get(getRequest, Map.class);
 
-        if (!result.isExists()) {
+            if (!response.found()) {
+                throw new DocumentNotFoundException(index, messageId);
+            }
+
+            return ResultMessage.parseFromSource(messageId, index, response.source());
+        } catch (IOException ex) {
+            LOG.error("IO Exception when getting object", ex);
             throw new DocumentNotFoundException(index, messageId);
         }
-
-        return ResultMessage.parseFromSource(messageId, index, result.getSource());
     }
 
     @Override
     public List<String> analyze(String toAnalyze, String index, String analyzer) {
-        final AnalyzeRequest analyzeRequest = AnalyzeRequest.withIndexAnalyzer(index, analyzer, toAnalyze);
+        try {
+            final AnalyzeRequest analyzeRequest = new AnalyzeRequest.Builder().index(index).analyzer(analyzer).text(toAnalyze).build();
 
-        final AnalyzeResponse result = client.execute((c, requestOptions) -> c.indices().analyze(analyzeRequest, requestOptions));
-        return result.getTokens().stream()
-                .map(AnalyzeResponse.AnalyzeToken::getTerm)
-                .collect(Collectors.toList());
+            AnalyzeResponse response = client.indices().analyze(analyzeRequest);
+
+            return response.tokens().stream().map(AnalyzeToken::token).collect(Collectors.toList());
+
+        } catch (IOException ex) {
+            throw exceptionFrom(ex, ex.getMessage());
+        }
+    }
+
+    private OpenSearchException exceptionFrom(Exception e, String errorMessage) {
+        if (e instanceof OpenSearchException) {
+            final OpenSearchException opensearchException = (OpenSearchException) e;
+            if (isIndexNotFoundException(opensearchException)) {
+                throw IndexNotFoundException.create(errorMessage + opensearchException.getResourceId(), opensearchException.getIndex().getName());
+            }
+        }
+        return new OpenSearchException(errorMessage, e);
+    }
+
+    private boolean isIndexNotFoundException(OpenSearchException e) {
+        return e.getMessage().contains("index_not_found_exception");
     }
 
     @Override
@@ -99,13 +126,15 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
 
             indexedSuccessfully += chunk.size();
 
-            final List<BulkItemResponse> failures = extractFailures(result);
+            final List<BulkResponseItem> failures = extractFailures(result);
 
             indexFailures.addAll(indexingErrorsFrom(failures, messageList));
 
             logDebugInfo(messageList, offset, chunkSize, chunkCount, result, failures);
 
-            logFailures(result, failures.size());
+            if(result.errors()) {
+                logFailures(result, failures.size());
+            }
 
             chunkCount++;
         }
@@ -113,20 +142,19 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
         return indexFailures;
     }
 
-    private List<BulkItemResponse> extractFailures(BulkResponse result) {
-        return Arrays.stream(result.getItems())
-                        .filter(BulkItemResponse::isFailed)
-                        .collect(Collectors.toList());
+    private List<BulkResponseItem> extractFailures(BulkResponse result) {
+        return result.items().stream().filter(t -> t.status() > 400).collect(Collectors.toList());
+
     }
 
     private void logFailures(BulkResponse result, int failureCount) {
-        if (failureCount > 0) {
-            LOG.error("Failed to index [{}] messages. Please check the index error log in your web interface for the reason. Error: {}",
-                    failureCount, result.buildFailureMessage());
-        }
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Failed to index [{}] messages. Please check the index error log in your web interface for the reason. Error: {}",
+                        failureCount, result.items().stream().filter(i -> i.status() > 400 && i.error() != null).findAny().map(i -> i.error()!=null?i.error().reason():null).orElse("UNKNOWN ERROR"));
+            }
     }
 
-    private void logDebugInfo(List<IndexingRequest> messageList, int offset, int chunkSize, int chunkCount, BulkResponse result, List<BulkItemResponse> failures) {
+    private void logDebugInfo(List<IndexingRequest> messageList, int offset, int chunkSize, int chunkCount, BulkResponse result, List<BulkResponseItem> failures) {
         if (LOG.isDebugEnabled()) {
             String chunkInfo = "";
             if (chunkSize != messageList.size()) {
@@ -134,16 +162,18 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
                         (int) Math.ceil((double) messageList.size() / chunkSize), offset);
             }
             LOG.debug("Index: Bulk indexed {} messages{}, failures: {}",
-                    result.getItems().length, chunkInfo, failures.size());
+                    result.items().size(), chunkInfo, failures.size());
         }
     }
 
     private BulkResponse runBulkRequest(int indexedSuccessfully, List<IndexingRequest> chunk) throws ChunkedBulkIndexer.EntityTooLargeException {
         final BulkRequest bulkRequest = createBulkRequest(chunk);
 
-        final BulkResponse result;
+
         try {
-            result = this.client.execute((c, requestOptions) -> c.bulk(bulkRequest, requestOptions));
+            return client.bulk(bulkRequest);
+        } catch (IOException e) {
+            throw new org.graylog2.indexer.ElasticsearchException(e);
         } catch (OpenSearchException e) {
             for (OpenSearchException cause : e.guessRootCauses()) {
                 if (cause.status().equals(RestStatus.REQUEST_ENTITY_TOO_LARGE)) {
@@ -152,15 +182,16 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
             }
             throw new org.graylog2.indexer.ElasticsearchException(e);
         }
-        return result;
+
     }
 
     private BulkRequest createBulkRequest(List<IndexingRequest> chunk) {
-        final BulkRequest bulkRequest = new BulkRequest();
+        final BulkRequest.Builder bulkRequest = new BulkRequest.Builder();
+        List<BulkOperation> operations = new ArrayList<>(chunk.size());
         for (IndexingRequest request: chunk) {
-            bulkRequest.add(indexRequestFrom(request));
+            operations.add(indexRequestFrom(request));
         }
-        return bulkRequest;
+        return bulkRequest.operations(operations).build();
     }
 
     private List<Messages.IndexingError> indexingErrorsFrom(List<IndexingRequest> messageList) {
@@ -173,7 +204,7 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
         return Messages.IndexingError.create(indexingRequest.message(), indexingRequest.indexSet().getWriteIndexAlias());
     }
 
-    private List<Messages.IndexingError> indexingErrorsFrom(List<BulkItemResponse> failedItems, List<IndexingRequest> messageList) {
+    private List<Messages.IndexingError> indexingErrorsFrom(List<BulkResponseItem> failedItems, List<IndexingRequest> messageList) {
         if (failedItems.isEmpty()) {
             return Collections.emptyList();
         }
@@ -185,37 +216,34 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
 
         return failedItems.stream()
                 .map(item -> {
-                    final Indexable message = messageMap.get(item.getId());
+                    final Indexable message = messageMap.get(item.id());
 
                     return indexingErrorFromResponse(item, message);
                 })
                 .collect(Collectors.toList());
     }
 
-    private Messages.IndexingError indexingErrorFromResponse(BulkItemResponse item, Indexable message) {
-        return Messages.IndexingError.create(message, item.getIndex(), errorTypeFromResponse(item), item.getFailureMessage());
+    private Messages.IndexingError indexingErrorFromResponse(BulkResponseItem item, Indexable message) {
+        return Messages.IndexingError.create(message, item.index(), errorTypeFromResponse(item), item.error()!= null? item.error().reason():"Unknown Reason");
     }
 
-    private Messages.IndexingError.ErrorType errorTypeFromResponse(BulkItemResponse item) {
-        final ParsedOpensearchException exception = ParsedOpensearchException.from(item.getFailureMessage());
-        switch (exception.type()) {
-            case MAPPER_PARSING_EXCEPTION: return Messages.IndexingError.ErrorType.MappingError;
-            case INDEX_BLOCK_ERROR: if (exception.reason().contains(INDEX_BLOCK_REASON)) return Messages.IndexingError.ErrorType.IndexBlocked;
-            case UNAVAILABLE_SHARDS_EXCEPTION: if (exception.reason().contains(PRIMARY_SHARD_NOT_ACTIVE_REASON)) return Messages.IndexingError.ErrorType.IndexBlocked;
-            default: return Messages.IndexingError.ErrorType.Unknown;
+    private Messages.IndexingError.ErrorType errorTypeFromResponse(BulkResponseItem item) {
+        final String type = item.error()!= null?item.error().type():"UNKNOWN";
+        switch (type) {
+            case MAPPER_PARSING_EXCEPTION:  {return Messages.IndexingError.ErrorType.MappingError;}
+            case INDEX_BLOCK_ERROR: {if (item.error().reason().contains(INDEX_BLOCK_REASON)) return Messages.IndexingError.ErrorType.IndexBlocked;}
+            case UNAVAILABLE_SHARDS_EXCEPTION: {if (item.error().reason().contains(PRIMARY_SHARD_NOT_ACTIVE_REASON)) return Messages.IndexingError.ErrorType.IndexBlocked;}
+            default:
+                return Messages.IndexingError.ErrorType.Unknown;
         }
     }
 
-    private IndexRequest indexRequestFrom(IndexingRequest request) {
+    private BulkOperation indexRequestFrom(IndexingRequest request) {
         final byte[] body;
-        try {
-            body = this.objectMapper.writeValueAsBytes(request.message().toElasticSearchObject(objectMapper, this.invalidTimestampMeter, BackendVersion.fromOS(Version.from(2,0,0))));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        return new IndexRequest(request.indexSet().getWriteIndexAlias())
-                .id(request.message().getId())
-                .source(body, XContentType.JSON);
+        Map<String, Object> messageMap = request.message().toElasticSearchObject(objectMapper, this.invalidTimestampMeter, BackendVersion.fromOS(Version.from(2, 0, 0)));
+
+        return new BulkOperation.Builder().index(new IndexOperation.Builder<Map<String, Object>>().document(messageMap).id(request.message().getId()).index(request.indexSet().getWriteIndexAlias()).build()).build();
     }
+
 }
 

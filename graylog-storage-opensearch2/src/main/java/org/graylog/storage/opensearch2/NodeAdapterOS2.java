@@ -8,10 +8,10 @@ import javax.inject.Inject;
 import java.util.Optional;
 
 public class NodeAdapterOS2 implements NodeAdapter {
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
 
     @Inject
-    public NodeAdapterOS2(OpensearchClient client) {
+    public NodeAdapterOS2(OpensearchGraylogClient client) {
         this.client = client;
     }
 

@@ -28,12 +28,12 @@ public class SearchesAdapterOS2 implements SearchesAdapter {
     private static final String AGG_EXTENDED_STATS = "gl2_extended_stats";
     private static final String AGG_VALUE_COUNT = "gl2_value_count";
 
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
     private final Scroll scroll;
     private final SearchRequestFactory searchRequestFactory;
 
     @Inject
-    public SearchesAdapterOS2(OpensearchClient client,
+    public SearchesAdapterOS2(OpensearchGraylogClient client,
                               Scroll scroll,
                               SearchRequestFactory searchRequestFactory) {
         this.client = client;

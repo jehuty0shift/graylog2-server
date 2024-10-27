@@ -32,10 +32,10 @@ public class IndexToolsAdapterOS2 implements IndexToolsAdapter {
     private static final String AGG_DATE_HISTOGRAM = "source_date_histogram";
     private static final String AGG_MESSAGE_FIELD = "message_field";
     private static final String AGG_FILTER = "message_filter";
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
 
     @Inject
-    public IndexToolsAdapterOS2(OpensearchClient client) {
+    public IndexToolsAdapterOS2(OpensearchGraylogClient client) {
         this.client = client;
     }
 

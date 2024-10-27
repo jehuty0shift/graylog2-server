@@ -2,7 +2,7 @@ package org.graylog.storage.opensearch2.views.migrations;
 
 import com.google.common.collect.ImmutableMap;
 import org.graylog.plugins.views.migrations.V20200730000000_AddGl2MessageIdFieldAliasForEvents;
-import org.graylog.storage.opensearch2.OpensearchClient;
+import org.graylog.storage.opensearch2.OpensearchGraylogClient;
 import org.graylog2.indexer.ElasticsearchException;
 import org.opensearch.action.support.IndicesOptions;
 import org.opensearch.action.support.master.AcknowledgedResponse;
@@ -17,10 +17,10 @@ import static org.graylog2.plugin.Message.FIELD_GL2_MESSAGE_ID;
 
 public class V20200730000000_AddGl2MessageIdFieldAliasForEventsOS2 implements V20200730000000_AddGl2MessageIdFieldAliasForEvents.ElasticsearchAdapter {
 
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
 
     @Inject
-    public V20200730000000_AddGl2MessageIdFieldAliasForEventsOS2(OpensearchClient client) {
+    public V20200730000000_AddGl2MessageIdFieldAliasForEventsOS2(OpensearchGraylogClient client) {
         this.client = client;
     }
 

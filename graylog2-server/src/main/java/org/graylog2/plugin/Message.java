@@ -44,16 +44,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -316,7 +307,7 @@ public class Message implements Messages, Indexable {
     @Override
     @SuppressWarnings("FromTemporalAccessor")
     public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull final Meter invalidTimestampMeter, BackendVersion version) {
-        final Map<String, Object> obj = Maps.newHashMapWithExpectedSize(REQUIRED_FIELDS.size() + fields.size());
+        final Map<String, Object> obj = new TreeMap<>();
 
         for (Map.Entry<String, Object> entry : fields.entrySet()) {
             final String key = entry.getKey();

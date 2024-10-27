@@ -44,13 +44,13 @@ import java.util.stream.Collectors;
 
 public class ClusterAdapterOS2 implements ClusterAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterAdapterOS2.class);
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
     private final Duration requestTimeout;
     private final CatApi catApi;
     private final PlainJsonApi jsonApi;
 
     @Inject
-    public ClusterAdapterOS2(OpensearchClient client,
+    public ClusterAdapterOS2(OpensearchGraylogClient client,
                              @Named("elasticsearch_socket_timeout") Duration requestTimeout,
                              CatApi catApi,
                              PlainJsonApi jsonApi) {
