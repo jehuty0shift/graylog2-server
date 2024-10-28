@@ -56,6 +56,7 @@ public class OpenSearchJavaClientProvider implements Provider<OpenSearchClient> 
             @Named("elasticsearch_discovery_default_scheme") String defaultSchemeForDiscoveredNodes,
             @Named("elasticsearch_use_expect_continue") boolean useExpectContinue,
             CredentialsProvider credentialsProvider) {
+        objectMapper = new ObjectMapper().registerModules(new BlackbirdModule(), new Jdk8Module(), new JavaTimeModule());
         client = buildClient(
                 hosts,
                 connectTimeout,
@@ -64,7 +65,6 @@ public class OpenSearchJavaClientProvider implements Provider<OpenSearchClient> 
                 maxTotalConnectionsPerRoute,
                 useExpectContinue,
                 credentialsProvider);
-        objectMapper = new ObjectMapper().registerModules(new BlackbirdModule(), new Jdk8Module(), new JavaTimeModule());
 
     }
 

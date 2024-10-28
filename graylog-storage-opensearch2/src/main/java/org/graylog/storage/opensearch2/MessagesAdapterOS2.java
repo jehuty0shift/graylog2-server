@@ -3,13 +3,12 @@ package org.graylog.storage.opensearch2;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.google.common.collect.Iterables;
 import org.graylog2.indexer.IndexNotFoundException;
 import org.graylog2.indexer.messages.*;
 import org.graylog2.indexer.results.ResultMessage;
 import org.graylog2.plugin.BackendVersion;
+import org.graylog2.plugin.Message;
 import org.graylog2.plugin.Version;
 import org.opensearch.OpenSearchException;
 import org.opensearch.client.opensearch.OpenSearchClient;
@@ -47,6 +46,8 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     private final Meter invalidTimestampMeter;
     private final ChunkedBulkIndexer chunkedBulkIndexer;
     private final ObjectMapper objectMapper;
+    private final BackendVersion version;
+    private JsonpMessageSerializer serializer;
 
     @Inject
     public MessagesAdapterOS2(OpenSearchClient openSearchClient, MetricRegistry metricRegistry, ChunkedBulkIndexer chunkedBulkIndexer, ObjectMapper objectMapper) {
@@ -54,6 +55,8 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
         this.invalidTimestampMeter = metricRegistry.meter(name(Messages.class, "invalid-timestamps"));
         this.chunkedBulkIndexer = chunkedBulkIndexer;
         this.objectMapper = objectMapper;
+        this.version = BackendVersion.fromOS(Version.from(2, 0, 0));
+        this.serializer = new JsonpMessageSerializer();
     }
 
     @Override
@@ -148,7 +151,7 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     }
 
     private void logFailures(BulkResponse result, int failureCount) {
-            if (LOG.isErrorEnabled()) {
+            if (LOG.isErrorEnabled() && result.errors()) {
                 LOG.error("Failed to index [{}] messages. Please check the index error log in your web interface for the reason. Error: {}",
                         failureCount, result.items().stream().filter(i -> i.status() > 400 && i.error() != null).findAny().map(i -> i.error()!=null?i.error().reason():null).orElse("UNKNOWN ERROR"));
             }
@@ -239,10 +242,12 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     }
 
     private BulkOperation indexRequestFrom(IndexingRequest request) {
-        final byte[] body;
-        Map<String, Object> messageMap = request.message().toElasticSearchObject(objectMapper, this.invalidTimestampMeter, BackendVersion.fromOS(Version.from(2, 0, 0)));
+        //Map<String, Object> messageMap = request.message().toElasticSearchObject(objectMapper, this.invalidTimestampMeter, version);
 
-        return new BulkOperation.Builder().index(new IndexOperation.Builder<Map<String, Object>>().document(messageMap).id(request.message().getId()).index(request.indexSet().getWriteIndexAlias()).build()).build();
+        JsonpMessage jsonpMessage = new JsonpMessage((Message) request.message(), version);
+//
+//        LOG.info("LOG is {}", jsonpMessage.toJSonString());
+        return new BulkOperation.Builder().index(new IndexOperation.Builder<JsonpMessage>().document(jsonpMessage).id(request.message().getId()).index(request.indexSet().getWriteIndexAlias()).build()).build();
     }
 
 }
