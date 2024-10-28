@@ -43,20 +43,14 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     static final String PRIMARY_SHARD_NOT_ACTIVE_REASON = "primary shard is not active";
 
     private final OpenSearchClient client;
-    private final Meter invalidTimestampMeter;
     private final ChunkedBulkIndexer chunkedBulkIndexer;
-    private final ObjectMapper objectMapper;
     private final BackendVersion version;
-    private JsonpMessageSerializer serializer;
 
     @Inject
-    public MessagesAdapterOS2(OpenSearchClient openSearchClient, MetricRegistry metricRegistry, ChunkedBulkIndexer chunkedBulkIndexer, ObjectMapper objectMapper) {
+    public MessagesAdapterOS2(OpenSearchClient openSearchClient, MetricRegistry metricRegistry, ChunkedBulkIndexer chunkedBulkIndexer) {
         this.client = openSearchClient;
-        this.invalidTimestampMeter = metricRegistry.meter(name(Messages.class, "invalid-timestamps"));
         this.chunkedBulkIndexer = chunkedBulkIndexer;
-        this.objectMapper = objectMapper;
         this.version = BackendVersion.fromOS(Version.from(2, 0, 0));
-        this.serializer = new JsonpMessageSerializer();
     }
 
     @Override
@@ -146,14 +140,14 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     }
 
     private List<BulkResponseItem> extractFailures(BulkResponse result) {
-        return result.items().stream().filter(t -> t.status() > 400).collect(Collectors.toList());
+        return result.items().stream().filter(t -> t.status() > 399).collect(Collectors.toList());
 
     }
 
     private void logFailures(BulkResponse result, int failureCount) {
             if (LOG.isErrorEnabled() && result.errors()) {
                 LOG.error("Failed to index [{}] messages. Please check the index error log in your web interface for the reason. Error: {}",
-                        failureCount, result.items().stream().filter(i -> i.status() > 400 && i.error() != null).findAny().map(i -> i.error()!=null?i.error().reason():null).orElse("UNKNOWN ERROR"));
+                        failureCount, result.items().stream().filter(i -> i.error() != null).findAny().map(i -> i.error()!=null?i.error().reason():null).orElse("UNKNOWN ERROR"));
             }
     }
 
@@ -242,11 +236,8 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     }
 
     private BulkOperation indexRequestFrom(IndexingRequest request) {
-        //Map<String, Object> messageMap = request.message().toElasticSearchObject(objectMapper, this.invalidTimestampMeter, version);
 
         JsonpMessage jsonpMessage = new JsonpMessage((Message) request.message(), version);
-//
-//        LOG.info("LOG is {}", jsonpMessage.toJSonString());
         return new BulkOperation.Builder().index(new IndexOperation.Builder<JsonpMessage>().document(jsonpMessage).id(request.message().getId()).index(request.indexSet().getWriteIndexAlias()).build()).build();
     }
 

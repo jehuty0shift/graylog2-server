@@ -40,7 +40,6 @@ public class JsonpMessage implements JsonpSerializable {
 
     @Override
     public void serialize(JsonGenerator generator, JsonpMapper mapper) {
-        LOG.info("serializing");
         generator.writeStartObject();
 
 
@@ -49,13 +48,17 @@ public class JsonpMessage implements JsonpSerializable {
             if (key.equals(Message.FIELD_ID)) {
                 continue;
             }
+
             final Object value = entry.getValue();
+            if (Message.FIELD_TIMESTAMP.equals(key)) {
+                final Instant timestampValue = (Instant) value;
+                generator.write(Message.FIELD_TIMESTAMP, buildElasticSearchTimeFormat(timestampValue, version));
+                continue;
+            }
 
             if (key.contains(".")) {
                 final String newKey = key.replace('.', KEY_REPLACEMENT_CHAR);
                 // If the message already contains the transformed key, we skip the field and emit a warning.
-                // This is still not optimal but better than implementing expensive logic with multiple replacement
-                // character options. Conflicts should be rare...
                 if (!message.hasField(newKey)) {
                     generator.writeKey(newKey);
                     mapper.serialize(value, generator);
@@ -69,10 +72,9 @@ public class JsonpMessage implements JsonpSerializable {
                 generator.writeKey(key);
                 mapper.serialize(value, generator);
             }
+
         }
 
-//        obj.put(FIELD_MESSAGE, getMessage());
-//        obj.put(FIELD_SOURCE, getSource());
         if (message.getStreamIds().size() > 1) {
             generator.writeStartArray(Message.FIELD_STREAMS);
             for (String streamId : message.getStreamIds()) {
@@ -83,11 +85,7 @@ public class JsonpMessage implements JsonpSerializable {
             generator.write(Message.FIELD_STREAMS, message.getStreamIds().iterator().next());
         }
 
-        final Instant timestampValue = message.getTimestamp();
-        generator.write(Message.FIELD_TIMESTAMP, buildElasticSearchTimeFormat(timestampValue, version));
-
         generator.writeEnd();
-        LOG.info("end serializing");
     }
 
     public String toJSonString() {
