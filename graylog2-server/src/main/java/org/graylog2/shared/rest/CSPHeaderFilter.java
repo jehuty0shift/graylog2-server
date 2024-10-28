@@ -49,7 +49,7 @@ public class CSPHeaderFilter implements ContainerRequestFilter, ContainerRespons
 
         responseContext.getHeaders().add(
                 "Content-Security-Policy",
-                replaceNonce(httpContentSecurityPolicy,nonce));
+                replaceNonce(httpContentSecurityPolicy,nonce!=null?nonce:""));
     }
 
     private String replaceNonce(final String csPolicy, final String nonce) {
