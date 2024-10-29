@@ -43,14 +43,18 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     static final String PRIMARY_SHARD_NOT_ACTIVE_REASON = "primary shard is not active";
 
     private final OpenSearchClient client;
+    private final Meter invalidTimestampMeter;
     private final ChunkedBulkIndexer chunkedBulkIndexer;
     private final BackendVersion version;
+    private final ObjectMapper objMapper;
 
     @Inject
-    public MessagesAdapterOS2(OpenSearchClient openSearchClient, MetricRegistry metricRegistry, ChunkedBulkIndexer chunkedBulkIndexer) {
+    public MessagesAdapterOS2(OpenSearchClient openSearchClient, MetricRegistry metricRegistry, ChunkedBulkIndexer chunkedBulkIndexer, ObjectMapper objMapper) {
         this.client = openSearchClient;
         this.chunkedBulkIndexer = chunkedBulkIndexer;
+        this.invalidTimestampMeter = metricRegistry.meter(name(Messages.class, "invalid-timestamps"));
         this.version = BackendVersion.fromOS(Version.from(2, 0, 0));
+        this.objMapper = objMapper;
     }
 
     @Override
@@ -129,7 +133,7 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
 
             logDebugInfo(messageList, offset, chunkSize, chunkCount, result, failures);
 
-            if(result.errors()) {
+            if (result.errors()) {
                 logFailures(result, failures.size());
             }
 
@@ -145,10 +149,10 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     }
 
     private void logFailures(BulkResponse result, int failureCount) {
-            if (LOG.isErrorEnabled() && result.errors()) {
-                LOG.error("Failed to index [{}] messages. Please check the index error log in your web interface for the reason. Error: {}",
-                        failureCount, result.items().stream().filter(i -> i.error() != null).findAny().map(i -> i.error()!=null?i.error().reason():null).orElse("UNKNOWN ERROR"));
-            }
+        if (LOG.isErrorEnabled() && result.errors()) {
+            LOG.error("Failed to index [{}] messages. Please check the index error log in your web interface for the reason. Error: {}",
+                    failureCount, result.items().stream().filter(i -> i.error() != null).findAny().map(i -> i.error() != null ? i.error().reason() : null).orElse("UNKNOWN ERROR"));
+        }
     }
 
     private void logDebugInfo(List<IndexingRequest> messageList, int offset, int chunkSize, int chunkCount, BulkResponse result, List<BulkResponseItem> failures) {
@@ -185,7 +189,7 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     private BulkRequest createBulkRequest(List<IndexingRequest> chunk) {
         final BulkRequest.Builder bulkRequest = new BulkRequest.Builder();
         List<BulkOperation> operations = new ArrayList<>(chunk.size());
-        for (IndexingRequest request: chunk) {
+        for (IndexingRequest request : chunk) {
             operations.add(indexRequestFrom(request));
         }
         return bulkRequest.operations(operations).build();
@@ -221,15 +225,23 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
     }
 
     private Messages.IndexingError indexingErrorFromResponse(BulkResponseItem item, Indexable message) {
-        return Messages.IndexingError.create(message, item.index(), errorTypeFromResponse(item), item.error()!= null? item.error().reason():"Unknown Reason");
+        return Messages.IndexingError.create(message, item.index(), errorTypeFromResponse(item), item.error() != null ? item.error().reason() : "Unknown Reason");
     }
 
     private Messages.IndexingError.ErrorType errorTypeFromResponse(BulkResponseItem item) {
-        final String type = item.error()!= null?item.error().type():"UNKNOWN";
+        final String type = item.error() != null ? item.error().type() : "UNKNOWN";
         switch (type) {
-            case MAPPER_PARSING_EXCEPTION:  {return Messages.IndexingError.ErrorType.MappingError;}
-            case INDEX_BLOCK_ERROR: {if (item.error().reason().contains(INDEX_BLOCK_REASON)) return Messages.IndexingError.ErrorType.IndexBlocked;}
-            case UNAVAILABLE_SHARDS_EXCEPTION: {if (item.error().reason().contains(PRIMARY_SHARD_NOT_ACTIVE_REASON)) return Messages.IndexingError.ErrorType.IndexBlocked;}
+            case MAPPER_PARSING_EXCEPTION: {
+                return Messages.IndexingError.ErrorType.MappingError;
+            }
+            case INDEX_BLOCK_ERROR: {
+                if (item.error().reason().contains(INDEX_BLOCK_REASON))
+                    return Messages.IndexingError.ErrorType.IndexBlocked;
+            }
+            case UNAVAILABLE_SHARDS_EXCEPTION: {
+                if (item.error().reason().contains(PRIMARY_SHARD_NOT_ACTIVE_REASON))
+                    return Messages.IndexingError.ErrorType.IndexBlocked;
+            }
             default:
                 return Messages.IndexingError.ErrorType.Unknown;
         }
@@ -237,9 +249,12 @@ public class MessagesAdapterOS2 implements MessagesAdapter {
 
     private BulkOperation indexRequestFrom(IndexingRequest request) {
 
-        JsonpMessage jsonpMessage = new JsonpMessage((Message) request.message(), version);
-        return new BulkOperation.Builder().index(new IndexOperation.Builder<JsonpMessage>().document(jsonpMessage).id(request.message().getId()).index(request.indexSet().getWriteIndexAlias()).build()).build();
+        if (request.message() instanceof Message) {
+            JsonpMessage jsonpMessage = new JsonpMessage((Message) request.message(), version);
+            return new BulkOperation.Builder().index(new IndexOperation.Builder<JsonpMessage>().document(jsonpMessage).id(request.message().getId()).index(request.indexSet().getWriteIndexAlias()).build()).build();
+        } else {
+            Map<String, Object> jsonMessage = request.message().toElasticSearchObject(objMapper, invalidTimestampMeter, version);
+            return new BulkOperation.Builder().index(new IndexOperation.Builder<Map<String, Object>>().document(jsonMessage).id(request.message().getId()).index(request.indexSet().getWriteIndexAlias()).build()).build();
+        }
     }
-
 }
-
