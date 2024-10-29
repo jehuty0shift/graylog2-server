@@ -21,6 +21,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.google.inject.assistedinject.Assisted;
 import org.apache.commons.lang3.StringUtils;
 import org.graylog2.inputs.codecs.gelf.GELFMessage;
@@ -58,9 +60,10 @@ public class GelfCodec extends AbstractCodec {
     private static final int DEFAULT_DECOMPRESS_SIZE_LIMIT = 8388608;
 
     private final GelfChunkAggregator aggregator;
-    private static final ObjectMapper objectMapper = new ObjectMapper().enable(
-            JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
-            JsonParser.Feature.ALLOW_TRAILING_COMMA)
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .enable(
+                    JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
+                    JsonParser.Feature.ALLOW_TRAILING_COMMA)
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
     private final long decompressSizeLimit;
 
@@ -200,7 +203,13 @@ public class GelfCodec extends AbstractCodec {
             }
 
             // We already set short_message and host as message and source. Do not add as fields again.
-            if ("short_message".equals(key) || "host".equals(key)) {
+            if ("short_message".equals(key) ||
+                    "host".equals(key) ||
+                    "line".equals(key) ||
+                    "level".equals(key) ||
+                    "facility".equals(key) ||
+                    Message.FIELD_FULL_MESSAGE.equals(key)
+            ) {
                 continue;
             }
 
