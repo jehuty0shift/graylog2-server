@@ -21,12 +21,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
 import org.bson.types.ObjectId;
+import org.graylog2.indexer.IndexSet;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.shared.SuppressForbidden;
 import org.graylog2.streams.StreamImpl;
 import org.graylog2.streams.StreamService;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -137,6 +139,6 @@ public class StreamCacheServiceTest {
     }
 
     private Stream createStream(ObjectId id, Map<String, Object> fields) {
-        return new StreamImpl(id, fields, Collections.emptyList(), Collections.emptySet(), null);
+        return new StreamImpl(id, fields, Collections.emptyList(), Collections.emptySet(), Mockito.mock(IndexSet.class));
     }
 }

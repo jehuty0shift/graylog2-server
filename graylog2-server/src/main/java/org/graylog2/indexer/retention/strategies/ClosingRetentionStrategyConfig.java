@@ -20,13 +20,16 @@ package org.graylog2.indexer.retention.strategies;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.auto.value.AutoValue;
+import org.glassfish.jersey.server.JSONP;
 import org.graylog.autovalue.WithBeanGetter;
 import org.graylog2.plugin.indexer.retention.RetentionStrategyConfig;
 
 import javax.validation.constraints.Min;
 
 @JsonAutoDetect
+@JsonDeserialize(builder = ClosingRetentionStrategyConfig.Builder.class)
 @AutoValue
 @WithBeanGetter
 public abstract class ClosingRetentionStrategyConfig implements RetentionStrategyConfig {
@@ -38,15 +41,35 @@ public abstract class ClosingRetentionStrategyConfig implements RetentionStrateg
     @JsonCreator
     public static ClosingRetentionStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                         @JsonProperty("max_number_of_indices") @Min(1) int maxNumberOfIndices) {
-        return new AutoValue_ClosingRetentionStrategyConfig(type, maxNumberOfIndices);
+        return ClosingRetentionStrategyConfig.Builder.builder().type(type)
+                .maxNumberOfIndices(maxNumberOfIndices).build();
     }
 
     @JsonCreator
     public static ClosingRetentionStrategyConfig create(@JsonProperty("max_number_of_indices") @Min(1) int maxNumberOfIndices) {
-        return new AutoValue_ClosingRetentionStrategyConfig(ClosingRetentionStrategyConfig.class.getCanonicalName(), maxNumberOfIndices);
+        return ClosingRetentionStrategyConfig.Builder.builder().type(ClosingRetentionStrategyConfig.class.getCanonicalName())
+                .maxNumberOfIndices(maxNumberOfIndices).build();
     }
 
     public static ClosingRetentionStrategyConfig createDefault() {
         return create(DEFAULT_MAX_NUMBER_OF_INDICES);
     }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+
+        @JsonProperty("type")
+        public abstract Builder type(String type);
+
+        @JsonProperty("max_number_of_indices")
+        public abstract Builder maxNumberOfIndices(int maxNumberOfIndices);
+
+        @JsonCreator
+        public static Builder builder() {
+            return new AutoValue_ClosingRetentionStrategyConfig.Builder();
+        }
+
+        public abstract ClosingRetentionStrategyConfig build();
+    }
+
 }

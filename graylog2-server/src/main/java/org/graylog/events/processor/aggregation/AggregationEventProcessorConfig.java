@@ -111,7 +111,7 @@ public abstract class AggregationEventProcessorConfig implements EventProcessorC
 
     @Override
     public Optional<EventProcessorSchedulerConfig> toJobSchedulerConfig(EventDefinition eventDefinition, JobSchedulerClock clock) {
-        final Instant now = Instant.now();
+        final Instant now = clock.nowUTC().toDate().toInstant();
 
         // We need an initial timerange for the first execution of the event processor
         final AbsoluteRange timerange = AbsoluteRange.create(now.minus(searchWithinMs(), ChronoUnit.MILLIS), now);

@@ -16,14 +16,15 @@
  */
 package org.graylog.plugins.sidecar.services;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.graylog.plugins.sidecar.rest.models.Collector;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -45,34 +46,34 @@ public class CollectorService extends PaginatedDbService<Collector> {
 
     @Nullable
     public Collector find(String id) {
-        return db.findOne(DBQuery.is("_id", id));
+        return db.findOne(Filters.eq("_id", new ObjectId(id)));
     }
 
     @Nullable
     public Collector findByName(String name) {
-        return db.findOne(DBQuery.is("name", name));
+        return db.findOne(Filters.eq("name", name));
     }
 
     @Nullable
     public Collector findByNameAndOs(String name, String operatingSystem) {
         return db.findOne(
-                DBQuery.and(
-                        DBQuery.is("name", name),
-                        DBQuery.is("node_operating_system", operatingSystem))
+                Filters.and(
+                        Filters.eq("name", name),
+                        Filters.eq("node_operating_system", operatingSystem))
         );
     }
 
     @Nullable
     public Collector findByNameExcludeId(String name, String id) {
         return db.findOne(
-                DBQuery.and(
-                    DBQuery.is("name", name),
-                    DBQuery.notEquals("_id", id))
+                Filters.and(
+                    Filters.eq("name", name),
+                    Filters.ne("_id", new ObjectId(id)))
         );
     }
 
     public long count() {
-        return db.count();
+        return db.countDocuments();
     }
 
     public List<Collector> allFilter(Predicate<Collector> filter) {
@@ -87,8 +88,8 @@ public class CollectorService extends PaginatedDbService<Collector> {
     }
 
     public PaginatedList<Collector> findPaginated(SearchQuery searchQuery, int page, int perPage, String sortField, String order) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery();
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = searchQuery.toDBQuery();
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
     }
 

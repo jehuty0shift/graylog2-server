@@ -34,11 +34,11 @@ public class ApacheDirectoryTestServiceFactory extends DefaultDirectoryServiceFa
      * This init method ensures that the directory service is using a unique name so a unique storage location is
      * used in TMPDIR.
      *
-     * @see DefaultDirectoryServiceFactory#buildInstanceDirectory(String)
+     * @see DefaultDirectoryServiceFactory#build(String)
      * @param name the server instance name
      */
     @Override
     public void init(String name) throws Exception {
-        super.init(String.format(Locale.ENGLISH, "%s-%s", name, UUID.randomUUID().toString()));
+        super.init(String.format(Locale.ENGLISH, "%s-%s", name, UUID.randomUUID()));
     }
 }

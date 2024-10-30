@@ -18,11 +18,11 @@ package org.graylog2.cluster;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.Subscribe;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoCollection;
+import one.util.streamex.StreamEx;
 import org.graylog.testing.mongodb.MongoDBInstance;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -45,6 +45,7 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
@@ -96,17 +97,17 @@ public class ClusterConfigServiceImplTest {
 
     @Test
     public void getReturnsExistingConfig() throws Exception {
-        DBObject dbObject = new BasicDBObjectBuilder()
+        BasicDBObject dbObject = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", Collections.singletonMap("text", "TEST"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get();
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(dbObject);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne(dbObject);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
         CustomConfig customConfig = clusterConfigService.get(CustomConfig.class);
         assertThat(customConfig.text).isEqualTo("TEST");
@@ -115,42 +116,42 @@ public class ClusterConfigServiceImplTest {
     @Test
     public void getReturnsNullOnNonExistingConfig() throws Exception {
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        assertThat(collection.count()).isEqualTo(0L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        assertThat(collection.countDocuments()).isZero();
 
         assertThat(clusterConfigService.get(CustomConfig.class)).isNull();
     }
 
     @Test
     public void getReturnsNullOnInvalidPayload() throws Exception {
-        DBObject dbObject = new BasicDBObjectBuilder()
+        BasicDBObject dbObject = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", "wrong payload")
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get();
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(dbObject);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne(dbObject);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
         assertThat(clusterConfigService.get(CustomConfig.class)).isNull();
     }
 
     @Test
     public void getWithKeyReturnsExistingConfig() throws Exception {
-        DBObject dbObject = new BasicDBObjectBuilder()
+        BasicDBObject dbObject = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", "foo")
                 .add("payload", Collections.singletonMap("text", "TEST"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get();
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(dbObject);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne(dbObject);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
         CustomConfig customConfig = clusterConfigService.get("foo", CustomConfig.class);
         assertThat(customConfig).isInstanceOf(CustomConfig.class);
@@ -160,25 +161,25 @@ public class ClusterConfigServiceImplTest {
     @Test
     public void getWithKeyReturnsNullOnNonExistingConfig() throws Exception {
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        assertThat(collection.count()).isEqualTo(0L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        assertThat(collection.countDocuments()).isZero();
 
         assertThat(clusterConfigService.get("foo", CustomConfig.class)).isNull();
     }
 
     @Test
     public void getOrDefaultReturnsExistingConfig() throws Exception {
-        DBObject dbObject = new BasicDBObjectBuilder()
+        BasicDBObject dbObject = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", Collections.singletonMap("text", "TEST"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get();
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(dbObject);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne(dbObject);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
         CustomConfig defaultValue = new CustomConfig();
         defaultValue.text = "DEFAULT";
@@ -190,8 +191,8 @@ public class ClusterConfigServiceImplTest {
     @Test
     public void getOrDefaultReturnsDefaultValueOnNonExistingConfig() throws Exception {
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        assertThat(collection.count()).isEqualTo(0L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        assertThat(collection.countDocuments()).isZero();
 
         CustomConfig defaultValue = new CustomConfig();
         defaultValue.text = "DEFAULT";
@@ -201,17 +202,17 @@ public class ClusterConfigServiceImplTest {
 
     @Test
     public void getOrDefaultReturnsDefaultValueOnInvalidPayload() throws Exception {
-        DBObject dbObject = new BasicDBObjectBuilder()
+        BasicDBObject dbObject = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", "wrong payload")
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get();
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(dbObject);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne(dbObject);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
         CustomConfig defaultValue = new CustomConfig();
         defaultValue.text = "DEFAULT";
@@ -222,12 +223,12 @@ public class ClusterConfigServiceImplTest {
     @Test
     public void writeIgnoresNull() throws Exception {
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        assertThat(collection.count()).isEqualTo(0L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        assertThat(collection.countDocuments()).isZero();
 
         clusterConfigService.write(null);
 
-        assertThat(collection.count()).isEqualTo(0L);
+        assertThat(collection.countDocuments()).isZero();
     }
 
     @Test
@@ -236,14 +237,14 @@ public class ClusterConfigServiceImplTest {
         customConfig.text = "TEST";
 
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        assertThat(collection.count()).isEqualTo(0L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        assertThat(collection.countDocuments()).isZero();
 
         clusterConfigService.write(customConfig);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
-        DBObject dbObject = collection.findOne();
+        BasicDBObject dbObject = collection.find().first();
         assertThat((String) dbObject.get("type")).isEqualTo(CustomConfig.class.getCanonicalName());
         assertThat((String) dbObject.get("last_updated_by")).isEqualTo("ID");
     }
@@ -254,14 +255,14 @@ public class ClusterConfigServiceImplTest {
         customConfig.text = "TEST";
 
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        assertThat(collection.count()).isEqualTo(0L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        assertThat(collection.countDocuments()).isZero();
 
         clusterConfigService.write("foobar", customConfig);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
-        DBObject dbObject = collection.findOne();
+        BasicDBObject dbObject = collection.find().first();
         assertThat((String) dbObject.get("type")).isEqualTo("foobar");
         assertThat((String) dbObject.get("last_updated_by")).isEqualTo("ID");
     }
@@ -271,22 +272,22 @@ public class ClusterConfigServiceImplTest {
         CustomConfig customConfig = new CustomConfig();
         customConfig.text = "TEST";
 
-        DBObject seedObject = new BasicDBObjectBuilder()
+        BasicDBObject seedObject = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", Collections.singletonMap("text", "ORIGINAL"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "NOT ID")
                 .get();
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(seedObject);
-        assertThat(collection.count()).isEqualTo(1L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne(seedObject);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
         clusterConfigService.write(customConfig);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
 
-        DBObject dbObject = collection.findOne();
+        BasicDBObject dbObject = collection.find().first();
         assertThat((String) dbObject.get("type")).isEqualTo(CustomConfig.class.getCanonicalName());
         assertThat((String) dbObject.get("last_updated_by")).isEqualTo("ID");
 
@@ -305,12 +306,12 @@ public class ClusterConfigServiceImplTest {
         clusterEventBus.registerClusterEventSubscriber(eventHandler);
 
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        assertThat(collection.count()).isEqualTo(0L);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        assertThat(collection.countDocuments()).isZero();
 
         clusterConfigService.write(customConfig);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
         assertThat(eventHandler.event).isNotNull();
         assertThat(eventHandler.event.nodeId()).isEqualTo("ID");
         assertThat(eventHandler.event.type()).isEqualTo(CustomConfig.class.getCanonicalName());
@@ -322,74 +323,72 @@ public class ClusterConfigServiceImplTest {
     @Test
     public void prepareCollectionCreatesIndexesOnExistingCollection() throws Exception {
         @SuppressWarnings("deprecation")
-        DBCollection original = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
+        MongoCollection<BasicDBObject> original = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
         original.dropIndexes();
-        assertThat(original.getName()).isEqualTo(COLLECTION_NAME);
-        assertThat(original.getIndexInfo()).hasSize(1);
+        assertThat(original.getNamespace().getCollectionName()).isEqualTo(COLLECTION_NAME);
+        assertThat(original.listIndexes().into(new ArrayList<>())).hasSize(1);
 
-        DBCollection collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
-        assertThat(collection.getName()).isEqualTo(COLLECTION_NAME);
-        assertThat(collection.getIndexInfo()).hasSize(2);
+        MongoCollection<ClusterConfig> collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
+        assertThat(collection.getNamespace().getCollectionName()).isEqualTo(COLLECTION_NAME);
+        assertThat(collection.listIndexes().into(new ArrayList<>())).hasSize(2);
         assertThat(collection.getWriteConcern()).isEqualTo(WriteConcern.JOURNALED);
     }
 
     @Test
     public void prepareCollectionCreatesCollectionIfItDoesNotExist() throws Exception {
-        @SuppressWarnings("deprecation")
-        final DB database = mongoConnection.getDatabase();
-        database.getCollection(COLLECTION_NAME).drop();
-        assertThat(database.collectionExists(COLLECTION_NAME)).isFalse();
-        DBCollection collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
+        mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME).drop();
+        assertThat(StreamEx.of(mongoConnection.getMongoDatabase().listCollectionNames()).anyMatch(s -> s.equals(COLLECTION_NAME))).isFalse();
+        MongoCollection<ClusterConfig> collection = ClusterConfigServiceImpl.prepareCollection(mongoConnection);
 
-        assertThat(collection.getName()).isEqualTo(COLLECTION_NAME);
-        assertThat(collection.getIndexInfo()).hasSize(2);
+        assertThat(collection.getNamespace().getCollectionName()).isEqualTo(COLLECTION_NAME);
+        assertThat(collection.listIndexes().into(new ArrayList<>())).hasSize(2);
         assertThat(collection.getWriteConcern()).isEqualTo(WriteConcern.JOURNALED);
     }
 
     @Test
     public void removeDoesNothingIfConfigDoesNotExist() throws Exception {
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
 
-        assertThat(collection.count()).isEqualTo(0L);
+        assertThat(collection.countDocuments()).isZero();
         assertThat(clusterConfigService.remove(CustomConfig.class)).isEqualTo(0);
     }
 
     @Test
     public void removeSuccessfullyRemovesConfig() throws Exception {
-        DBObject dbObject = new BasicDBObjectBuilder()
+        BasicDBObject dbObject = (BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", Collections.singletonMap("text", "TEST"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get();
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(dbObject);
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne(dbObject);
 
-        assertThat(collection.count()).isEqualTo(1L);
+        assertThat(collection.countDocuments()).isEqualTo(1L);
         assertThat(clusterConfigService.remove(CustomConfig.class)).isEqualTo(1);
-        assertThat(collection.count()).isEqualTo(0L);
+        assertThat(collection.countDocuments()).isZero();
     }
 
     @Test
     public void listReturnsAllClasses() throws Exception {
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(new BasicDBObjectBuilder()
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne((BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", Collections.singletonMap("text", "TEST"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get());
-        collection.save(new BasicDBObjectBuilder()
+        collection.insertOne((BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", AnotherCustomConfig.class.getCanonicalName())
                 .add("payload", Collections.singletonMap("text", "TEST"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get());
 
-        assertThat(collection.count()).isEqualTo(2L);
+        assertThat(collection.countDocuments()).isEqualTo(2L);
         assertThat(clusterConfigService.list())
                 .hasSize(2)
                 .containsOnly(CustomConfig.class, AnotherCustomConfig.class);
@@ -398,21 +397,21 @@ public class ClusterConfigServiceImplTest {
     @Test
     public void listIgnoresInvalidClasses() throws Exception {
         @SuppressWarnings("deprecation")
-        final DBCollection collection = mongoConnection.getDatabase().getCollection(COLLECTION_NAME);
-        collection.save(new BasicDBObjectBuilder()
+        final MongoCollection<BasicDBObject> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, BasicDBObject.class);
+        collection.insertOne((BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", CustomConfig.class.getCanonicalName())
                 .add("payload", Collections.singletonMap("text", "TEST"))
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get());
-        collection.save(new BasicDBObjectBuilder()
+        collection.insertOne((BasicDBObject) new BasicDBObjectBuilder()
                 .add("type", "invalid.ClassName")
                 .add("payload", Collections.emptyMap())
                 .add("last_updated", TIME.toString())
                 .add("last_updated_by", "ID")
                 .get());
 
-        assertThat(collection.count()).isEqualTo(2L);
+        assertThat(collection.countDocuments()).isEqualTo(2L);
         assertThat(clusterConfigService.list())
                 .hasSize(1)
                 .containsOnly(CustomConfig.class);

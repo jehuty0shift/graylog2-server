@@ -45,6 +45,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,18 +76,76 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
     private final ObjectMapper objectMapper = new ObjectMapperProvider().get();
 
     static class StaticRandomObjectIdProvider extends RandomObjectIdProvider {
+        private static final char[] HEX_CHARS = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
         private final Date date;
         private AtomicInteger counter;
-
-        StaticRandomObjectIdProvider(Date date) {
+        private static final int RANDOM_1 = 16777200;
+        private static final short RANDOM_2 = 32700;
+        public StaticRandomObjectIdProvider(Date date) {
             super(date);
             this.date = date;
             this.counter = new AtomicInteger(0);
         }
+        private static byte int3(int x) {
+            return (byte)(x >> 24);
+        }
+
+        private static byte int2(int x) {
+            return (byte)(x >> 16);
+        }
+
+        private static byte int1(int x) {
+            return (byte)(x >> 8);
+        }
+
+        private static byte int0(int x) {
+            return (byte)x;
+        }
+
+        private static byte short1(short x) {
+            return (byte)(x >> 8);
+        }
+
+        private static byte short0(short x) {
+            return (byte)x;
+        }
+
+        public String toHexString(byte[] byteArray) {
+            char[] chars = new char[24];
+            int i = 0;
+
+            for(byte b : byteArray) {
+                chars[i++] = HEX_CHARS[b >> 4 & 15];
+                chars[i++] = HEX_CHARS[b & 15];
+            }
+
+            return new String(chars);
+        }
+
+        private byte[] makeByteArray() {
+            ByteBuffer buffer = ByteBuffer.allocate(12);
+            int timestamp = (int)(this.date.getTime() / 1000L);
+            int counterValue = this.counter.incrementAndGet();
+            buffer.put(int3(timestamp));
+            buffer.put(int2(timestamp));
+            buffer.put(int1(timestamp));
+            buffer.put(int0(timestamp));
+            buffer.put(int2(RANDOM_1));
+            buffer.put(int1(RANDOM_1));
+            buffer.put(int0(RANDOM_1));
+            buffer.put(short1(RANDOM_2));
+            buffer.put(short0(RANDOM_2));
+            buffer.put(int2(counterValue));
+            buffer.put(int1(counterValue));
+            buffer.put(int0(counterValue));
+
+            return buffer.array();
+        }
 
         @Override
         public String get() {
-            return new ObjectId(date, 42, (short) 23, counter.incrementAndGet()).toHexString();
+            return toHexString(makeByteArray());
         }
     }
 
@@ -128,7 +187,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5c7e5499f38ed7e1d8d6a613", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5c7e5499f38ed7e1d8d6a613", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_relative-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_relative-expected_searches.json"));
@@ -141,7 +200,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_absolute-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_absolute-expected_searches.json"));
@@ -154,7 +213,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5de660c6b2d44b5813c1d806", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5de660c6b2d44b5813c1d806", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_keyword-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_keyword-expected_searches.json"));
@@ -167,7 +226,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_with_stream-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_with_stream-expected_searches.json"));
@@ -180,7 +239,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_with_missing_fields-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_with_missing_fields-expected_searches.json"));
@@ -193,7 +252,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_with_missing_fields-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_with_missing_fields-expected_searches.json"));
@@ -206,7 +265,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5c7e5499f38ed7e1d8d6a613", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5c7e5499f38ed7e1d8d6a613", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_without_message_row-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_without_message_row-expected_searches.json"));
@@ -219,7 +278,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5c7e5499f38ed7e1d8d6a613", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5c7e5499f38ed7e1d8d6a613", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_relative_with_interval_field-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_relative_with_interval_field-expected_searches.json"));
@@ -232,7 +291,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5de660b7b2d44b5813c1d7f6", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_absolute_with_interval_field-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_absolute_with_interval_field-expected_searches.json"));
@@ -245,7 +304,7 @@ public class V20191203120602_MigrateSavedSearchesToViewsTest {
 
         final MigrationCompleted migrationCompleted = captureMigrationCompleted();
         assertThat(migrationCompleted.savedSearchIds())
-                .containsExactly(new AbstractMap.SimpleEntry<>("5de660c6b2d44b5813c1d806", "5de0e98900002a0017000002"));
+                .containsExactly(new AbstractMap.SimpleEntry<>("5de660c6b2d44b5813c1d806", "5de0e989fffff07fbc000002"));
 
         assertViewServiceCreatedViews(1, resourceFile("sample_saved_search_keyword_with_interval_field-expected_views.json"));
         assertSearchServiceCreated(1, resourceFile("sample_saved_search_keyword_with_interval_field-expected_searches.json"));

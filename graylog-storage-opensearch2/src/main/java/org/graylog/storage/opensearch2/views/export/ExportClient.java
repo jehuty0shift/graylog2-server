@@ -1,7 +1,7 @@
 package org.graylog.storage.opensearch2.views.export;
 
 import org.graylog.plugins.views.search.export.ExportException;
-import org.graylog.storage.opensearch2.OpensearchClient;
+import org.graylog.storage.opensearch2.OpensearchGraylogClient;
 import org.graylog.storage.opensearch2.ThrowingBiFunction;
 import org.graylog2.indexer.ElasticsearchException;
 import org.opensearch.action.search.SearchRequest;
@@ -13,10 +13,10 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 public class ExportClient {
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
 
     @Inject
-    public ExportClient(OpensearchClient client) {
+    public ExportClient(OpensearchGraylogClient client) {
         this.client = client;
     }
 

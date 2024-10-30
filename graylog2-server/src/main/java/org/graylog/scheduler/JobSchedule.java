@@ -19,9 +19,8 @@ package org.graylog.scheduler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.bson.conversions.Bson;
 import org.joda.time.DateTime;
-import org.mongojack.DBQuery;
-import org.mongojack.DBUpdate;
 
 import java.util.Map;
 import java.util.Optional;
@@ -58,7 +57,7 @@ public interface JobSchedule {
 
     /**
      * Returns a map with the schedule data. This can be used to update a MongoDB document with schedule
-     * data. (see {@link org.mongojack.JacksonDBCollection#update(DBQuery.Query, DBUpdate.Builder) JacksonDBCollection#update()})
+     * data. (see {@link org.mongojack.JacksonMongoCollection#updateOne(Bson, Bson)} JacksonMongoCollection#updateOne()})
      *
      * @param fieldPrefix the field prefix to use for the map key
      * @return filled optional with a map, empty optional if there is no update data

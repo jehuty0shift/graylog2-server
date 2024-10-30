@@ -18,6 +18,13 @@ package org.graylog2.indexer.indexset;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Sorts;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -26,16 +33,10 @@ import org.graylog2.indexer.indexset.events.IndexSetCreatedEvent;
 import org.graylog2.indexer.indexset.events.IndexSetDeletedEvent;
 import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.streams.StreamService;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -44,7 +45,7 @@ import static java.util.Objects.requireNonNull;
 public class MongoIndexSetService implements IndexSetService {
     private static final String COLLECTION_NAME = "index_sets";
 
-    private final JacksonDBCollection<IndexSetConfig, ObjectId> collection;
+    private final JacksonMongoCollection<IndexSetConfig> collection;
     private final ClusterConfigService clusterConfigService;
     private final ClusterEventBus clusterEventBus;
     private final StreamService streamService;
@@ -55,18 +56,17 @@ public class MongoIndexSetService implements IndexSetService {
                                 StreamService streamService,
                                 ClusterConfigService clusterConfigService,
                                 ClusterEventBus clusterEventBus) {
-        this(JacksonDBCollection.wrap(
-                mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
+        this(JacksonMongoCollection.builder().withObjectMapper(objectMapperProvider.get()).build(
+                mongoConnection.getMongoDatabase(),COLLECTION_NAME,
                 IndexSetConfig.class,
-                ObjectId.class,
-                objectMapperProvider.get()),
+                UuidRepresentation.STANDARD),
                 streamService,
                 clusterConfigService,
                 clusterEventBus);
     }
 
     @VisibleForTesting
-    protected MongoIndexSetService(JacksonDBCollection<IndexSetConfig, ObjectId> collection,
+    protected MongoIndexSetService(JacksonMongoCollection<IndexSetConfig> collection,
                                    StreamService streamService,
                                    ClusterConfigService clusterConfigService,
                                    ClusterEventBus clusterEventBus) {
@@ -75,8 +75,8 @@ public class MongoIndexSetService implements IndexSetService {
         this.clusterConfigService = clusterConfigService;
         this.clusterEventBus = requireNonNull(clusterEventBus);
 
-        this.collection.getDbCollection().createIndex(DBSort.asc(IndexSetConfig.FIELD_INDEX_PREFIX), null, true);
-        this.collection.getDbCollection().createIndex(DBSort.desc(IndexSetConfig.FIELD_CREATION_DATE));
+        this.collection.createIndex(Sorts.ascending(IndexSetConfig.FIELD_INDEX_PREFIX), new IndexOptions().unique(true));
+        this.collection.createIndex(Sorts.descending(IndexSetConfig.FIELD_CREATION_DATE));
     }
 
     /**
@@ -92,7 +92,7 @@ public class MongoIndexSetService implements IndexSetService {
      */
     @Override
     public Optional<IndexSetConfig> get(ObjectId id) {
-        final DBQuery.Query query = DBQuery.is("_id", id);
+        final Bson query = Filters.eq("_id", id);
         final IndexSetConfig indexSetConfig = collection.findOne(query);
 
         return Optional.ofNullable(indexSetConfig);
@@ -113,7 +113,7 @@ public class MongoIndexSetService implements IndexSetService {
      * {@inheritDoc}
      */
     @Override
-    public Optional<IndexSetConfig> findOne(DBQuery.Query query) {
+    public Optional<IndexSetConfig> findOne(Bson query) {
         return Optional.ofNullable(collection.findOne(query));
     }
 
@@ -122,12 +122,16 @@ public class MongoIndexSetService implements IndexSetService {
      */
     @Override
     public List<IndexSetConfig> findAll() {
-        return ImmutableList.copyOf((Iterator<? extends IndexSetConfig>) collection.find().sort(DBSort.asc("title")));
+        return Collections.unmodifiableList(collection.find().sort(Sorts.ascending("title")).into(new ArrayList<>()));
     }
 
     @Override
     public List<IndexSetConfig> findByIds(Set<String> ids) {
-        return collection.find(DBQuery.in("_id", ids)).toArray();
+        return Collections.unmodifiableList(collection.find(Filters.in("_id",
+                        ids.stream()
+                                .map(ObjectId::new)
+                                .collect(Collectors.toList())))
+                .into(new ArrayList<>()));
     }
 
     /**
@@ -135,17 +139,17 @@ public class MongoIndexSetService implements IndexSetService {
      */
     @Override
     public List<IndexSetConfig> findPaginated(Set<String> indexSetIds, int limit, int skip) {
-        final List<DBQuery.Query> idQuery = indexSetIds.stream()
-                .map(id -> DBQuery.is("_id", id))
+        final List<Bson> idQuery = indexSetIds.stream()
+                .map(id -> Filters.eq("_id", new ObjectId(id)))
                 .collect(Collectors.toList());
 
-        final DBQuery.Query query = DBQuery.or(idQuery.toArray(new DBQuery.Query[0]));
+        final Bson query = Filters.or(idQuery);
 
-        return ImmutableList.copyOf(collection.find(query)
-                .sort(DBSort.asc("title"))
+        return Collections.unmodifiableList(collection.find(query)
+                .sort(Sorts.ascending("title"))
                 .skip(skip)
                 .limit(limit)
-                .toArray());
+                .into(new ArrayList<>()));
     }
 
     /**
@@ -153,8 +157,8 @@ public class MongoIndexSetService implements IndexSetService {
      */
     @Override
     public IndexSetConfig save(IndexSetConfig indexSetConfig) {
-        final WriteResult<IndexSetConfig, ObjectId> writeResult = collection.save(indexSetConfig);
-        final IndexSetConfig savedObject = writeResult.getSavedObject();
+        final UpdateResult writeResult = collection.save(indexSetConfig);
+        final IndexSetConfig savedObject = collection.findOneById(writeResult.getUpsertedId());
 
         final IndexSetCreatedEvent createdEvent = IndexSetCreatedEvent.create(savedObject);
         clusterEventBus.post(createdEvent);
@@ -179,10 +183,10 @@ public class MongoIndexSetService implements IndexSetService {
             return 0;
         }
 
-        final DBQuery.Query query = DBQuery.is("_id", id);
-        final WriteResult<IndexSetConfig, ObjectId> writeResult = collection.remove(query);
+        final Bson query = Filters.eq("_id", id);
+        final DeleteResult writeResult = collection.deleteOne(query);
 
-        final int removedEntries = writeResult.getN();
+        final int removedEntries = (int)writeResult.getDeletedCount();
         if (removedEntries > 0) {
             final IndexSetDeletedEvent deletedEvent = IndexSetDeletedEvent.create(id.toHexString());
             clusterEventBus.post(deletedEvent);

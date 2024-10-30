@@ -183,7 +183,12 @@ public class MetricUtils {
             // note that we do not guard against differing metric types here, we consider that a programming error for now.
 
             //noinspection unchecked
-            return (T) metricRegistry.getMetrics().get(name);
+            T existingMetric =(T) metricRegistry.getMetrics().get(name);
+            if (metric.getClass().equals(existingMetric.getClass())) {
+                return existingMetric;
+            } else {
+                throw new ClassCastException("metric has a different class from existing metric class: " + existingMetric.getClass());
+            }
         }
     }
 

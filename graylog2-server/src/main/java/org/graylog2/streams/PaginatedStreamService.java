@@ -16,13 +16,12 @@
  */
 package org.graylog2.streams;
 
+import org.bson.conversions.Bson;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.inject.Inject;
 import java.util.function.Predicate;
@@ -38,13 +37,13 @@ public class PaginatedStreamService extends PaginatedDbService<StreamDTO> {
     }
 
     public long count() {
-        return db.count();
+        return db.countDocuments();
     }
 
     public PaginatedList<StreamDTO> findPaginated(SearchQuery searchQuery, Predicate<StreamDTO> filter, int page,
                                                   int perPage, String sortField, String order) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery();
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = searchQuery.toDBQuery();
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryFilterAndSort(dbQuery, filter, sortBuilder, page, perPage);
     }
 }

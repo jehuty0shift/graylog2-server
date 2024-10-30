@@ -9,11 +9,11 @@ import javax.inject.Inject;
 
 public class PlainJsonApi {
     private final ObjectMapper objectMapper;
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
 
     @Inject
     public PlainJsonApi(ObjectMapper objectMapper,
-                        OpensearchClient client) {
+                        OpensearchGraylogClient client) {
         this.objectMapper = objectMapper;
         this.client = client;
     }

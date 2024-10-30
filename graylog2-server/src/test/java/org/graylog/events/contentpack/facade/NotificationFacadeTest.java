@@ -98,7 +98,7 @@ public class NotificationFacadeTest {
     @Rule
     public final MockitoRule mockitoRule = MockitoJUnit.rule();
 
-    private MongoJackObjectMapperProvider mapperProvider = new MongoJackObjectMapperProvider(objectMapper);
+    private MongoJackObjectMapperProvider mapperProvider;
 
     @Before
     @SuppressForbidden("Using Executors.newSingleThreadExecutor() is okay in tests")
@@ -111,6 +111,7 @@ public class NotificationFacadeTest {
         );
         jobDefinitionService = mock(DBJobDefinitionService.class);
         stateService = mock(DBEventProcessorStateService.class);
+        mapperProvider = new MongoJackObjectMapperProvider(objectMapper);
         eventDefinitionService = new DBEventDefinitionService(mongodb.mongoConnection(), mapperProvider, stateService, mock(EntityOwnershipService.class));
 
         notificationService = new DBNotificationService(mongodb.mongoConnection(), mapperProvider, mock(EntityOwnershipService.class));

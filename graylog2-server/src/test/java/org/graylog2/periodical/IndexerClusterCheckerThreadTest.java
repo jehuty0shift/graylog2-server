@@ -17,13 +17,7 @@
 package org.graylog2.periodical;
 
 import org.graylog2.indexer.cluster.Cluster;
-import org.graylog2.indexer.cluster.health.AbsoluteValueWatermarkSettings;
-import org.graylog2.indexer.cluster.health.ByteSize;
-import org.graylog2.indexer.cluster.health.ClusterAllocationDiskSettings;
-import org.graylog2.indexer.cluster.health.NodeDiskUsageStats;
-import org.graylog2.indexer.cluster.health.PercentageWatermarkSettings;
-import org.graylog2.indexer.cluster.health.SIUnitParser;
-import org.graylog2.indexer.cluster.health.WatermarkSettings;
+import org.graylog2.indexer.cluster.health.*;
 import org.graylog2.notifications.Notification;
 import org.graylog2.notifications.NotificationImpl;
 import org.graylog2.notifications.NotificationService;
@@ -39,14 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class IndexerClusterCheckerThreadTest {
     @Rule
@@ -73,7 +60,7 @@ public class IndexerClusterCheckerThreadTest {
 
         verify(notificationService, times(1)).isFirst(Notification.Type.ES_OPEN_FILES);
         verifyNoMoreInteractions(notificationService);
-        verifyZeroInteractions(cluster);
+        verifyNoMoreInteractions(cluster);
     }
 
     @Test

@@ -37,6 +37,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -207,12 +208,12 @@ public class MongoIndexSetTest {
                 "graylog_4_restored_archive", Collections.emptySet(),
                 "graylog_5", Collections.singleton("graylog_deflector"));
 
-        when(indices.getIndexNamesAndAliases(anyString())).thenReturn(indexNameAliases);
+        when(indices.getIndices(Mockito.any(IndexSet.class), anyString(), anyString())).thenReturn(indexNameAliases.keySet());
         final MongoIndexSet mongoIndexSet = new MongoIndexSet(config, indices, nodeId, indexRangeService, auditEventSender, systemJobManager, jobFactory, activityWriter);
 
 
         final String[] allGraylogIndexNames = mongoIndexSet.getManagedIndices();
-        assertThat(allGraylogIndexNames).containsExactlyElementsOf(indexNameAliases.keySet());
+        assertThat(allGraylogIndexNames).containsOnlyElementsOf(indexNameAliases.keySet());
     }
 
     @Test

@@ -18,14 +18,17 @@ package org.graylog2.indexer.ranges;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.primitives.Ints;
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import org.bson.types.ObjectId;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditEventSender;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -40,16 +43,14 @@ import org.graylog2.indexer.searches.IndexRangeStats;
 import org.graylog2.plugin.system.NodeId;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import static org.graylog2.audit.AuditEventTypes.ES_INDEX_RANGE_CREATE;
@@ -58,12 +59,13 @@ import static org.graylog2.audit.AuditEventTypes.ES_INDEX_RANGE_DELETE;
 public class MongoIndexRangeService implements IndexRangeService {
     private static final Logger LOG = LoggerFactory.getLogger(MongoIndexRangeService.class);
     private static final String COLLECTION_NAME = "index_ranges";
+    private static final String START_KEY = "start";
 
     private final Indices indices;
     private final IndexSetRegistry indexSetRegistry;
     private final AuditEventSender auditEventSender;
     private final NodeId nodeId;
-    private final JacksonDBCollection<MongoIndexRange, ObjectId> collection;
+    private final JacksonMongoCollection<MongoIndexRange> collection;
 
     @Inject
     public MongoIndexRangeService(MongoConnection mongoConnection,
@@ -77,26 +79,21 @@ public class MongoIndexRangeService implements IndexRangeService {
         this.indexSetRegistry = indexSetRegistry;
         this.auditEventSender = auditEventSender;
         this.nodeId = nodeId;
-        this.collection = JacksonDBCollection.wrap(
-            mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
+        this.collection = JacksonMongoCollection.builder().withObjectMapper(objectMapperProvider.get()).build(
+            mongoConnection.getMongoDatabase(), COLLECTION_NAME,
             MongoIndexRange.class,
-            ObjectId.class,
-            objectMapperProvider.get());
-
+            UuidRepresentation.STANDARD);
         eventBus.register(this);
 
         collection.createIndex(new BasicDBObject(MongoIndexRange.FIELD_INDEX_NAME, 1));
-        collection.createIndex(BasicDBObjectBuilder.start()
-            .add(MongoIndexRange.FIELD_BEGIN, 1)
-            .add(MongoIndexRange.FIELD_END, 1)
-            .get());
+        collection.createIndex(Indexes.ascending(IndexRange.FIELD_BEGIN, IndexRange.FIELD_END));
     }
 
     @Override
     public IndexRange get(String index) throws NotFoundException {
-        final DBQuery.Query query = DBQuery.and(
-            DBQuery.notExists("start"),
-            DBQuery.is(IndexRange.FIELD_INDEX_NAME, index));
+        final Bson query = Filters.and(
+            Filters.exists(START_KEY, false),
+            Filters.eq(IndexRange.FIELD_INDEX_NAME, index));
         final MongoIndexRange indexRange = collection.findOne(query);
         if (indexRange == null) {
             throw new NotFoundException("Index range for index <" + index + "> not found.");
@@ -107,29 +104,26 @@ public class MongoIndexRangeService implements IndexRangeService {
 
     @Override
     public SortedSet<IndexRange> find(DateTime begin, DateTime end) {
-        final DBQuery.Query query = DBQuery.or(
-                DBQuery.and(
-                        DBQuery.notExists("start"),  // "start" has been used by the old index ranges in MongoDB
-                        DBQuery.lessThanEquals(IndexRange.FIELD_BEGIN, end.getMillis()),
-                        DBQuery.greaterThanEquals(IndexRange.FIELD_END, begin.getMillis())
+        final Bson query = Filters.or(
+                Filters.and(
+                        Filters.exists(START_KEY, false),  // "start" has been used by the old index ranges in MongoDB
+                        Filters.lte(IndexRange.FIELD_BEGIN, end.getMillis()),
+                        Filters.gte(IndexRange.FIELD_END, begin.getMillis())
                 ),
-                DBQuery.and(
-                        DBQuery.notExists("start"),  // "start" has been used by the old index ranges in MongoDB
-                        DBQuery.lessThanEquals(IndexRange.FIELD_BEGIN, 0L),
-                        DBQuery.greaterThanEquals(IndexRange.FIELD_END, 0L)
+                Filters.and(
+                        Filters.exists(START_KEY, false),  // "start" has been used by the old index ranges in MongoDB
+                        Filters.lte(IndexRange.FIELD_BEGIN, 0L),
+                        Filters.gte(IndexRange.FIELD_END, 0L)
                 )
         );
 
-        try (DBCursor<MongoIndexRange> indexRanges = collection.find(query)) {
-            return ImmutableSortedSet.copyOf(IndexRange.COMPARATOR, (Iterator<? extends IndexRange>) indexRanges);
-        }
+            return Collections.unmodifiableSortedSet(collection.find(query).into(new TreeSet<>(IndexRange.COMPARATOR)));
+
     }
 
     @Override
     public SortedSet<IndexRange> findAll() {
-        try (DBCursor<MongoIndexRange> cursor = collection.find(DBQuery.notExists("start"))) {
-            return ImmutableSortedSet.copyOf(IndexRange.COMPARATOR, (Iterator<? extends IndexRange>) cursor);
-        }
+            return Collections.unmodifiableSortedSet(collection.find(Filters.exists(START_KEY, false)).into(new TreeSet<>(IndexRange.COMPARATOR)));
     }
 
     @Override
@@ -153,16 +147,15 @@ public class MongoIndexRangeService implements IndexRangeService {
     }
 
     @Override
-    public WriteResult<MongoIndexRange, ObjectId> save(IndexRange indexRange) {
+    public UpdateResult save(IndexRange indexRange) {
         remove(indexRange.indexName());
-        final WriteResult<MongoIndexRange, ObjectId> save = collection.save(MongoIndexRange.create(indexRange));
-        return save;
+        return collection.save(MongoIndexRange.create(indexRange));
     }
 
     @Override
     public boolean remove(String index) {
-        final WriteResult<MongoIndexRange, ObjectId> remove = collection.remove(DBQuery.in(IndexRange.FIELD_INDEX_NAME, index));
-        return remove.getN() > 0;
+        final DeleteResult remove = collection.deleteMany(Filters.in(IndexRange.FIELD_INDEX_NAME, index));
+        return remove.getDeletedCount() > 0;
     }
 
     @Subscribe

@@ -25,7 +25,7 @@ public class ScrollResultOS2 extends IndexQueryResult implements ScrollResult {
     private static final Logger LOG = LoggerFactory.getLogger(ScrollResult.class);
     private static final TimeValue DEFAULT_SCROLL = TimeValue.timeValueMinutes(1);
 
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
     private final long totalHits;
     private final int limit;
     private final String scroll;
@@ -41,7 +41,7 @@ public class ScrollResultOS2 extends IndexQueryResult implements ScrollResult {
     }
 
     @AssistedInject
-    public ScrollResultOS2(OpensearchClient client,
+    public ScrollResultOS2(OpensearchGraylogClient client,
                            @Assisted SearchResponse initialResult,
                            @Assisted("query") String query,
                            @Assisted("scroll") String scroll,

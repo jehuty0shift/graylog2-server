@@ -18,12 +18,13 @@ package org.graylog2.system.processing;
 
 import com.github.joschi.jadconfig.util.Duration;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
-import org.bson.types.ObjectId;
+import com.mongodb.client.model.*;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog.scheduler.clock.JobSchedulerClock;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -36,19 +37,13 @@ import org.graylog2.rest.models.system.inputs.responses.InputCreated;
 import org.graylog2.rest.models.system.inputs.responses.InputDeleted;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.graylog2.system.processing.ProcessingStatusDto.FIELD_NODE_ID;
@@ -67,7 +62,7 @@ public class DBProcessingStatusService {
     private final JobSchedulerClock clock;
     private final Duration updateThreshold;
     private final double journalWriteRateThreshold;
-    private final JacksonDBCollection<ProcessingStatusDto, ObjectId> db;
+    private final JacksonMongoCollection<ProcessingStatusDto> db;
     private final BaseConfiguration baseConfiguration;
     private final InputService inputService;
     private final Set<String> inputNodeSet;
@@ -90,12 +85,9 @@ public class DBProcessingStatusService {
         this.inputService = inputService;
         this.inputNodeSet = inputService.all().stream().map(i -> i.isGlobal()?nodeId.toString():i.getNodeId()).collect(Collectors.toSet());
         this.baseConfiguration = baseConfiguration;
-        this.db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
-                ProcessingStatusDto.class,
-                ObjectId.class,
-                mapper.get());
+        this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(),COLLECTION_NAME, ProcessingStatusDto.class, UuidRepresentation.STANDARD);
 
-        db.createIndex(new BasicDBObject(ProcessingStatusDto.FIELD_NODE_ID, 1), new BasicDBObject("unique", true));
+        db.createIndex(new BasicDBObject(ProcessingStatusDto.FIELD_NODE_ID, 1), new IndexOptions().unique(true));
 
         // Remove the old (3.1.0) index before creating the new one. This is needed, because mongodb >= 4.2 won't allow
         // the creation of identical indices with a different name. We don't use a migration,
@@ -103,7 +95,7 @@ public class DBProcessingStatusService {
         // TODO remove this in a future release (maybe at 3.5)
         final String OLD_INDEX_NAME = "updated_at_1_input_journal.uncommitted_entries_1_input_journal.written_messages_1m_rate_1";
         try {
-            if (db.getIndexInfo().stream().anyMatch(dbo -> dbo.get("name").equals(OLD_INDEX_NAME))) {
+            if (db.listIndexes().into(new ArrayList<>()).stream().anyMatch(dbo -> dbo.get("name").equals(OLD_INDEX_NAME))) {
                 db.dropIndex(OLD_INDEX_NAME);
             }
         } catch (MongoException ignored) {
@@ -115,7 +107,7 @@ public class DBProcessingStatusService {
         // See: https://github.com/Graylog2/graylog2-server/issues/6322
         db.createIndex(new BasicDBObject(FIELD_UPDATED_AT, 1)
                 .append(FIELD_UNCOMMITTED_ENTRIES, 1)
-                .append(FIELD_WRITTEN_MESSAGES_1M, 1), new BasicDBObject("name", "compound_0"));
+                .append(FIELD_WRITTEN_MESSAGES_1M, 1), new IndexOptions().name("compound_0"));
 
         serverEventBus.register(this);
     }
@@ -147,7 +139,7 @@ public class DBProcessingStatusService {
      * @return a list of all processing status entries
      */
     public List<ProcessingStatusDto> all() {
-        return ImmutableList.copyOf(db.find().sort(DBSort.asc("_id")).iterator());
+        return Collections.unmodifiableList(db.find().sort(Sorts.ascending("_id")).into(new ArrayList<>()));
     }
 
     /**
@@ -156,7 +148,7 @@ public class DBProcessingStatusService {
      * @return the processing status entry or an empty optional if none exists
      */
     public Optional<ProcessingStatusDto> get() {
-        return Optional.ofNullable(db.findOne(DBQuery.is(ProcessingStatusDto.FIELD_NODE_ID, nodeId)));
+        return Optional.ofNullable(db.findOne(Filters.eq(ProcessingStatusDto.FIELD_NODE_ID, nodeId)));
     }
 
     /**
@@ -171,9 +163,9 @@ public class DBProcessingStatusService {
     public Optional<DateTime> earliestPostIndexingTimestamp() {
         final String sortField = ProcessingStatusDto.FIELD_RECEIVE_TIMES + "." + ProcessingStatusDto.ReceiveTimes.FIELD_POST_INDEXING;
         final DateTime updateThresholdTimestamp = clock.nowUTC().minus(updateThreshold.toMilliseconds());
-        final DBQuery.Query queryWithoutMetrics = DBQuery.greaterThan(FIELD_UPDATED_AT, updateThresholdTimestamp);
-        final DBQuery.Query queryWithMetrics = getDataSelectionQuery(clock, updateThreshold, journalWriteRateThreshold);
-        final DBQuery.Query queryWithMetricsForNodes = getDataWithNodeSelectionQuery(inputNodeSet, clock, updateThreshold, journalWriteRateThreshold);
+        final Bson queryWithoutMetrics = Filters.gt(FIELD_UPDATED_AT, updateThresholdTimestamp);
+        final Bson queryWithMetrics = getDataSelectionQuery(clock, updateThreshold, journalWriteRateThreshold);
+        final Bson queryWithMetricsForNodes = getDataWithNodeSelectionQuery(inputNodeSet, clock, updateThreshold, journalWriteRateThreshold);
 
         final String queryStrWithoutMetrics = "greater than " + FIELD_UPDATED_AT + " " + updateThresholdTimestamp;
         final String queryStrWithMetrics = "greater than " + FIELD_UPDATED_AT + " and updateThresold " + updateThreshold + " and journalThreshold " + journalWriteRateThreshold;
@@ -182,17 +174,18 @@ public class DBProcessingStatusService {
         // First try to query processing status from nodes that are active (include journal metrics restrictions).
         // If no result is found, query the processing status again, but without weeding out nodes with a low input volume.
         // This prevents to completely stall the event processing if the ingestion volume is too low.
-        for (DBQuery.Query query: Arrays.asList(queryWithMetricsForNodes, queryWithMetrics, queryWithoutMetrics)) {
+        for (Bson query: Arrays.asList(queryWithMetricsForNodes, queryWithMetrics, queryWithoutMetrics)) {
             // Get the earliest timestamp of the post-indexing receive timestamp by sorting and returning the first one.
             // We use the earliest timestamp because some nodes can be faster than others and we need to make sure
             // to return the timestamp of the slowest one.
-            try (DBCursor<ProcessingStatusDto> cursor = db.find(query).sort(DBSort.asc(sortField)).limit(1)) {
-                if (cursor.hasNext()) {
-                    DateTime postIndexing = cursor.next().receiveTimes().postIndexing();
+
+                ProcessingStatusDto processingStatusDto = db.find(query).sort(Sorts.ascending(sortField)).limit(1).first();
+                if (processingStatusDto != null) {
+                    DateTime postIndexing = processingStatusDto.receiveTimes().postIndexing();
                     LOG.debug("found postIndexing time: {}",postIndexing);
                     return Optional.of(postIndexing);
                 }
-            }
+
         }
         LOG.debug("Result is empty");
         return Optional.empty();
@@ -200,44 +193,44 @@ public class DBProcessingStatusService {
 
     // This has been put into a static method to simplify testing the processing status selection
     @VisibleForTesting
-    static DBQuery.Query getDataSelectionQuery(JobSchedulerClock clock, Duration updateThreshold, double journalWriteRateThreshold) {
+    static Bson getDataSelectionQuery(JobSchedulerClock clock, Duration updateThreshold, double journalWriteRateThreshold) {
         final DateTime updateThresholdTimestamp = clock.nowUTC().minus(updateThreshold.toMilliseconds());
 
-        return DBQuery.and(
+        return Filters.and(
                 // Only select processing status for a node ...
                 // ... that has been updated recently
-                DBQuery.greaterThan(FIELD_UPDATED_AT, updateThresholdTimestamp),
+                Filters.gt(FIELD_UPDATED_AT, updateThresholdTimestamp),
                 // ... and either ...
-                DBQuery.or(
+                Filters.or(
                         // ... received a certain amount of messages in the last minute
-                        DBQuery.greaterThanEquals(FIELD_WRITTEN_MESSAGES_1M, journalWriteRateThreshold),
+                        Filters.gte(FIELD_WRITTEN_MESSAGES_1M, journalWriteRateThreshold),
                         // ... or has messages left in the journal
-                        DBQuery.greaterThanEquals(FIELD_UNCOMMITTED_ENTRIES, 1L),
+                        Filters.gte(FIELD_UNCOMMITTED_ENTRIES, 1L),
                         // ... or has journaling disabled
-                        DBQuery.is(FIELD_JOURNAL_ENABLED, false)
+                        Filters.eq(FIELD_JOURNAL_ENABLED, false)
                 )
         );
     }
 
     // This has been put into a static method to simplify testing the processing status selection
     @VisibleForTesting
-    static DBQuery.Query getDataWithNodeSelectionQuery(Set<String> inputNodeSet, JobSchedulerClock clock, Duration updateThreshold, double journalWriteRateThreshold) {
+    static Bson getDataWithNodeSelectionQuery(Set<String> inputNodeSet, JobSchedulerClock clock, Duration updateThreshold, double journalWriteRateThreshold) {
         final DateTime updateThresholdTimestamp = clock.nowUTC().minus(updateThreshold.toMilliseconds());
 
-        return DBQuery.and(
+        return Filters.and(
                 // Only select processing status for a node ...
                 // ... that has been updated recently
-                DBQuery.greaterThan(FIELD_UPDATED_AT, updateThresholdTimestamp),
+                Filters.gt(FIELD_UPDATED_AT, updateThresholdTimestamp),
                 //....that has an input started
-                DBQuery.in(FIELD_NODE_ID, inputNodeSet),
+                Filters.in(FIELD_NODE_ID, inputNodeSet),
                 // ... and either ...
-                DBQuery.or(
+                Filters.or(
                         // ... received a certain amount of messages in the last minute
-                        DBQuery.greaterThanEquals(FIELD_WRITTEN_MESSAGES_1M, journalWriteRateThreshold),
+                        Filters.gte(FIELD_WRITTEN_MESSAGES_1M, journalWriteRateThreshold),
                         // ... or has messages left in the journal
-                        DBQuery.greaterThanEquals(FIELD_UNCOMMITTED_ENTRIES, 1L),
+                        Filters.gte(FIELD_UNCOMMITTED_ENTRIES, 1L),
                         // ... or has journaling disabled
-                        DBQuery.is(FIELD_JOURNAL_ENABLED, false)
+                        Filters.eq(FIELD_JOURNAL_ENABLED, false)
                 )
         );
     }
@@ -258,13 +251,9 @@ public class DBProcessingStatusService {
         // TODO: Using a timestamp provided by the node for "updated_at" can be bad if the node clock is skewed.
         //       Ideally we would use MongoDB's "$currentDate" but there doesn't seem to be a way to use that
         //       with mongojack.
-        return MongoDBUpsertRetryer.run(() -> db.findAndModify(
-                DBQuery.is(ProcessingStatusDto.FIELD_NODE_ID, nodeId),
-                null,
-                null,
-                false,
+        return MongoDBUpsertRetryer.run(() -> db.findOneAndReplace(
+                Filters.eq(ProcessingStatusDto.FIELD_NODE_ID, nodeId),
                 ProcessingStatusDto.of(nodeId, processingStatusRecorder, updatedAt, baseConfiguration.isMessageJournalEnabled()),
-                true, // We want to return the updated document to the caller
-                true));
+                new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true)));
     }
 }

@@ -16,12 +16,14 @@
  */
 package org.graylog2.database;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReturnDocument;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.plugin.database.EmbeddedPersistable;
 import org.graylog2.plugin.database.Persisted;
@@ -34,11 +36,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PersistedServiceImpl implements PersistedService {
     private static final Logger LOG = LoggerFactory.getLogger(PersistedServiceImpl.class);
@@ -49,11 +47,11 @@ public class PersistedServiceImpl implements PersistedService {
     }
 
     protected DBObject get(ObjectId id, String collectionName) {
-        return collection(collectionName).findOne(new BasicDBObject("_id", id));
+        return collection(collectionName).find(Filters.eq("_id", id)).first();
     }
 
     protected <T extends Persisted> DBObject get(Class<T> modelClass, ObjectId id) {
-        return collection(modelClass).findOne(new BasicDBObject("_id", id));
+        return collection(modelClass).find(Filters.eq("_id", id)).first();
     }
 
     protected <T extends Persisted> DBObject get(Class<T> modelClass, String id) {
@@ -64,41 +62,52 @@ public class PersistedServiceImpl implements PersistedService {
         return query(query, collection(collectionName));
     }
 
-    protected List<DBObject> query(DBObject query, DBCollection collection) {
-        return cursorToList(collection.find(query));
+    protected List<DBObject> query(DBObject query, MongoCollection<BasicDBObject> collection) {
+        return collection.find(new BasicDBObject(query.toMap())).into(new ArrayList<>());
+    }
+
+    protected List<DBObject> query(Bson query, MongoCollection<BasicDBObject> collection) {
+        return collection.find(query).into(new ArrayList<>());
     }
 
     protected <T extends Persisted> List<DBObject> query(Class<T> modelClass, DBObject query) {
         return query(query, collection(modelClass));
     }
 
+    protected <T extends Persisted> List<DBObject> query(Class<T> modelClass, Bson query) {
+        return query(query, collection(modelClass));
+    }
+
     protected <T extends Persisted> List<DBObject> query(Class<T> modelClass, DBObject query, DBObject sort) {
-        return cursorToList(collection(modelClass).find(query).sort(sort));
+        return collection(modelClass).find(new BasicDBObject(query.toMap())).sort(new BasicDBObject(sort.toMap())).into(new ArrayList<>());
     }
 
     protected <T extends Persisted> List<DBObject> query(Class<T> modelClass, DBObject query, DBObject sort, int limit, int offset) {
-        return cursorToList(
-                collection(modelClass)
-                        .find(query)
-                        .sort(sort)
+        return collection(modelClass)
+                        .find(new BasicDBObject(query.toMap()))
+                        .sort(new BasicDBObject(sort.toMap()))
                         .limit(limit)
                         .skip(offset)
-        );
+                        .into(new ArrayList<>());
     }
 
     protected long count(DBObject query, String collectionName) {
-        return collection(collectionName).count(query);
+        return collection(collectionName).countDocuments(dBObjectToBson(query));
     }
 
     protected <T extends Persisted> long count(Class<T> modelClass, DBObject query) {
-        return collection(modelClass).count(query);
+        return collection(modelClass).countDocuments(dBObjectToBson(query));
     }
 
-    private DBCollection collection(String collectionName) {
-        return mongoConnection.getDatabase().getCollection(collectionName);
+    public static BasicDBObject dBObjectToBson(DBObject object) {
+        return new BasicDBObject(object.toMap());
     }
 
-    protected <T extends Persisted> DBCollection collection(Class<T> modelClass) {
+    private MongoCollection<BasicDBObject> collection(String collectionName) {
+        return mongoConnection.getMongoDatabase().getCollection(collectionName, BasicDBObject.class);
+    }
+
+    protected <T extends Persisted> MongoCollection<BasicDBObject> collection(Class<T> modelClass) {
         CollectionName collectionNameAnnotation = modelClass.getAnnotation(CollectionName.class);
         if (collectionNameAnnotation == null) {
             throw new RuntimeException("Unable to determine collection for class " + modelClass.getCanonicalName());
@@ -108,66 +117,58 @@ public class PersistedServiceImpl implements PersistedService {
         return collection(collectionName);
     }
 
-    protected <T extends Persisted> DBCollection collection(T model) {
+    protected <T extends Persisted> MongoCollection<BasicDBObject> collection(T model) {
         return collection(model.getClass());
     }
 
-    protected List<DBObject> cursorToList(DBCursor cursor) {
-        if (cursor == null) {
-            return Collections.emptyList();
-        }
-
-        try {
-            return Lists.newArrayList((Iterable<DBObject>) cursor);
-        } finally {
-            cursor.close();
-        }
+    protected <T extends Persisted> DBObject findOne(Class<T> model, DBObject query) {
+        return collection(model).find(dBObjectToBson(query)).first();
     }
 
-    protected <T extends Persisted> DBObject findOne(Class<T> model, DBObject query) {
-        return collection(model).findOne(query);
+    protected <T extends Persisted> DBObject findOne(Class<T> model, Bson query) {
+        return collection(model).find(query).first();
     }
 
     protected <T extends Persisted> DBObject findOne(Class<T> model, DBObject query, DBObject sort) {
-        return collection(model).findOne(query, new BasicDBObject(), sort);
+        return collection(model).find(dBObjectToBson(query)).sort(dBObjectToBson(sort)).first();
     }
 
     protected DBObject findOne(DBObject query, String collectionName) {
-        return collection(collectionName).findOne(query);
+        return collection(collectionName).find(dBObjectToBson(query)).first();
     }
 
     protected DBObject findOne(DBObject query, DBObject sort, String collectioName) {
-        return collection(collectioName).findOne(query, new BasicDBObject(), sort);
+        return collection(collectioName).find(dBObjectToBson(query)).sort(dBObjectToBson(sort)).first();
     }
 
     protected long totalCount(String collectionName) {
-        return collection(collectionName).count();
+        return collection(collectionName).countDocuments();
     }
 
     protected <T extends Persisted> long totalCount(Class<T> modelClass) {
-        return collection(modelClass).count();
+        return collection(modelClass).countDocuments();
     }
 
     @Override
     public <T extends Persisted> int destroy(T model) {
-        return collection(model).remove(new BasicDBObject("_id", new ObjectId(model.getId()))).getN();
+        return (int)collection(model).deleteMany(new BasicDBObject("_id", new ObjectId(model.getId()))).getDeletedCount();
     }
 
     @Override
     public <T extends Persisted> int destroyAll(Class<T> modelClass) {
-        return collection(modelClass).remove(new BasicDBObject()).getN();
+        return (int)collection(modelClass).deleteMany(new BasicDBObject()).getDeletedCount();
     }
 
     protected int destroyAll(String collectionName) {
-        return collection(collectionName).remove(new BasicDBObject()).getN();
+        return (int)collection(collectionName).deleteMany(new BasicDBObject()).getDeletedCount();
     }
 
     protected int destroy(DBObject query, String collectionName) {
-        return collection(collectionName).remove(query).getN();
+        return (int)collection(collectionName).deleteMany(dBObjectToBson(query)).getDeletedCount();
     }
 
     protected <T extends Persisted> int destroyAll(Class<T> modelClass, DBObject query) {
-        return collection(modelClass).remove(query).getN();
+        return (int)collection(modelClass).deleteMany(dBObjectToBson(query)).getDeletedCount();
     }
 
     @Override
@@ -189,7 +190,7 @@ public class PersistedServiceImpl implements PersistedService {
 		 * a new document will be created if it doesn't.
 		 */
         BasicDBObject q = new BasicDBObject("_id", new ObjectId(model.getId()));
-        collection(model).update(q, doc, true, false);
+        collection(model).findOneAndReplace(q, doc, new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
 
         return model.getId();
     }
@@ -252,7 +253,7 @@ public class PersistedServiceImpl implements PersistedService {
         fieldTransformations(fields);
 
         BasicDBObject dbo = new BasicDBObject(fields);
-        collection(model).update(new BasicDBObject("_id", new ObjectId(model.getId())), new BasicDBObject("$push", new BasicDBObject(key, dbo)));
+        collection(model).updateOne(new BasicDBObject("_id", new ObjectId(model.getId())), new BasicDBObject("$push", new BasicDBObject(key, dbo)));
     }
 
     protected <T extends Persisted> void removeEmbedded(T model, String key, String searchId) {
@@ -262,7 +263,7 @@ public class PersistedServiceImpl implements PersistedService {
 
         // http://docs.mongodb.org/manual/reference/operator/pull/
 
-        collection(model).update(qry, update);
+        collection(model).updateOne(qry, update);
     }
 
     protected <T extends Persisted> void removeEmbedded(T model, String arrayKey, String key, String searchId) {
@@ -272,7 +273,7 @@ public class PersistedServiceImpl implements PersistedService {
 
         // http://docs.mongodb.org/manual/reference/operator/pull/
 
-        collection(model).update(qry, update);
+        collection(model).updateOne(qry, update);
     }
 
     private void fieldTransformations(Map<String, Object> doc) {

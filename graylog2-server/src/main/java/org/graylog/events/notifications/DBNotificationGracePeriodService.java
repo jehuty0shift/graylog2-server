@@ -16,6 +16,7 @@
  */
 package org.graylog.events.notifications;
 
+import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
 import org.graylog.events.event.EventDto;
 import org.graylog.scheduler.clock.JobSchedulerClock;
@@ -24,8 +25,6 @@ import org.graylog2.database.MongoConnection;
 import org.graylog2.database.NotFoundException;
 import org.graylog2.database.PaginatedDbService;
 import org.joda.time.DateTime;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ import java.util.Optional;
 public class DBNotificationGracePeriodService extends PaginatedDbService<EventNotificationStatus> {
     private static final String NOTIFICATION_STATUS_COLLECTION_NAME = "event_notification_status";
 
-    private JobSchedulerClock clock;
+    private final JobSchedulerClock clock;
 
     @Inject
     public DBNotificationGracePeriodService(MongoConnection mongoConnection,
@@ -54,28 +53,22 @@ public class DBNotificationGracePeriodService extends PaginatedDbService<EventNo
     }
 
     public List<EventNotificationStatus> getAllStatuses() {
-        List<EventNotificationStatus> result = new ArrayList<>();
-        try (DBCursor<EventNotificationStatus> eventNotificationStatuses = db.find()) {
-            for (EventNotificationStatus status : eventNotificationStatuses) {
-                result.add(status);
-            }
-        }
-        return result;
+        return db.find().into(new ArrayList<>());
     }
 
     public int deleteStatus(String statusId) {
         final ObjectId id = new ObjectId(statusId);
-        return db.removeById(id).getN();
+        return (int)db.removeById(id).getDeletedCount();
     }
 
     private Optional<EventNotificationStatus> getNotificationStatus(String notificationId, String definitionId, String key) {
         if (notificationId == null || definitionId == null || key == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(db.findOne(DBQuery.and(
-                DBQuery.is(EventNotificationStatus.FIELD_NOTIFICATION_ID, notificationId),
-                DBQuery.is(EventNotificationStatus.FIELD_EVENT_DEFINITION_ID, definitionId),
-                DBQuery.is(EventNotificationStatus.FIELD_EVENT_KEY, key))));
+        return Optional.ofNullable(db.findOne(Filters.and(
+                Filters.eq(EventNotificationStatus.FIELD_NOTIFICATION_ID, notificationId),
+                Filters.eq(EventNotificationStatus.FIELD_EVENT_DEFINITION_ID, definitionId),
+                Filters.eq(EventNotificationStatus.FIELD_EVENT_KEY, key))));
     }
 
     public void updateTriggerStatus(String notificationId, EventDto eventDto, long grace) {
@@ -101,6 +94,8 @@ public class DBNotificationGracePeriodService extends PaginatedDbService<EventNo
                 break;
             case "notified":
                 statusBuilder.notifiedAt(Optional.of(eventDto.eventTimestamp()));
+                break;
+            default:
                 break;
         }
 

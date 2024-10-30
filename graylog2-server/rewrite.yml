@@ -1,0 +1,43 @@
+type: specs.openrewrite.org/v1beta/recipe
+name: org.ovh.mongoDB.ReplaceDBQueryAndDBSortWithMongoFiltersAndSorts
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: "org.mongojack.DBQuery"
+      newFullyQualifiedTypeName: "com.mongodb.client.model.Filters"
+
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: "org.mongojack.DBSort"
+      newFullyQualifiedTypeName: "com.mongodb.client.model.Sorts"
+
+  - org.openrewrite.java.ReplaceMethodCall:
+      methodPattern: "org.mongojack.DBQuery.is(String, Object)"
+      replacement: "com.mongodb.client.model.Filters.eq(#{any(String)}, #{any(Object)})"
+
+  - org.openrewrite.java.ReplaceMethodCall:
+      methodPattern: "org.mongojack.DBQuery.greaterThan(String, Object)"
+      replacement: "com.mongodb.client.model.Filters.gt(#{any(String)}, #{any(Object)})"
+
+  - org.openrewrite.java.ReplaceMethodCall:
+      methodPattern: "org.mongojack.DBQuery.lessThan(String, Object)"
+      replacement: "com.mongodb.client.model.Filters.lt(#{any(String)}, #{any(Object)})"
+
+  - org.openrewrite.java.ReplaceMethodCall:
+      methodPattern: "org.mongojack.DBQuery.and(org.mongojack.DBQuery...)"
+      replacement: "com.mongodb.client.model.Filters.and(#{any(com.mongodb.client.model.Filters)}...)"
+
+  - org.openrewrite.java.ReplaceMethodCall:
+      methodPattern: "org.mongojack.DBQuery.or(org.mongojack.DBQuery...)"
+      replacement: "com.mongodb.client.model.Filters.or(#{any(com.mongodb.client.model.Filters)}...)"
+
+  - org.openrewrite.java.ReplaceMethodCall:
+      methodPattern: "org.mongojack.DBSort.asc(String)"
+      replacement: "com.mongodb.client.model.Sorts.ascending(#{any(String)})"
+
+  - org.openrewrite.java.ReplaceMethodCall:
+      methodPattern: "org.mongojack.DBSort.desc(String)"
+      replacement: "com.mongodb.client.model.Sorts.descending(#{any(String)})"
+
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: "org.mongojack.DBQuery.Query"
+      newFullyQualifiedTypeName: "org.bson.Bson"
+

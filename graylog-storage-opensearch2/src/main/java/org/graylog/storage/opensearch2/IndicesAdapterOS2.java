@@ -61,13 +61,13 @@ import static java.util.stream.Collectors.toList;
 
 public class IndicesAdapterOS2 implements IndicesAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(IndicesAdapterOS2.class);
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
     private final StatsApi statsApi;
     private final CatApi catApi;
     private final ClusterStateApi clusterStateApi;
 
     @Inject
-    public IndicesAdapterOS2(OpensearchClient client,
+    public IndicesAdapterOS2(OpensearchGraylogClient client,
                              StatsApi statsApi,
                              CatApi catApi,
                              ClusterStateApi clusterStateApi) {

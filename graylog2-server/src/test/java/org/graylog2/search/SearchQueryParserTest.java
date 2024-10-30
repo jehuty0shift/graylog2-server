@@ -18,26 +18,29 @@ package org.graylog2.search;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bson.BSONObject;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonValue;
+import org.bson.conversions.Bson;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Test;
-import org.mongojack.DBQuery;
-import org.mongojack.internal.query.CollectionQueryCondition;
-import org.mongojack.internal.query.CompoundQueryCondition;
-import org.mongojack.internal.query.QueryCondition;
+import scala.compat.java8.StreamExtensions;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
+import java.util.Random;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,8 +61,8 @@ public class SearchQueryParserTest {
         assertThat(query.hasDisallowedKeys()).isFalse();
         assertThat(query.getDisallowedKeys()).isEmpty();
 
-        final DBQuery.Query dbQuery = query.toDBQuery();
-        final Collection<String> fieldNamesUsed = extractFieldNames(dbQuery.conditions());
+        final Bson dbQuery = query.toDBQuery();
+        final Collection<String> fieldNamesUsed = extractFieldNames(dbQuery.toBsonDocument());
         assertThat(fieldNamesUsed).containsExactly("name");
     }
 
@@ -75,8 +78,8 @@ public class SearchQueryParserTest {
         assertThat(query.hasDisallowedKeys()).isFalse();
         assertThat(query.getDisallowedKeys()).isEmpty();
 
-        final DBQuery.Query dbQuery = query.toDBQuery();
-        final Collection<String> fieldNamesUsed = extractFieldNames(dbQuery.conditions());
+        final Bson dbQuery = query.toDBQuery();
+        final Collection<String> fieldNamesUsed = extractFieldNames(dbQuery.toBsonDocument());
         assertThat(fieldNamesUsed).containsExactly("name");
     }
 
@@ -102,8 +105,8 @@ public class SearchQueryParserTest {
         assertThat(queryMap.get("defaultfield")).containsOnly(new SearchQueryParser.FieldValue("foo", false));
         assertThat(query.hasDisallowedKeys()).isTrue();
         assertThat(query.getDisallowedKeys()).containsExactly("notallowed");
-        final DBQuery.Query dbQuery = query.toDBQuery();
-        final Collection<String> fieldNames = extractFieldNames(dbQuery.conditions());
+        final Bson dbQuery = query.toDBQuery();
+        final Collection<String> fieldNames = extractFieldNames(dbQuery.toBsonDocument());
         assertThat(fieldNames).containsExactly("defaultfield");
     }
 
@@ -124,30 +127,31 @@ public class SearchQueryParserTest {
         assertThat(queryMap.get("real_id")).containsOnly(new SearchQueryParser.FieldValue("1234", false));
         assertThat(query.hasDisallowedKeys()).isFalse();
 
-        final DBQuery.Query dbQuery = query.toDBQuery();
-        final Collection<String> fieldNames = extractFieldNames(dbQuery.conditions());
+        final Bson dbQuery = query.toDBQuery();
+        final Collection<String> fieldNames = extractFieldNames(dbQuery.toBsonDocument());
         assertThat(fieldNames).containsOnly("index_name", "real_id");
     }
 
-    private Collection<String> extractFieldNames(Set<Map.Entry<String, QueryCondition>> conditions) {
+    private Collection<String> extractFieldNames(Map<String, BsonValue> conditions) {
         final ImmutableSet.Builder<String> names = ImmutableSet.builder();
 
+        Random rand = new Random();
         // recurse into the tree, conveniently there's no visitor we can use, so it's manual
-        conditions.forEach(entry -> {
+        conditions.entrySet().forEach(entry -> {
             final String op = entry.getKey();
             if (!op.startsWith("$")) {
                 names.add(op);
             }
-            final QueryCondition queryCondition = entry.getValue();
-            if (queryCondition instanceof CollectionQueryCondition) {
+            final BsonValue queryCondition = entry.getValue();
+
+            if (queryCondition instanceof BsonArray) {
                 names.addAll(
-                        extractFieldNames(((CollectionQueryCondition) queryCondition).getValues().stream()
-                                .map(qc -> Maps.immutableEntry("$dummy", qc))
-                                .collect(Collectors.toSet()))
+                        extractFieldNames(((BsonArray) queryCondition).getValues().stream()
+                                .collect(Collectors.toMap(qc -> "$dummy_"+rand.nextInt(), Function.identity())))
                 );
-            } else if (queryCondition instanceof CompoundQueryCondition) {
+            } else if (queryCondition instanceof BsonDocument) {
                 names.addAll(
-                        extractFieldNames(((CompoundQueryCondition) queryCondition).getQuery().conditions())
+                        extractFieldNames((BsonDocument)queryCondition)
                 );
             }
         });

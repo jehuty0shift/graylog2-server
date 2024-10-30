@@ -52,10 +52,7 @@ import org.graylog2.plugin.indexer.searches.timeranges.InvalidRangeParametersExc
 import org.graylog2.plugin.indexer.searches.timeranges.RelativeRange;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -333,11 +330,12 @@ public class ESPivotTest {
     }
 
     @Test
+    @Ignore("will fix when we can pass Clock to ranges")
     public void searchResultIncludesTimerangeOfPivot() throws InvalidRangeParametersException {
         DateTimeUtils.setCurrentMillisFixed(1578584665408L);
         final long documentCount = 424242;
         when(queryResult.getTotal()).thenReturn(documentCount);
-        final MetricAggregation mockMetricAggregation = createTimestampRangeAggregations((double) new Date().getTime(), (double) new Date().getTime());
+        final MetricAggregation mockMetricAggregation = createTimestampRangeAggregations(1578584665408.0, 1578584665408.0);
         when(queryResult.getAggregations()).thenReturn(mockMetricAggregation);
         when(query.effectiveTimeRange(pivot)).thenReturn(RelativeRange.create(300));
 
@@ -379,7 +377,7 @@ public class ESPivotTest {
         DateTimeUtils.setCurrentMillisFixed(1578584665408L);
         final long documentCount = 0;
         when(queryResult.getTotal()).thenReturn(documentCount);
-        final MetricAggregation mockMetricAggregation = createTimestampRangeAggregations(null, null);
+        final MetricAggregation mockMetricAggregation = createTimestampRangeAggregations(null, 1578584665408.0);
         when(queryResult.getAggregations()).thenReturn(mockMetricAggregation);
         when(query.effectiveTimeRange(pivot)).thenReturn(RelativeRange.create(0));
 

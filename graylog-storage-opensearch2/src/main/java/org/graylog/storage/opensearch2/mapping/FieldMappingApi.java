@@ -3,7 +3,7 @@ package org.graylog.storage.opensearch2.mapping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Streams;
-import org.graylog.storage.opensearch2.OpensearchClient;
+import org.graylog.storage.opensearch2.OpensearchGraylogClient;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
 
@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 
 public class FieldMappingApi {
     private final ObjectMapper objectMapper;
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
 
     @Inject
     public FieldMappingApi(ObjectMapper objectMapper,
-                           OpensearchClient client) {
+                           OpensearchGraylogClient client) {
         this.objectMapper = objectMapper;
         this.client = client;
     }

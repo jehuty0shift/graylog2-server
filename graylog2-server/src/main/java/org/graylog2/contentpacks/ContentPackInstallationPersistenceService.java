@@ -16,10 +16,12 @@
  */
 package org.graylog2.contentpacks;
 
-import com.google.common.collect.ImmutableSet;
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertOneResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.contentpacks.model.ContentPackInstallation;
@@ -27,35 +29,27 @@ import org.graylog2.contentpacks.model.ModelId;
 import org.graylog2.contentpacks.model.entities.NativeEntityDescriptor;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.rest.models.system.contentpacks.responses.ContentPackMetadata;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Singleton
 public class ContentPackInstallationPersistenceService {
     private static final String COLLECTION_NAME = "content_packs_installations";
 
-    private final JacksonDBCollection<ContentPackInstallation, ObjectId> dbCollection;
+    private final JacksonMongoCollection<ContentPackInstallation> dbCollection;
 
     @Inject
     public ContentPackInstallationPersistenceService(final MongoJackObjectMapperProvider mapperProvider,
                                                      final MongoConnection mongoConnection) {
-        this(JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
-                ContentPackInstallation.class, ObjectId.class, mapperProvider.get()));
+        this(JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(), COLLECTION_NAME,
+                ContentPackInstallation.class, UuidRepresentation.STANDARD));
     }
 
-    ContentPackInstallationPersistenceService(final JacksonDBCollection<ContentPackInstallation, ObjectId> dbCollection) {
+    ContentPackInstallationPersistenceService(final JacksonMongoCollection<ContentPackInstallation> dbCollection) {
         this.dbCollection = dbCollection;
 
         dbCollection.createIndex(new BasicDBObject(ContentPackInstallation.FIELD_CONTENT_PACK_ID, 1));
@@ -63,19 +57,13 @@ public class ContentPackInstallationPersistenceService {
     }
 
     public Set<ContentPackInstallation> loadAll() {
-        try (final DBCursor<ContentPackInstallation> installations = dbCollection.find()) {
-            return ImmutableSet.copyOf((Iterator<ContentPackInstallation>) installations);
-        }
+        return Collections.unmodifiableSet(dbCollection.find().into(new HashSet<>()));
     }
 
     public Set<ContentPackInstallation> findByContentPackIds(Set<ModelId> ids) {
-        final Set<String> stringIds = ids.stream().map(x -> x.toString()).collect(Collectors.toSet());
-        final DBObject query = BasicDBObjectBuilder.start()
-                .push(ContentPackInstallation.FIELD_CONTENT_PACK_ID)
-                .append("$in", stringIds)
-                .get();
-        final DBCursor<ContentPackInstallation> result = dbCollection.find(query);
-        return ImmutableSet.copyOf((Iterable<ContentPackInstallation>) result);
+        final Set<String> stringIds = ids.stream().map(ModelId::toString).collect(Collectors.toSet());
+        final Bson query = Filters.in(ContentPackInstallation.FIELD_CONTENT_PACK_ID, stringIds);
+        return Collections.unmodifiableSet(dbCollection.find(query).into(new HashSet<>()));
     }
 
     public Optional<ContentPackInstallation> findById(ObjectId id) {
@@ -84,29 +72,26 @@ public class ContentPackInstallationPersistenceService {
     }
 
     public Set<ContentPackInstallation> findByContentPackIdAndRevision(ModelId id, int revision) {
-        final DBQuery.Query query = DBQuery
-                .is(ContentPackInstallation.FIELD_CONTENT_PACK_ID, id)
-                .is(ContentPackInstallation.FIELD_CONTENT_PACK_REVISION, revision);
-        try (final DBCursor<ContentPackInstallation> installations = dbCollection.find(query)) {
-            return ImmutableSet.copyOf((Iterator<ContentPackInstallation>) installations);
-        }
+        final Bson query = Filters.and(
+                Filters.eq(ContentPackInstallation.FIELD_CONTENT_PACK_ID, id),
+                Filters.eq(ContentPackInstallation.FIELD_CONTENT_PACK_REVISION, revision));
+        return Collections.unmodifiableSet(dbCollection.find(query).into(new HashSet<>()));
+
     }
 
     public Set<ContentPackInstallation> findByContentPackId(ModelId id) {
-        final DBQuery.Query query = DBQuery.is(ContentPackInstallation.FIELD_CONTENT_PACK_ID, id);
-        try (final DBCursor<ContentPackInstallation> installations = dbCollection.find(query)) {
-            return ImmutableSet.copyOf((Iterator<ContentPackInstallation>) installations);
-        }
+        final Bson query = Filters.eq(ContentPackInstallation.FIELD_CONTENT_PACK_ID, id);
+        return Collections.unmodifiableSet(dbCollection.find(query).into(new HashSet<>()));
     }
 
     public ContentPackInstallation insert(final ContentPackInstallation installation) {
-        final WriteResult<ContentPackInstallation, ObjectId> writeResult = dbCollection.insert(installation);
-        return writeResult.getSavedObject();
+        InsertOneResult result = dbCollection.insertOne(installation);
+        return dbCollection.findOneById(result.getInsertedId());
     }
 
     public int deleteById(ObjectId id) {
-        final WriteResult<ContentPackInstallation, ObjectId> writeResult = dbCollection.removeById(id);
-        return writeResult.getN();
+        final DeleteResult writeResult = dbCollection.removeById(id);
+        return (int) writeResult.getDeletedCount();
     }
 
     public Map<ModelId, Map<Integer, ContentPackMetadata>> getInstallationMetadata(Set<ModelId> ids) {
@@ -138,15 +123,15 @@ public class ContentPackInstallationPersistenceService {
     public long countInstallationOfEntityById(ModelId entityId) {
         final String field = String.format(Locale.ROOT, "%s.%s", ContentPackInstallation.FIELD_ENTITIES, NativeEntityDescriptor.FIELD_META_ID);
 
-        return dbCollection.getCount(DBQuery.is(field, entityId));
+        return dbCollection.countDocuments(Filters.eq(field, entityId));
     }
 
     public long countInstallationOfEntityByIdAndFoundOnSystem(ModelId entityId) {
-        final DBQuery.Query query = DBQuery.elemMatch(ContentPackInstallation.FIELD_ENTITIES,
-                DBQuery.and(
-                        DBQuery.is(NativeEntityDescriptor.FIELD_ENTITY_FOUND_ON_SYSTEM, true),
-                        DBQuery.is(NativeEntityDescriptor.FIELD_META_ID, entityId.id())));
+        final Bson query = Filters.elemMatch(ContentPackInstallation.FIELD_ENTITIES,
+                Filters.and(
+                        Filters.eq(NativeEntityDescriptor.FIELD_ENTITY_FOUND_ON_SYSTEM, true),
+                        Filters.eq(NativeEntityDescriptor.CONTENT_PACK_ENTITY_ID, entityId.id())));
 
-        return dbCollection.getCount(query);
+        return dbCollection.countDocuments(query);
     }
 }

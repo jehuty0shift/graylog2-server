@@ -137,7 +137,7 @@ public class ShiroSecurityContextFilterTest {
         assertThat(securityContext).isExactlyInstanceOf(ShiroSecurityContext.class);
         assertThat(securityContext.getAuthenticationScheme()).isEqualTo(SecurityContext.BASIC_AUTH);
         assertThat(securityContext.getUsername()).isEqualTo("user");
-        assertThat(securityContext.getToken()).isExactlyInstanceOf(UsernamePasswordToken.class);
+        assertThat(securityContext.getToken()).isInstanceOf(UsernamePasswordToken.class);
     }
 
     @Test
@@ -191,6 +191,6 @@ public class ShiroSecurityContextFilterTest {
         assertThat(securityContext.getAuthenticationScheme()).isEqualTo(SecurityContext.BASIC_AUTH);
         assertThat(securityContext.getUsername()).isEqualTo("user");
         assertThat(securityContext.getPassword()).isEqualTo("pass:word");
-        assertThat(securityContext.getToken()).isExactlyInstanceOf(UsernamePasswordToken.class);
+        assertThat(securityContext.getToken()).isInstanceOf(UsernamePasswordToken.class);
     }
 }

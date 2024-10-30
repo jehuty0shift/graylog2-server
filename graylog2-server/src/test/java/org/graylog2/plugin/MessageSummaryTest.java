@@ -18,6 +18,8 @@ package org.graylog2.plugin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -92,7 +94,7 @@ public class MessageSummaryTest {
 
     @Test
     public void testJSONSerialization() throws Exception {
-        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         final MapType valueType = mapper.getTypeFactory().constructMapType(HashMap.class, String.class, Object.class);
 
         final Map<String, Object> map = mapper.readValue(mapper.writeValueAsBytes(messageSummary), valueType);

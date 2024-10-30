@@ -20,6 +20,7 @@ import org.graylog2.migrations.V20170607164210_MigrateReopenedIndicesToAliases;
 import org.graylog2.plugin.BackendVersion;
 import org.graylog2.plugin.VersionAwareModule;
 import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.client.opensearch.OpenSearchClient;
 
 public class Opensearch2Module extends VersionAwareModule {
     @Override
@@ -43,6 +44,7 @@ public class Opensearch2Module extends VersionAwareModule {
 
         bind(RestHighLevelClient.class).toProvider(RestHighLevelClientProvider.class);
         bind(CredentialsProvider.class).toProvider(OSCredentialsProvider.class);
+        bind(OpenSearchClient.class).toProvider(OpenSearchJavaClientProvider.class);
     }
 
     private <T> LinkedBindingBuilder<T> bindForSupportedVersion(Class<T> interfaceClass) {

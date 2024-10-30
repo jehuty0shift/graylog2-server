@@ -226,8 +226,8 @@ public class EventDefinitionHandlerTest {
         // and reset the job definition timerange to the new parameters
         final EventProcessorExecutionJob.Config newJobConfig = (EventProcessorExecutionJob.Config) newJobDefinition.config();
         final TimeRange newTimeRange = newJobConfig.parameters().timerange();
-        assertThat(newTimeRange.getFrom()).isEqualTo(clock.nowUTC().minus(newConfig.searchWithinMs()));
-        assertThat(newTimeRange.getTo()).isEqualTo(clock.nowUTC());
+        assertThat(newTimeRange.getFrom()).isEqualTo(clock.nowUTC().minus(newConfig.searchWithinMs()).toDate().toInstant());
+        assertThat(newTimeRange.getTo()).isEqualTo(clock.nowUTC().toDate().toInstant());
 
         assertThat(jobTriggerService.get("54e3deadbeefdeadbeef0002")).isPresent().get().satisfies(trigger -> {
             assertThat(trigger.data()).isEmpty();

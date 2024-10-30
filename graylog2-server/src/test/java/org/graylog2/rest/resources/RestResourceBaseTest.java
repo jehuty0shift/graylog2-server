@@ -27,6 +27,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,7 +53,7 @@ public class RestResourceBaseTest {
         @Override
         protected Subject getSubject() {
             final Subject mock = mock(Subject.class);
-            when(mock.isPermitted((String[]) any())).thenReturn(new boolean[]{false, false});
+            when(mock.isPermitted(any(String.class), any(String.class))).thenReturn(new boolean[]{false, false});
             return mock;
         }
 
@@ -64,7 +65,7 @@ public class RestResourceBaseTest {
         @Override
         protected Subject getSubject() {
             final Subject mock = mock(Subject.class);
-            when(mock.isPermitted((String[]) any())).thenReturn(new boolean[]{true, true});
+            when(mock.isPermitted(any(String.class), any(String.class))).thenReturn(new boolean[]{true, true});
             return mock;
         }
 
@@ -76,7 +77,7 @@ public class RestResourceBaseTest {
         @Override
         protected Subject getSubject() {
             final Subject mock = mock(Subject.class);
-            when(mock.isPermitted((String[]) any())).thenReturn(new boolean[]{false, true});
+            when(mock.isPermitted(any(String.class), any(String.class))).thenReturn(new boolean[]{false, true});
             return mock;
         }
 

@@ -16,8 +16,12 @@
  */
 package org.graylog2.lookup.db;
 
-import com.google.common.collect.ImmutableList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -26,21 +30,14 @@ import org.graylog2.events.ClusterEventBus;
 import org.graylog2.lookup.dto.CacheDto;
 import org.graylog2.lookup.events.CachesDeleted;
 import org.graylog2.lookup.events.CachesUpdated;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DBCacheService {
-    private final JacksonDBCollection<CacheDto, ObjectId> db;
+    private final JacksonMongoCollection<CacheDto> db;
     private final ClusterEventBus clusterEventBus;
 
     @Inject
@@ -48,13 +45,12 @@ public class DBCacheService {
                           MongoJackObjectMapperProvider mapper,
                           ClusterEventBus clusterEventBus) {
 
-        this.db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection("lut_caches"),
+        this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "lut_caches",
                 CacheDto.class,
-                ObjectId.class,
-                mapper.get());
+                UuidRepresentation.STANDARD);
         this.clusterEventBus = clusterEventBus;
 
-        db.createIndex(new BasicDBObject("name", 1), new BasicDBObject("unique", true));
+        db.createIndex(new BasicDBObject("name", 1), new IndexOptions().unique(true));
     }
 
     public Optional<CacheDto> get(String idOrName) {
@@ -62,32 +58,26 @@ public class DBCacheService {
             return Optional.ofNullable(db.findOneById(new ObjectId(idOrName)));
         } catch (IllegalArgumentException e) {
             // not an ObjectId, try again with name
-            return Optional.ofNullable(db.findOne(DBQuery.is("name", idOrName)));
-
+            return Optional.ofNullable(db.findOne(Filters.eq("name", idOrName)));
         }
     }
 
     public CacheDto save(CacheDto table) {
-        WriteResult<CacheDto, ObjectId> save = db.save(table);
-        final CacheDto savedCache = save.getSavedObject();
+        UpdateResult save = db.save(table);
+        final CacheDto savedCache = db.findOneById(save.getUpsertedId());
         clusterEventBus.post(CachesUpdated.create(savedCache.id()));
 
         return savedCache;
     }
 
-    public PaginatedList<CacheDto> findPaginated(DBQuery.Query query, DBSort.SortBuilder sort, int page, int perPage) {
-        try (DBCursor<CacheDto> cursor = db.find(query)
+    public PaginatedList<CacheDto> findPaginated(Bson query, Bson sort, int page, int perPage) {
+        List<CacheDto> paginated = db.find(query)
                 .sort(sort)
                 .limit(perPage)
-                .skip(perPage * Math.max(0, page - 1))) {
-
-            return new PaginatedList<>(asImmutableList(cursor), cursor.count(), page, perPage);
-        }
+                .skip(perPage * Math.max(0, page - 1)).into(new ArrayList<>());
+        return new PaginatedList<>(Collections.unmodifiableList(paginated), paginated.size(), page, perPage);
     }
 
-    private ImmutableList<CacheDto> asImmutableList(Iterator<? extends CacheDto> cursor) {
-        return ImmutableList.copyOf(cursor);
-    }
 
     public void delete(String idOrName) {
         final Optional<CacheDto> cacheDto = get(idOrName);
@@ -98,15 +88,11 @@ public class DBCacheService {
     }
 
     public Collection<CacheDto> findByIds(Set<String> idSet) {
-        final DBQuery.Query query = DBQuery.in("_id", idSet.stream().map(ObjectId::new).collect(Collectors.toList()));
-        try (DBCursor<CacheDto> cursor = db.find(query)) {
-            return asImmutableList(cursor);
-        }
+        final Bson query = Filters.in("_id", idSet.stream().map(ObjectId::new).collect(Collectors.toList()));
+        return Collections.unmodifiableList(db.find(query).into(new ArrayList<>()));
     }
 
     public Collection<CacheDto> findAll() {
-        try (DBCursor<CacheDto> cursor = db.find()) {
-            return asImmutableList(cursor);
-        }
+        return Collections.unmodifiableList(db.find().into(new ArrayList<>()));
     }
 }

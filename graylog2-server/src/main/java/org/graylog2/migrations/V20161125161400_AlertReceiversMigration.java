@@ -21,7 +21,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.graylog.autovalue.WithBeanGetter;
 import org.graylog2.alarmcallbacks.AlarmCallbackConfiguration;
@@ -52,7 +53,7 @@ public class V20161125161400_AlertReceiversMigration extends Migration {
     private final ClusterConfigService clusterConfigService;
     private final StreamService streamService;
     private final AlarmCallbackConfigurationService alarmCallbackService;
-    private final DBCollection dbCollection;
+    private final MongoCollection<Document> dbCollection;
 
     @Inject
     public V20161125161400_AlertReceiversMigration(ClusterConfigService clusterConfigService,
@@ -63,7 +64,7 @@ public class V20161125161400_AlertReceiversMigration extends Migration {
         this.streamService = streamService;
         this.alarmCallbackService = alarmCallbackService;
         final String collectionName = StreamImpl.class.getAnnotation(CollectionName.class).value();
-        this.dbCollection = mongoConnection.getDatabase().getCollection(collectionName);
+        this.dbCollection = mongoConnection.getMongoDatabase().getCollection(collectionName);
     }
 
     @Override
@@ -131,7 +132,7 @@ public class V20161125161400_AlertReceiversMigration extends Migration {
             return Optional.empty();
         }
 
-        this.dbCollection.update(
+        this.dbCollection.updateOne(
                 new BasicDBObject("_id", new ObjectId(stream.getId())),
                 new BasicDBObject("$unset", new BasicDBObject(StreamImpl.FIELD_ALERT_RECEIVERS, ""))
         );

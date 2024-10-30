@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -18,18 +18,18 @@ package org.graylog2.database;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
+import com.mongodb.MongoException;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  * @param <DTO>
  */
 public abstract class PaginatedDbService<DTO> {
-    protected final JacksonDBCollection<DTO, ObjectId> db;
+    protected final JacksonMongoCollection<DTO> db;
 
     protected PaginatedDbService(MongoConnection mongoConnection,
                                  MongoJackObjectMapperProvider mapper,
@@ -65,11 +65,11 @@ public abstract class PaginatedDbService<DTO> {
                                  Class<DTO> dtoClass,
                                  String collectionName,
                                  Class<?> view) {
-        this.db = JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection(collectionName),
-                dtoClass,
-                ObjectId.class,
-                mapper.get(),
-                view);
+        JacksonMongoCollection.JacksonMongoCollectionBuilder jackSonBuilder = JacksonMongoCollection.builder().withObjectMapper(mapper.get());
+        if (view != null) {
+            jackSonBuilder = jackSonBuilder.withView(view);
+        }
+        this.db = jackSonBuilder.build(mongoConnection.getMongoDatabase(), collectionName, dtoClass, UuidRepresentation.STANDARD);
     }
 
     /**
@@ -89,8 +89,18 @@ public abstract class PaginatedDbService<DTO> {
      * @return the newly saved {@link DTO}
      */
     public DTO save(DTO dto) {
-        final WriteResult<DTO, ObjectId> save = db.save(dto);
-        return save.getSavedObject();
+        final UpdateResult save = db.save(dto);
+        if (save.wasAcknowledged()) {
+            if (save.getUpsertedId() != null) {
+                return db.find(Filters.eq("_id", save.getUpsertedId().asObjectId())).first();
+            } else if (save.getModifiedCount() == 1) {
+                return dto;
+            } else {
+                throw new MongoException("Object does not exist and no upsert has been made");
+            }
+        } else {
+            throw new MongoException("Cannot find saved object");
+        }
     }
 
     /**
@@ -100,13 +110,13 @@ public abstract class PaginatedDbService<DTO> {
      * @return the number of deleted documents
      */
     public int delete(String id) {
-        return db.removeById(new ObjectId(id)).getN();
+        return (int) db.removeById(new ObjectId(id)).getDeletedCount();
     }
 
     /**
      * Returns a {@link PaginatedList<DTO>} for the given query and pagination parameters.
      * <p>
-     * This method is only accessible by subclasses to avoid exposure of the {@link DBQuery} and {@link DBSort}
+     * This method is only accessible by subclasses to avoid exposure of the {@link Filters} and {@link com.mongodb.client.model.Sorts}
      * interfaces to consumers.
      *
      * @param query   the query to execute
@@ -115,14 +125,15 @@ public abstract class PaginatedDbService<DTO> {
      * @param perPage the number of entries per page, 0 is unlimited
      * @return the paginated list
      */
-    protected PaginatedList<DTO> findPaginatedWithQueryAndSort(DBQuery.Query query, DBSort.SortBuilder sort, int page, int perPage) {
-        try (final DBCursor<DTO> cursor = db.find(query)
+    protected PaginatedList<DTO> findPaginatedWithQueryAndSort(Bson query, Bson sort, int page, int perPage) {
+        final int total = (int)db.countDocuments(query);
+        FindIterable<DTO> cursor = db.find(query)
                 .sort(sort)
                 .limit(perPage)
-                .skip(perPage * Math.max(0, page - 1))) {
-            final long grandTotal = db.count();
-            return new PaginatedList<>(asImmutableList(cursor), cursor.count(), page, perPage, grandTotal);
-        }
+                .skip(perPage * Math.max(0, page - 1));
+        final long grandTotal = db.countDocuments();
+        List<DTO> elements = cursor.into(new ArrayList<>());
+        return new PaginatedList<>(Collections.unmodifiableList(elements), total, page, perPage, grandTotal);
     }
 
     protected ImmutableList<DTO> asImmutableList(Iterator<? extends DTO> cursor) {
@@ -135,10 +146,10 @@ public abstract class PaginatedDbService<DTO> {
      * Since the database cannot execute the filter function directly, this method streams over the result cursor
      * and executes the filter function for each database object. <strong>This increases memory consumption and should only be
      * used if necessary.</strong> Use the
-     * {@link PaginatedDbService#findPaginatedWithQueryFilterAndSort(DBQuery.Query, Predicate, DBSort.SortBuilder, int, int) #findPaginatedWithQueryAndSort()}
+     * {@link PaginatedDbService#findPaginatedWithQueryFilterAndSort(Bson, Predicate, Bson, int, int) #findPaginatedWithQueryAndSort()}
      * method if possible.
      * <p>
-     * This method is only accessible by subclasses to avoid exposure of the {@link DBQuery} and {@link DBSort}
+     * This method is only accessible by subclasses to avoid exposure of the {@link Bson} and {@link Bson}
      * interfaces to consumers.
      *
      * @param query   the query to execute
@@ -148,9 +159,9 @@ public abstract class PaginatedDbService<DTO> {
      * @param perPage the number of entries per page, 0 is unlimited
      * @return the paginated list
      */
-    protected PaginatedList<DTO> findPaginatedWithQueryFilterAndSort(DBQuery.Query query,
+    protected PaginatedList<DTO> findPaginatedWithQueryFilterAndSort(Bson query,
                                                                      Predicate<DTO> filter,
-                                                                     DBSort.SortBuilder sort,
+                                                                     Bson sort,
                                                                      int page,
                                                                      int perPage) {
         // Calculate the total amount of items matching the query/filter, but before pagination
@@ -166,7 +177,7 @@ public abstract class PaginatedDbService<DTO> {
                 filteredResultStream = filteredResultStream.skip(perPage * Math.max(0, page - 1)).limit(perPage);
             }
 
-            final long grandTotal = db.count();
+            final long grandTotal = db.countDocuments();
 
             return new PaginatedList<>(filteredResultStream.collect(Collectors.toList()), Math.toIntExact(total), page, perPage, grandTotal);
         }
@@ -180,7 +191,7 @@ public abstract class PaginatedDbService<DTO> {
      * @return stream of all database entries
      */
     public Stream<DTO> streamAll() {
-        return streamQuery(DBQuery.empty());
+        return streamQuery(Filters.empty());
     }
 
     /**
@@ -196,24 +207,24 @@ public abstract class PaginatedDbService<DTO> {
                 .map(ObjectId::new)
                 .collect(Collectors.toList());
 
-        return streamQuery(DBQuery.in("_id", objectIds));
+        return streamQuery(Filters.in("_id", objectIds));
     }
 
     /**
-     * Returns an unordered stream of database entries for the given {@link DBQuery.Query}.
+     * Returns an unordered stream of database entries for the given {@link Bson}.
      * <p>
      * The returned stream needs to be closed to free the underlying database resources.
      *
      * @param query the query to execute
      * @return stream of database entries that match the query
      */
-    protected Stream<DTO> streamQuery(DBQuery.Query query) {
-        final DBCursor<DTO> cursor = db.find(query);
-        return Streams.stream((Iterable<DTO>) cursor).onClose(cursor::close);
+    protected Stream<DTO> streamQuery(Bson query) {
+        final FindIterable<DTO> cursor = db.find(query);
+        return Streams.stream(cursor);
     }
 
     /**
-     * Returns a stream of database entries for the given {@link DBQuery.Query} sorted by the give {@link DBSort.SortBuilder}.
+     * Returns a stream of database entries for the given {@link Bson} sorted by the give {@link Bson}.
      * <p>
      * The returned stream needs to be closed to free the underlying database resources.
      *
@@ -221,9 +232,9 @@ public abstract class PaginatedDbService<DTO> {
      * @param sort  the sort order for the query
      * @return stream of database entries that match the query
      */
-    protected Stream<DTO> streamQueryWithSort(DBQuery.Query query, DBSort.SortBuilder sort) {
-        final DBCursor<DTO> cursor = db.find(query).sort(sort);
-        return Streams.stream((Iterable<DTO>) cursor).onClose(cursor::close);
+    protected Stream<DTO> streamQueryWithSort(Bson query, Bson sort) {
+        final FindIterable<DTO> cursor = db.find(query).sort(sort);
+        return Streams.stream(cursor);
     }
 
     /**
@@ -233,13 +244,11 @@ public abstract class PaginatedDbService<DTO> {
      * @param field the field to sort on
      * @return the sort builder
      */
-    protected DBSort.SortBuilder getSortBuilder(String order, String field) {
-        DBSort.SortBuilder sortBuilder;
+    protected Bson getSortBuilder(String order, String field) {
         if ("desc".equalsIgnoreCase(order)) {
-            sortBuilder = DBSort.desc(field);
+            return Sorts.descending(field);
         } else {
-            sortBuilder = DBSort.asc(field);
+            return Sorts.ascending(field);
         }
-        return sortBuilder;
     }
 }

@@ -53,7 +53,10 @@ public class RestResourceBaseTest {
         @Override
         protected Subject getSubject() {
             final Subject mock = mock(Subject.class);
-            when(mock.isPermitted((String[]) any())).thenReturn(new boolean[]{false, false});
+            when(mock.isPermitted(any(String.class),any(String.class))).then((any) -> {
+                if (any != null) {
+                    return new boolean[]{false, false};
+                } else { throw new IllegalArgumentException();}});
             return mock;
         }
 
@@ -66,7 +69,10 @@ public class RestResourceBaseTest {
         @Override
         protected Subject getSubject() {
             final Subject mock = mock(Subject.class);
-            when(mock.isPermitted((String[]) any())).thenReturn(new boolean[]{true, true});
+            when(mock.isPermitted(any(String.class), any(String.class))).then((any) -> {
+                if (any != null) {
+                    return new boolean[]{true, true};
+                } else { throw new IllegalArgumentException();}});
             return mock;
         }
 
@@ -79,7 +85,7 @@ public class RestResourceBaseTest {
         @Override
         protected Subject getSubject() {
             final Subject mock = mock(Subject.class);
-            when(mock.isPermitted((String[]) any())).thenReturn(new boolean[]{false, true});
+            when(mock.isPermitted(any(String.class), any(String.class))).thenReturn(new boolean[]{false, true});
             return mock;
         }
 

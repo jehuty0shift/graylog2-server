@@ -21,23 +21,30 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.DeadEvent;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.MongoException;
+import com.mongodb.WriteConcern;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.Updates;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.periodical.Periodical;
 import org.graylog2.plugin.system.NodeId;
 import org.graylog2.security.SafeChainingClassLoader;
 import org.graylog2.security.UnauthorizedClassLoadingException;
-import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.shared.utilities.AutoValueUtils;
-import org.mongojack.DBCursor;
-import org.mongojack.DBSort;
-import org.mongojack.DBUpdate;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -46,8 +53,9 @@ public class ClusterEventPeriodical extends Periodical {
 
     @VisibleForTesting
     static final String COLLECTION_NAME = "cluster_events";
+    private static final String CONSUMERS_KEY = "consumers";
 
-    private final JacksonDBCollection<ClusterEvent, String> dbCollection;
+    private final JacksonMongoCollection<ClusterEvent> dbCollection;
     private final NodeId nodeId;
     private final ObjectMapper objectMapper;
     private final EventBus serverEventBus;
@@ -60,11 +68,15 @@ public class ClusterEventPeriodical extends Periodical {
                                   final SafeChainingClassLoader safeChainingClassLoader,
                                   final EventBus serverEventBus,
                                   final ClusterEventBus clusterEventBus) {
-        this(JacksonDBCollection.wrap(prepareCollection(mongoConnection), ClusterEvent.class, String.class, mapperProvider.get()),
-                nodeId, mapperProvider.get(), safeChainingClassLoader, serverEventBus, clusterEventBus);
+        this(JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(prepareCollection(mongoConnection), ClusterEvent.class, UuidRepresentation.STANDARD),
+                nodeId,
+                mapperProvider.get(),
+                safeChainingClassLoader,
+                serverEventBus,
+                clusterEventBus);
     }
 
-    private ClusterEventPeriodical(final JacksonDBCollection<ClusterEvent, String> dbCollection,
+    private ClusterEventPeriodical(final JacksonMongoCollection<ClusterEvent> dbCollection,
                            final NodeId nodeId,
                            final ObjectMapper objectMapper,
                            final SafeChainingClassLoader safeChainingClassLoader,
@@ -80,17 +92,16 @@ public class ClusterEventPeriodical extends Periodical {
     }
 
     @VisibleForTesting
-    static DBCollection prepareCollection(final MongoConnection mongoConnection) {
-        final DB db = mongoConnection.getDatabase();
+    static MongoCollection<ClusterEvent> prepareCollection(final MongoConnection mongoConnection) {
+        final MongoDatabase db = mongoConnection.getMongoDatabase();
 
-        DBCollection coll = db.getCollection(COLLECTION_NAME);
+        MongoCollection<ClusterEvent> coll = db.getCollection(COLLECTION_NAME, ClusterEvent.class).withWriteConcern(WriteConcern.JOURNALED);
 
-        coll.createIndex(DBSort
-                .asc("timestamp")
-                .asc("producer")
-                .asc("consumers"));
+        coll.createIndex(Sorts.orderBy(
+                Sorts.ascending("timestamp"),
+                Sorts.ascending("producer"),
+                Sorts.ascending(CONSUMERS_KEY)));
 
-        coll.setWriteConcern(WriteConcern.JOURNALED);
 
         return coll;
     }
@@ -138,13 +149,13 @@ public class ClusterEventPeriodical extends Periodical {
     @Override
     public void doRun() {
         LOG.debug("Opening MongoDB cursor on \"{}\"", COLLECTION_NAME);
-        try (DBCursor<ClusterEvent> cursor = eventCursor(nodeId)) {
+        try {
+            FindIterable<ClusterEvent> cursor = eventCursor(nodeId);
             if (LOG.isTraceEnabled()) {
                 LOG.trace("MongoDB query plan: {}", cursor.explain());
             }
 
-            while (cursor.hasNext()) {
-                ClusterEvent clusterEvent = cursor.next();
+            for (ClusterEvent clusterEvent : cursor) {
                 LOG.trace("Processing cluster event: {}", clusterEvent);
 
                 Object payload = extractPayload(clusterEvent.payload(), clusterEvent.eventClass());
@@ -173,24 +184,24 @@ public class ClusterEventPeriodical extends Periodical {
         final ClusterEvent clusterEvent = ClusterEvent.create(nodeId.toString(), className, event);
 
         try {
-            final String id = dbCollection.save(clusterEvent, WriteConcern.JOURNALED).getSavedId();
+            final String id = Objects.requireNonNull(dbCollection.save(clusterEvent, WriteConcern.JOURNALED).getUpsertedId()).asObjectId().getValue().toHexString();
             LOG.debug("Published cluster event with ID <{}> and type <{}>", id, className);
         } catch (MongoException e) {
             LOG.error("Couldn't publish cluster event of type <" + className + ">", e);
         }
     }
 
-    private DBCursor<ClusterEvent> eventCursor(NodeId nodeId) {
+    private FindIterable<ClusterEvent> eventCursor(NodeId nodeId) {
         // Resorting to ugly MongoDB Java Client because of https://github.com/devbliss/mongojack/issues/88
         final BasicDBList consumersList = new BasicDBList();
         consumersList.add(nodeId.toString());
-        final DBObject query = new BasicDBObject("consumers", new BasicDBObject("$nin", consumersList));
+        final Bson query = Filters.nin(CONSUMERS_KEY, consumersList);
 
-        return dbCollection.find(query).sort(DBSort.asc("timestamp"));
+        return dbCollection.find(query).sort(Sorts.ascending("timestamp"));
     }
 
     private void updateConsumers(final String eventId, final NodeId nodeId) {
-        dbCollection.updateById(eventId, DBUpdate.addToSet("consumers", nodeId.toString()));
+        dbCollection.updateById(eventId, Updates.addToSet(CONSUMERS_KEY, nodeId.toString()));
     }
 
     private Object extractPayload(Object payload, String eventClass) {

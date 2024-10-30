@@ -66,6 +66,6 @@ public class SemverDeserializerTest {
     public void failsForInvalidType() {
         assertThatThrownBy(() -> objectMapper.readValue("[]", Semver.class))
                 .isInstanceOf(JsonMappingException.class)
-                .hasMessageStartingWith("Unexpected token (START_ARRAY), expected VALUE_STRING: expected String or Number");
+                .hasMessageStartingWith("Unexpected token (START_ARRAY), expected START_ARRAY: expected String or Number");
     }
 }

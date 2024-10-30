@@ -181,10 +181,18 @@ public class RawMessage implements Serializable {
         final long time = id.getTime();
         final long clockSeqAndNode = id.getClockSeqAndNode();
 
-        return ByteBuffer.allocate(16)
-                .putLong(time)
-                .putLong(clockSeqAndNode)
-                .array(); // TODO PERFORMANCE object creation
+        byte[] bytes = new byte[16];
+
+        // Convert `time` long to bytes
+        for (int i = 0; i < 8; i++) {
+            bytes[i] = (byte) (time >>> (56 - i * 8));
+        }
+
+        // Convert `clockSeqAndNode` long to bytes
+        for (int i = 0; i < 8; i++) {
+            bytes[8 + i] = (byte) (clockSeqAndNode >>> (56 - i * 8));
+        }
+        return bytes;
     }
 
     @Nullable

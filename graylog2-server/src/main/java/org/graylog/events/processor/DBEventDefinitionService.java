@@ -16,7 +16,7 @@
  */
 package org.graylog.events.processor;
 
-import com.google.common.collect.ImmutableList;
+import com.mongodb.client.model.Filters;
 import org.graylog.events.notifications.EventNotificationConfig;
 import org.graylog.security.entities.EntityOwnershipService;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -25,7 +25,6 @@ import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.search.SearchQuery;
-import org.mongojack.DBQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +84,11 @@ public class DBEventDefinitionService extends PaginatedDbService<EventDefinition
         final String field = String.format(Locale.US, "%s.%s",
             EventDefinitionDto.FIELD_NOTIFICATIONS,
             EventNotificationConfig.FIELD_NOTIFICATION_ID);
-        return ImmutableList.copyOf((db.find(DBQuery.is(field, notificationId)).iterator()));
+            EventDefinitionDto edDto = db.findOne(Filters.eq(field, notificationId));
+            if (edDto != null) {
+                return List.of(edDto);
+            } else {
+                return List.of();
+            }
     }
 }

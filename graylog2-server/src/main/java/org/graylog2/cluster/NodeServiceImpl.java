@@ -19,6 +19,7 @@ package org.graylog2.cluster;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.Configuration;
 import org.graylog2.database.MongoConnection;
@@ -92,7 +93,7 @@ public class NodeServiceImpl extends PersistedServiceImpl implements NodeService
         query.put("last_seen", new BasicDBObject("$gte", Tools.getUTCTimestamp() - pingTimeout));
         query.put("type", type.toString());
 
-        for (DBObject obj : query(NodeImpl.class, query)) {
+        for (DBObject obj : query(NodeImpl.class, (Bson) query)) {
             Node node = new NodeImpl((ObjectId) obj.get("_id"), obj.toMap());
             String nodeId = (String) obj.get("node_id");
 
@@ -151,7 +152,7 @@ public class NodeServiceImpl extends PersistedServiceImpl implements NodeService
         query.put("node_id", new BasicDBObject("$ne", nodeId.toString()));
         query.put("is_master", true);
 
-        return query(NodeImpl.class, query).size() == 0;
+        return query(NodeImpl.class, (Bson)query).isEmpty();
     }
 
     @Override
@@ -161,6 +162,6 @@ public class NodeServiceImpl extends PersistedServiceImpl implements NodeService
         query.put("last_seen", new BasicDBObject("$gte", Tools.getUTCTimestamp() - pingTimeout));
         query.put("is_master", true);
 
-        return query(NodeImpl.class, query).size() > 0;
+        return !query(NodeImpl.class, (Bson)query).isEmpty();
     }
 }

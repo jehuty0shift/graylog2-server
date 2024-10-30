@@ -228,9 +228,6 @@ class MongoDBFixtureImporter {
             indexOptions.max(indexOptionsDoc.getDouble("max"));
         }
 
-        if (indexOptionsDoc.containsKey("bucketSize")) {
-            indexOptions.bucketSize(indexOptionsDoc.getDouble("bucketSize"));
-        }
 
         if (indexOptionsDoc.containsKey("storageEngine")) {
             indexOptions.storageEngine(indexOptionsDoc.get("storageEngine", Bson.class));

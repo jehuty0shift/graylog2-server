@@ -19,14 +19,16 @@ package org.graylog2.events;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.primitives.Ints;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.periodical.Periodical;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +44,16 @@ public class ClusterEventCleanupPeriodical extends Periodical {
     @VisibleForTesting
     static final long DEFAULT_MAX_EVENT_AGE = TimeUnit.DAYS.toMillis(1L);
 
-    private final JacksonDBCollection<ClusterEvent, String> dbCollection;
+    private final JacksonMongoCollection<ClusterEvent> dbCollection;
     private final long maxEventAge;
 
     @Inject
     public ClusterEventCleanupPeriodical(final MongoJackObjectMapperProvider mapperProvider,
                                          final MongoConnection mongoConnection) {
-        this(JacksonDBCollection.wrap(mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
-                ClusterEvent.class, String.class, mapperProvider.get()), DEFAULT_MAX_EVENT_AGE);
+        this(JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(), COLLECTION_NAME, ClusterEvent.class, UuidRepresentation.STANDARD).withWriteConcern(WriteConcern.JOURNALED),DEFAULT_MAX_EVENT_AGE);
     }
 
-    ClusterEventCleanupPeriodical(final JacksonDBCollection<ClusterEvent, String> dbCollection, final long maxEventAge) {
+    ClusterEventCleanupPeriodical(final JacksonMongoCollection<ClusterEvent> dbCollection, final long maxEventAge) {
         this.dbCollection = checkNotNull(dbCollection);
         this.maxEventAge = maxEventAge;
     }
@@ -103,10 +104,10 @@ public class ClusterEventCleanupPeriodical extends Periodical {
             LOG.debug("Removing stale events from MongoDB collection \"{}\"", COLLECTION_NAME);
 
             final long timestamp = DateTime.now(DateTimeZone.UTC).getMillis() - maxEventAge;
-            final DBQuery.Query query = DBQuery.lessThan("timestamp", timestamp);
-            final WriteResult<ClusterEvent, String> writeResult = dbCollection.remove(query, WriteConcern.JOURNALED);
+            final Bson query = Filters.lt("timestamp", timestamp);
+            final DeleteResult deleteResult = dbCollection.deleteMany(query);
 
-            LOG.debug("Removed {} stale events from \"{}\"", writeResult.getN(), COLLECTION_NAME);
+            LOG.debug("Removed {} stale events from \"{}\"", deleteResult.getDeletedCount(), COLLECTION_NAME);
         } catch (Exception e) {
             LOG.warn("Error while removing stale cluster events from MongoDB", e);
         }

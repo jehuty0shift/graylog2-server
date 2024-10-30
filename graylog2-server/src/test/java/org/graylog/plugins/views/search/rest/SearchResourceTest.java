@@ -322,6 +322,7 @@ public class SearchResourceTest {
 
     private void throwGuardExceptionFor(Search search) {
         doThrow(new ForbiddenException()).when(executionGuard).check(eq(search), any());
+        doThrow(new ForbiddenException()).when(executionGuard).check(eq(search),any(), any());
     }
 
     private Search mockNewSearch() {

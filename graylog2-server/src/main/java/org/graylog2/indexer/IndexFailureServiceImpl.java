@@ -18,10 +18,10 @@ package org.graylog2.indexer;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.client.model.Filters;
-import org.bson.conversions.Bson;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.CreateCollectionOptions;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.graylog2.database.CollectionName;
 import org.graylog2.database.MongoConnection;
@@ -43,13 +43,16 @@ public class IndexFailureServiceImpl extends PersistedServiceImpl implements Ind
 
         // Make sure that the index failures collection is always created capped.
         collectionName = IndexFailureImpl.class.getAnnotation(CollectionName.class).value();
-        if (!mongoConnection.getDatabase().collectionExists(collectionName)) {
+        if (!mongoConnection.getMongoDatabase().listCollectionNames().into(new ArrayList<>()).contains(collectionName)) {
             final DBObject options = BasicDBObjectBuilder.start()
                     .add("capped", true)
                     .add("size", 52428800) // 50MB max size.
                     .get();
 
-            final DBCollection collection = mongoConnection.getDatabase().createCollection(collectionName, options);
+            mongoConnection.getMongoDatabase().
+                    createCollection(collectionName, new CreateCollectionOptions().capped(true).sizeInBytes(1073741824));
+            MongoCollection<Document> collection = mongoConnection.getMongoDatabase().
+                    getCollection(collectionName);
 
             collection.createIndex(new BasicDBObject("timestamp", 1));
             collection.createIndex(new BasicDBObject("letter_id", 1));
@@ -83,6 +86,6 @@ public class IndexFailureServiceImpl extends PersistedServiceImpl implements Ind
 
     @Override
     public long totalCount() {
-        return collection(IndexFailureImpl.class).count();
+        return collection(IndexFailureImpl.class).countDocuments();
     }
 }

@@ -18,6 +18,7 @@ package org.graylog2.indexer.indexset;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.eventbus.Subscribe;
+import com.mongodb.client.model.Filters;
 import org.bson.types.ObjectId;
 import org.graylog.testing.mongodb.MongoDBFixtures;
 import org.graylog.testing.mongodb.MongoDBInstance;
@@ -44,7 +45,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.mongojack.DBQuery;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -64,7 +64,7 @@ public class MongoIndexSetServiceTest {
     public final MockitoRule mockitoRule = MockitoJUnit.rule();
 
     private final ObjectMapper objectMapper = new ObjectMapperProvider().get();
-    private final MongoJackObjectMapperProvider objectMapperProvider = new MongoJackObjectMapperProvider(objectMapper);
+    private MongoJackObjectMapperProvider objectMapperProvider = new MongoJackObjectMapperProvider(objectMapper);
 
     private ClusterEventBus clusterEventBus;
     private MongoIndexSetService indexSetService;
@@ -77,6 +77,8 @@ public class MongoIndexSetServiceTest {
 
     @Before
     public void setUp() throws Exception {
+        objectMapperProvider = new MongoJackObjectMapperProvider(objectMapper);
+
         clusterEventBus = new ClusterEventBus();
         clusterConfigService = new ClusterConfigServiceImpl(objectMapperProvider, mongodb.mongoConnection(),
                 nodeId, new SafeChainingClassLoader(new ChainingClassLoader(getClass().getClassLoader()), SafeClassesProvider.allLdpInternal()), clusterEventBus);
@@ -167,11 +169,11 @@ public class MongoIndexSetServiceTest {
     @Test
     @MongoDBFixtures("MongoIndexSetServiceTest.json")
     public void findOne() throws Exception {
-        final Optional<IndexSetConfig> config3 = indexSetService.findOne(DBQuery.is("title", "Test 2"));
+        final Optional<IndexSetConfig> config3 = indexSetService.findOne(Filters.eq("title", "Test 2"));
         assertThat(config3).isPresent();
         assertThat(config3.get().id()).isEqualTo("57f3d721a43c2d59cb750002");
 
-        final Optional<IndexSetConfig> config4 = indexSetService.findOne(DBQuery.is("title", "__yolo"));
+        final Optional<IndexSetConfig> config4 = indexSetService.findOne(Filters.eq("title", "__yolo"));
         assertThat(config4).isNotPresent();
     }
 

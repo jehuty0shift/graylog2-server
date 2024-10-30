@@ -16,38 +16,29 @@
  */
 package org.graylog2.database;
 
-import com.mongodb.DB;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
 import static java.util.Objects.requireNonNull;
 
 public class MongoConnectionForTests implements MongoConnection {
-    private final Mongo mongoClient;
-    private final DB db;
+    private final MongoClient mongoClient;
     private final MongoDatabase mongoDatabase;
-
-    public MongoConnectionForTests(Mongo mongoClient, String dbName) {
-        this.mongoClient = requireNonNull(mongoClient);
-        this.db = mongoClient.getDB(dbName);
-        this.mongoDatabase = null;
-    }
 
     public MongoConnectionForTests(MongoClient mongoClient, String dbName) {
         this.mongoClient = requireNonNull(mongoClient);
-        this.db = mongoClient.getDB(dbName);
         this.mongoDatabase = mongoClient.getDatabase(dbName);
     }
 
-    @Override
-    public Mongo connect() {
-        return mongoClient;
+    public MongoConnectionForTests(MongoClient mongoClient, MongoDatabase mongoDatabase) {
+        this.mongoClient = requireNonNull(mongoClient);
+        this.mongoDatabase = mongoDatabase;
     }
 
+
     @Override
-    public DB getDatabase() {
-        return db;
+    public MongoClient connect() {
+        return mongoClient;
     }
 
     @Override

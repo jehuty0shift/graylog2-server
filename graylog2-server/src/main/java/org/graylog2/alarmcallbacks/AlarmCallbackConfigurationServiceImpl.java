@@ -16,9 +16,10 @@
  */
 package org.graylog2.alarmcallbacks;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.mongodb.DBCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
+import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
 import org.glassfish.jersey.internal.guava.Lists;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -27,33 +28,25 @@ import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.database.ValidationException;
 import org.graylog2.plugin.streams.Stream;
 import org.graylog2.rest.models.alarmcallbacks.requests.CreateAlarmCallbackRequest;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AlarmCallbackConfigurationServiceImpl implements AlarmCallbackConfigurationService {
-    private final JacksonDBCollection<AlarmCallbackConfigurationImpl, String> coll;
+    private final JacksonMongoCollection<AlarmCallbackConfigurationImpl> coll;
 
     @Inject
     public AlarmCallbackConfigurationServiceImpl(MongoConnection mongoConnection,
                                                  MongoJackObjectMapperProvider mapperProvider) {
         final String collectionName = AlarmCallbackConfigurationImpl.class.getAnnotation(CollectionName.class).value();
-        final DBCollection dbCollection = mongoConnection.getDatabase().getCollection(collectionName);
-        this.coll = JacksonDBCollection.wrap(dbCollection, AlarmCallbackConfigurationImpl.class, String.class, mapperProvider.get());
-        dbCollection.createIndex(AlarmCallbackConfigurationImpl.FIELD_STREAM_ID);
+        this.coll = JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(), collectionName, AlarmCallbackConfigurationImpl.class, UuidRepresentation.STANDARD);
+        coll.createIndex(Indexes.ascending(AlarmCallbackConfigurationImpl.FIELD_STREAM_ID));
     }
 
     @Override
     public List<AlarmCallbackConfiguration> getForStreamId(String streamId) {
-        try (DBCursor<AlarmCallbackConfigurationImpl> dbCursor = coll.find(DBQuery.is("stream_id", streamId))) {
-            return ImmutableList.copyOf((Iterable<AlarmCallbackConfigurationImpl>) dbCursor);
-        }
+        return Collections.unmodifiableList(coll.find(Filters.eq("stream_id", streamId)).into(new ArrayList<>()));
     }
 
     @Override
@@ -78,34 +71,34 @@ public class AlarmCallbackConfigurationServiceImpl implements AlarmCallbackConfi
 
     @Override
     public long count() {
-        return coll.count();
+        return coll.countDocuments();
     }
 
     @Override
     public Map<String, Long> countPerType() {
         final HashMap<String, Long> result = Maps.newHashMap();
 
-        try(DBCursor<AlarmCallbackConfigurationImpl> avs = coll.find()) {
-            for (AlarmCallbackConfigurationImpl av : avs) {
+
+        for (AlarmCallbackConfigurationImpl av : coll.find()) {
                 Long count = result.get(av.getType());
                 if (count == null) {
                     count = 0L;
                 }
                 result.put(av.getType(), count + 1);
             }
-        }
+
 
         return result;
     }
 
     @Override
     public String save(AlarmCallbackConfiguration model) throws ValidationException {
-        return coll.save(implOrFail(model)).getSavedId();
+        return Objects.requireNonNull(coll.save(implOrFail(model)).getUpsertedId()).asObjectId().getValue().toHexString();
     }
 
     @Override
     public int destroy(AlarmCallbackConfiguration model) {
-        return coll.removeById(model.getId()).getN();
+        return (int) coll.removeById(model.getId()).getDeletedCount();
     }
 
     private AlarmCallbackConfigurationImpl implOrFail(AlarmCallbackConfiguration callback) {

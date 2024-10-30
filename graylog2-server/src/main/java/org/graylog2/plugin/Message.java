@@ -17,17 +17,12 @@
 package org.graylog2.plugin;
 
 import com.codahale.metrics.Meter;
-import com.eaio.uuid.UUID;
+import com.eaio.uuid.UUIDGen;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.net.InetAddresses;
 import org.graylog2.indexer.IndexSet;
 import org.graylog2.indexer.messages.Indexable;
@@ -42,30 +37,15 @@ import javax.annotation.concurrent.NotThreadSafe;
 import java.net.InetAddress;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Predicates.equalTo;
 import static com.google.common.base.Predicates.not;
-import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_EVENT_CATEGORY;
-import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_EVENT_SUBCATEGORY;
-import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_EVENT_TYPE;
-import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_EVENT_TYPE_CODE;
-import static org.graylog.schema.GraylogSchemaFields.FIELD_ILLUMINATE_TAGS;
-import static org.graylog2.plugin.Tools.*;
-import static org.joda.time.DateTimeZone.UTC;
+import static org.graylog2.plugin.Tools.ES_DATE_FORMAT_FORMATTER;
+import static org.graylog2.plugin.Tools.buildElasticSearchTimeFormat;
 
 @NotThreadSafe
 public class Message implements Messages, Indexable {
@@ -238,10 +218,8 @@ public class Message implements Messages, Indexable {
             FIELD_MESSAGE, FIELD_ID
     );
 
-    @Deprecated
-    public static final Function<Message, String> ID_FUNCTION = new MessageIdFunction();
 
-    private final Map<String, Object> fields = Maps.newHashMap();
+    private final Map<String, Object> fields;
     private Set<Stream> streams = Sets.newHashSet();
     private Set<IndexSet> indexSets = Sets.newHashSet();
     private String sourceInputId;
@@ -260,7 +238,8 @@ public class Message implements Messages, Indexable {
     private ArrayList<Recording> recordings;
 
     public Message(final String message, final String source, final Instant timestamp) {
-        fields.put(FIELD_ID, new UUID().toString());
+        fields = Maps.newHashMap();
+        fields.put(FIELD_ID, new UUID(UUIDGen.newTime(), UUIDGen.getClockSeqAndNode()).toString());
         addRequiredField(FIELD_MESSAGE, message);
         addRequiredField(FIELD_SOURCE, source);
         addRequiredField(FIELD_TIMESTAMP, timestamp);
@@ -272,6 +251,7 @@ public class Message implements Messages, Indexable {
 
     private Message(String id, Map<String, Object> newFields) {
         Preconditions.checkArgument(id != null, "message id cannot be null");
+        this.fields = Maps.newHashMap();
         fields.put(FIELD_ID, id);
         addFields(newFields);
     }
@@ -279,7 +259,7 @@ public class Message implements Messages, Indexable {
     public boolean isComplete() {
         for (final String key : REQUIRED_FIELDS) {
             final Object field = getField(key);
-            if (field == null || field instanceof String && ((String) field).isEmpty()) {
+            if (field == null || (field instanceof String && ((String) field).isEmpty())) {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("Message <{}> is incomplete because the field <{}> is <{}>", fields.get(FIELD_ID), key, field);
                 }
@@ -305,10 +285,12 @@ public class Message implements Messages, Indexable {
         return sb.toString();
     }
 
+    @Override
     public String getId() {
         return getFieldAs(String.class, FIELD_ID);
     }
 
+    @Override
     public Instant getTimestamp() {
         return getFieldAs(Instant.class, FIELD_TIMESTAMP);
     }
@@ -316,7 +298,7 @@ public class Message implements Messages, Indexable {
     @Override
     @SuppressWarnings("FromTemporalAccessor")
     public Map<String, Object> toElasticSearchObject(ObjectMapper objectMapper, @Nonnull final Meter invalidTimestampMeter, BackendVersion version) {
-        final Map<String, Object> obj = Maps.newHashMapWithExpectedSize(REQUIRED_FIELDS.size() + fields.size());
+        final Map<String, Object> obj = new TreeMap<>();
 
         for (Map.Entry<String, Object> entry : fields.entrySet()) {
             final String key = entry.getKey();
@@ -603,7 +585,7 @@ public class Message implements Messages, Indexable {
      * @return an immutable copy of the current set of assigned streams, empty if no streams have been assigned
      */
     public Set<Stream> getStreams() {
-        return ImmutableSet.copyOf(this.streams);
+        return Collections.unmodifiableSet(this.streams);
     }
 
     /**
@@ -714,6 +696,7 @@ public class Message implements Messages, Indexable {
     }
 
     @Nullable
+    @Override
     public DateTime getReceiveTime() {
         return receiveTime;
     }

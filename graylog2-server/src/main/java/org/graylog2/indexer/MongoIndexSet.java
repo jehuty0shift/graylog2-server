@@ -41,12 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -123,8 +118,11 @@ public class MongoIndexSet implements IndexSet {
     @Override
     public String[] getManagedIndices() {
         // also allow restore archives to be returned
-        final Set<String> indexNames = indices.getIndices(this, "open","closed");
-        indexNames.remove(getWriteIndexAlias());
+        final Set<String> indexNames = new HashSet<>(indices.getIndices(this, "open","closed"));
+        if (indexNames.contains(getWriteIndexAlias())) {
+            throw new IllegalStateException("MongoIndexSet contains a deflector " + getWriteIndexAlias());
+        }
+
 
         return indexNames.toArray(new String[indexNames.size()]);
     }

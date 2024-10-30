@@ -16,20 +16,20 @@
  */
 package org.graylog.plugins.sidecar.template.loader;
 
+import com.mongodb.client.model.Filters;
 import freemarker.cache.TemplateLoader;
 import org.bson.types.ObjectId;
 import org.graylog.plugins.sidecar.rest.models.Configuration;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
 public class MongoDbTemplateLoader implements TemplateLoader {
-    private final JacksonDBCollection<Configuration, ObjectId> dbCollection;
+    private final JacksonMongoCollection<Configuration> dbCollection;
 
-    public MongoDbTemplateLoader(JacksonDBCollection<Configuration, ObjectId> dbCollection) {
+    public MongoDbTemplateLoader(JacksonMongoCollection<Configuration> dbCollection) {
         this.dbCollection = dbCollection;
     }
 
@@ -37,7 +37,7 @@ public class MongoDbTemplateLoader implements TemplateLoader {
     public Object findTemplateSource(String id) throws IOException {
         Configuration configuration;
         try {
-            configuration = dbCollection.findOne(DBQuery.is("_id", unlocalize(id)));
+            configuration = dbCollection.findOne(Filters.eq("_id", new ObjectId(unlocalize(id))));
         } catch (IllegalArgumentException e) {
             // no ObjectID so skip MongoDB loader and try with next one
             return null;

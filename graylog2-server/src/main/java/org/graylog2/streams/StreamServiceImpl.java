@@ -17,15 +17,17 @@
 package org.graylog2.streams;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.UpdateOptions;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog.security.entities.EntityOwnershipService;
 import org.graylog2.alarmcallbacks.AlarmCallbackConfiguration;
@@ -55,22 +57,13 @@ import org.graylog2.plugin.streams.StreamRule;
 import org.graylog2.rest.resources.streams.requests.CreateStreamRequest;
 import org.graylog2.streams.events.StreamDeletedEvent;
 import org.graylog2.streams.events.StreamsChangedEvent;
-import org.mongojack.DBProjection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -200,26 +193,23 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
     }
 
     private List<Stream> loadAll(DBObject query) {
-        final List<DBObject> results = query(StreamImpl.class, query);
-        final List<String> streamIds = results.stream()
-                .map(o -> o.get("_id").toString())
-                .collect(Collectors.toList());
-        final Map<String, List<StreamRule>> allStreamRules = streamRuleService.loadForStreamIds(streamIds);
+        return loadAll((Bson) dBObjectToBson(query));
+    }
 
-        final ImmutableList.Builder<Stream> streams = ImmutableList.builder();
+    private List<Stream> loadAll(Bson query) {
+        final List<DBObject> results = query(StreamImpl.class, query);
+        final List<String> streamIds = new ArrayList<>(results.size());
+        for (DBObject result : results) {
+            streamIds.add(((ObjectId) result.get("_id")).toHexString());
+        }
 
         final Map<String, IndexSet> indexSets = indexSetsForStreams(results);
-
-        final Set<String> outputIds = results.stream()
-                .map(this::outputIdsForRawStream)
-                .flatMap(outputs -> outputs.stream().map(ObjectId::toHexString))
-                .collect(Collectors.toSet());
-
-        final Map<String, Output> outputsById = outputService.loadByIds(outputIds)
+        final Map<String, Output> outputsById = outputService.loadAll() //outputs are not numerous
                 .stream()
                 .collect(Collectors.toMap(Output::getId, Function.identity()));
 
-
+        final Map<String, List<StreamRule>> allStreamRules = streamRuleService.loadForStreamIds(streamIds);
+        final List<Stream> streams = new ArrayList<>(results.size());
         for (DBObject o : results) {
             final ObjectId objectId = (ObjectId) o.get("_id");
             final String id = objectId.toHexString();
@@ -243,12 +233,12 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
             @SuppressWarnings("unchecked")
             final Map<String, Object> fields = o.toMap();
 
-            final String indexSetId = (String) fields.get(StreamImpl.FIELD_INDEX_SET_ID);
+            final String indexSetId = (String) o.get(StreamImpl.FIELD_INDEX_SET_ID);
 
             streams.add(new StreamImpl(objectId, fields, streamRules, outputs, indexSets.get(indexSetId)));
         }
 
-        return streams.build();
+        return Collections.unmodifiableList(streams);
     }
 
     private List<ObjectId> outputIdsForRawStream(DBObject o) {
@@ -268,7 +258,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
 
     @Override
     public List<String> loadAllIds() {
-        final List<DBObject> results = query(StreamImpl.class, new BasicDBObject());
+        final List<DBObject> results = query(StreamImpl.class, Filters.empty());
         return results.stream()
                 .map(o -> o.get("_id").toString())
                 .collect(Collectors.toList());
@@ -279,9 +269,8 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
         final Set<ObjectId> objectIds = streamIds.stream()
                 .map(ObjectId::new)
                 .collect(Collectors.toSet());
-        final DBObject query = QueryBuilder.start("_id").in(objectIds).get();
 
-        return ImmutableSet.copyOf(loadAll(query));
+        return Collections.unmodifiableSet(new HashSet<>(loadAll(Filters.in("_id", objectIds))));
     }
 
     @Override
@@ -289,19 +278,18 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
         final Set<ObjectId> objectIds = streamIds.stream()
                 .map(ObjectId::new)
                 .collect(Collectors.toSet());
-        final DBObject query = QueryBuilder.start("_id").in(objectIds).get();
-        final DBObject onlyIndexSetIdField = DBProjection.include(StreamImpl.FIELD_INDEX_SET_ID);
-        return StreamSupport.stream(collection(StreamImpl.class).find(query, onlyIndexSetIdField).spliterator(), false)
+        final Bson query = Filters.in("_id", objectIds);
+        final Bson onlyIndexSetIdField = Projections.include(StreamImpl.FIELD_INDEX_SET_ID);
+        return StreamSupport.stream(collection(StreamImpl.class).find(query).projection(onlyIndexSetIdField).spliterator(), false)
                 .map(s -> s.get(StreamImpl.FIELD_INDEX_SET_ID).toString())
                 .collect(Collectors.toSet());
     }
 
     @Override
     public List<Stream> loadAllWithConfiguredAlertConditions() {
-        final DBObject query = QueryBuilder.start().and(
-                QueryBuilder.start(StreamImpl.EMBEDDED_ALERT_CONDITIONS).exists(true).get(),
-                QueryBuilder.start(StreamImpl.EMBEDDED_ALERT_CONDITIONS).not().size(0).get()
-        ).get();
+        final Bson query = Filters.and(
+                Filters.exists(StreamImpl.EMBEDDED_ALERT_CONDITIONS),
+                Filters.not(Filters.size(StreamImpl.EMBEDDED_ALERT_CONDITIONS, 0)));
 
         return loadAll(query);
     }
@@ -500,7 +488,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
 
     @Override
     public void addOutput(Stream stream, Output output) {
-        collection(stream).update(
+        collection(stream).updateOne(
                 new BasicDBObject("_id", new ObjectId(stream.getId())),
                 new BasicDBObject("$addToSet", new BasicDBObject(StreamImpl.FIELD_OUTPUTS, new ObjectId(output.getId())))
         );
@@ -512,7 +500,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
         final BasicDBList outputs = new BasicDBList();
         outputs.addAll(outputIds);
 
-        collection(StreamImpl.class).update(
+        collection(StreamImpl.class).updateOne(
                 new BasicDBObject("_id", streamId),
                 new BasicDBObject("$addToSet", new BasicDBObject(StreamImpl.FIELD_OUTPUTS, new BasicDBObject("$each", outputs)))
         );
@@ -521,7 +509,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
 
     @Override
     public void removeOutput(Stream stream, Output output) {
-        collection(stream).update(
+        collection(stream).updateOne(
                 new BasicDBObject("_id", new ObjectId(stream.getId())),
                 new BasicDBObject("$pull", new BasicDBObject(StreamImpl.FIELD_OUTPUTS, new ObjectId(output.getId())))
         );
@@ -538,17 +526,16 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
         // Collect streams that will change before updating them because we don't get the list of changed streams
         // from the upsert call.
         final ImmutableSet<String> updatedStreams;
-        try (final DBCursor cursor = collection(StreamImpl.class).find(match)) {
-            updatedStreams = StreamSupport.stream(cursor.spliterator(), false)
+
+        FindIterable<BasicDBObject> streamsImpl = collection(StreamImpl.class).find(dBObjectToBson(match));
+        updatedStreams = StreamSupport.stream(streamsImpl.spliterator(), false)
                     .map(stream -> stream.get("_id"))
                     .filter(Objects::nonNull)
                     .map(id -> ((ObjectId) id).toHexString())
                     .collect(ImmutableSet.toImmutableSet());
-        }
 
-        collection(StreamImpl.class).update(
-                match, modify, false, true
-        );
+
+        collection(StreamImpl.class).updateMany(dBObjectToBson(match), dBObjectToBson(modify), new UpdateOptions().upsert(false));
 
         clusterEventBus.post(StreamsChangedEvent.create(updatedStreams));
     }

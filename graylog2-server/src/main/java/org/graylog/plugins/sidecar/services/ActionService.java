@@ -16,16 +16,19 @@
  */
 package org.graylog.plugins.sidecar.services;
 
-import com.mongodb.BasicDBObject;
-import org.bson.types.ObjectId;
+import com.mongodb.MongoException;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
 import org.graylog.plugins.sidecar.rest.models.CollectorAction;
 import org.graylog.plugins.sidecar.rest.models.CollectorActions;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.mongojack.DBQuery;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -33,16 +36,13 @@ import java.util.List;
 
 public class ActionService {
     private static final String COLLECTION_NAME = "sidecar_collector_actions";
-    private final JacksonDBCollection<CollectorActions, ObjectId> dbCollection;
+    private static final String SIDECARD_KEY = "sidecard_id";
+    private final JacksonMongoCollection<CollectorActions> dbCollection;
 
     @Inject
     public ActionService(MongoConnection mongoConnection,
                          MongoJackObjectMapperProvider mapper){
-        dbCollection = JacksonDBCollection.wrap(
-                mongoConnection.getDatabase().getCollection(COLLECTION_NAME),
-                CollectorActions.class,
-                ObjectId.class,
-                mapper.get());
+        dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), COLLECTION_NAME, CollectorActions.class, UuidRepresentation.STANDARD);
     }
 
     public CollectorActions fromRequest(String sidecarId, List<CollectorAction> actions) {
@@ -70,21 +70,23 @@ public class ActionService {
     }
 
     public CollectorActions saveAction(CollectorActions collectorActions) {
-        return dbCollection.findAndModify(
-                DBQuery.is("sidecar_id", collectorActions.sidecarId()),
-                new BasicDBObject(),
-                new BasicDBObject(),
-                false,
-                collectorActions,
-                true,
-                true);
+        UpdateResult updateResult=  dbCollection.replaceOne(
+                Filters.eq("sidecar_id", collectorActions.sidecarId()),
+                collectorActions, new ReplaceOptions().upsert(true));
+
+        return dbCollection.findOne(Filters.eq("_id",updateResult.getUpsertedId()));
     }
 
     public CollectorActions findActionBySidecar(String sidecarId, boolean remove) {
         if (remove) {
-            return dbCollection.findAndRemove(DBQuery.is("sidecar_id", sidecarId));
+            CollectorActions collectorActions = dbCollection.findOne(Filters.eq(SIDECARD_KEY,sidecarId));
+            DeleteResult deleteResult=  dbCollection.deleteOne(Filters.eq(SIDECARD_KEY, sidecarId));
+            if (!deleteResult.wasAcknowledged()) {
+                throw new MongoException("Couldn't delete the CollectorActions");
+            }
+            return collectorActions;
         } else {
-            return dbCollection.findOne(DBQuery.is("sidecar_id", sidecarId));
+            return dbCollection.findOne(Filters.eq(SIDECARD_KEY, sidecarId));
         }
     }
 }

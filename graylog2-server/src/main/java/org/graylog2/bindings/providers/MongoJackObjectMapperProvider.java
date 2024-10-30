@@ -16,10 +16,7 @@
  */
 package org.graylog2.bindings.providers;
 
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -73,7 +70,7 @@ public class MongoJackObjectMapperProvider implements Provider<ObjectMapper> {
      * (one of my many useless talents is finding corner cases).
      * </p>
      */
-    public static class PreserveLeadingUnderscoreStrategy extends PropertyNamingStrategy.SnakeCaseStrategy {
+    public static class PreserveLeadingUnderscoreStrategy extends PropertyNamingStrategies.SnakeCaseStrategy {
         @Override
         public String translate(String input) {
             String translated = super.translate(input);

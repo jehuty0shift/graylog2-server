@@ -63,7 +63,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("TEST");
         assertThat(message.getSource()).isEqualTo("example.local");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("filebeat");
         assertThat(message.getField("file")).isEqualTo("/tmp/test.log");
         assertThat(message.getField("type")).isEqualTo("log");
@@ -79,7 +79,7 @@ public class BeatsCodecTest {
         final Message message = codec.decode(messageFromJson("packetbeat-dns.json"));
         assertThat(message).isNotNull();
         assertThat(message.getSource()).isEqualTo("example.local");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("packetbeat");
         assertThat(message.getField("type")).isEqualTo("dns");
     }
@@ -89,7 +89,7 @@ public class BeatsCodecTest {
         final Message message = codec.decode(messageFromJson("topbeat-system.json"));
         assertThat(message).isNotNull();
         assertThat(message.getSource()).isEqualTo("example.local");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("topbeat");
         assertThat(message.getField("type")).isEqualTo("system");
     }
@@ -99,7 +99,7 @@ public class BeatsCodecTest {
         final Message message = codec.decode(messageFromJson("winlogbeat.json"));
         assertThat(message).isNotNull();
         assertThat(message.getSource()).isEqualTo("example.local");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 11, 24, 12, 13, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 11, 24, 12, 13, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("winlogbeat");
         assertThat(message.getField("type")).isEqualTo("wineventlog");
         assertThat(message.getField("winlogbeat_level")).isEqualTo("Information");
@@ -114,7 +114,7 @@ public class BeatsCodecTest {
 
         assertThat(message).isNotNull();
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
     }
@@ -124,7 +124,7 @@ public class BeatsCodecTest {
         final Message message = codec.decode(messageFromJson("generic-with-fields.json"));
         assertThat(message).isNotNull();
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("foo_field")).isEqualTo("bar");
@@ -155,7 +155,7 @@ public class BeatsCodecTest {
             final Message message = codec.decode(messageFromJson(testFile));
             assertThat(message).isNotNull();
             assertThat(message.getSource()).isEqualTo("example.local");
-            assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 12, 14, 12, 0, DateTimeZone.UTC));
+            assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 12, 14, 12, 0, DateTimeZone.UTC).toDate().toInstant());
             assertThat(message.getField("facility")).isEqualTo("metricbeat");
         }
     }
@@ -166,7 +166,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("null");
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("beat_docker_id")).isEqualTo("123");
@@ -180,7 +180,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("null");
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("beat_kubernetes_pod_name")).isEqualTo("testpod");
@@ -194,7 +194,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("null");
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("beat_meta_cloud_provider")).isEqualTo("ecs");
@@ -209,7 +209,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("null");
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("beat_meta_cloud_provider")).isEqualTo("digitalocean");
@@ -223,7 +223,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("null");
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("beat_meta_cloud_provider")).isEqualTo("ec2");
@@ -239,7 +239,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("null");
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("beat_meta_cloud_provider")).isEqualTo("gce");
@@ -255,7 +255,7 @@ public class BeatsCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getMessage()).isEqualTo("null");
         assertThat(message.getSource()).isEqualTo("unknown");
-        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC));
+        assertThat(message.getTimestamp()).isEqualTo(new DateTime(2016, 4, 1, 0, 0, DateTimeZone.UTC).toDate().toInstant());
         assertThat(message.getField("facility")).isEqualTo("genericbeat");
         assertThat(message.getField("beat_foo")).isEqualTo("bar");
         assertThat(message.getField("beat_meta_cloud_provider")).isEqualTo("qcloud");

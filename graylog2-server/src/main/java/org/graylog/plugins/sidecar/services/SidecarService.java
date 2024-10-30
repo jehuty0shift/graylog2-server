@@ -18,13 +18,12 @@ package org.graylog.plugins.sidecar.services;
 
 import com.google.common.collect.ImmutableSet;
 import com.mongodb.BasicDBObject;
-import org.graylog.plugins.sidecar.rest.models.Collector;
-import org.graylog.plugins.sidecar.rest.models.CollectorStatus;
-import org.graylog.plugins.sidecar.rest.models.CollectorStatusList;
-import org.graylog.plugins.sidecar.rest.models.Configuration;
-import org.graylog.plugins.sidecar.rest.models.NodeDetails;
-import org.graylog.plugins.sidecar.rest.models.Sidecar;
-import org.graylog.plugins.sidecar.rest.models.SidecarSummary;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.ReturnDocument;
+import org.bson.conversions.Bson;
+import org.graylog.plugins.sidecar.rest.models.*;
 import org.graylog.plugins.sidecar.rest.requests.ConfigurationAssignment;
 import org.graylog.plugins.sidecar.rest.requests.RegistrationRequest;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
@@ -36,8 +35,6 @@ import org.graylog2.search.SearchQuery;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
@@ -66,11 +63,11 @@ public class SidecarService extends PaginatedDbService<Sidecar> {
         this.configurationService = configurationService;
         this.validator = validator;
 
-        db.createIndex(new BasicDBObject(Sidecar.FIELD_NODE_ID, 1), new BasicDBObject("unique", true));
+        db.createIndex(new BasicDBObject(Sidecar.FIELD_NODE_ID, 1), new IndexOptions().unique(true).background(true));
     }
 
     public long count() {
-        return db.count();
+        return db.countDocuments();
     }
 
     @Override
@@ -78,14 +75,10 @@ public class SidecarService extends PaginatedDbService<Sidecar> {
         if (sidecar != null) {
             final Set<ConstraintViolation<Sidecar>> violations = validator.validate(sidecar);
             if (violations.isEmpty()) {
-                return db.findAndModify(
-                        DBQuery.is(Sidecar.FIELD_NODE_ID, sidecar.nodeId()),
-                        new BasicDBObject(),
-                        new BasicDBObject(),
-                        false,
+                return db.findOneAndReplace(
+                        Filters.eq(Sidecar.FIELD_NODE_ID, sidecar.nodeId()),
                         sidecar,
-                        true,
-                        true);
+                        new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
             } else {
                 throw new IllegalArgumentException("Specified object failed validation: " + violations);
             }
@@ -100,18 +93,18 @@ public class SidecarService extends PaginatedDbService<Sidecar> {
     }
 
     public Sidecar findByNodeId(String id) {
-        return db.findOne(DBQuery.is(Sidecar.FIELD_NODE_ID, id));
+        return db.findOne(Filters.eq(Sidecar.FIELD_NODE_ID, id));
     }
 
     public PaginatedList<Sidecar> findPaginated(SearchQuery searchQuery, int page, int perPage, String sortField, String order) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery();
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = searchQuery.toDBQuery();
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
     }
 
     public PaginatedList<Sidecar> findPaginated(SearchQuery searchQuery, Predicate<Sidecar> filter, int page, int perPage, String sortField, String order) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery();
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = searchQuery.toDBQuery();
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         if (filter == null) {
             return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
         }

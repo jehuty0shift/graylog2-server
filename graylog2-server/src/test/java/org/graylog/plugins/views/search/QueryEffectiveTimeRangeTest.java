@@ -89,7 +89,6 @@ public class QueryEffectiveTimeRangeTest {
 
     @Test
     public void returnGlobalOverrideTimeRangeWithOffsetIfPresentAndOffsetTimeRange() throws InvalidRangeParametersException {
-        DateTimeUtils.setCurrentMillisFixed(1578590095642L);
 
         final SearchType searchType = mock(SearchType.class);
         when(searchType.timerange())
@@ -100,9 +99,9 @@ public class QueryEffectiveTimeRangeTest {
                                         .build()
                         )));
         final Query queryWithTimeRange = query.toBuilder()
-                .timerange(RelativeRange.create(3600))
+                .timerange(AbsoluteRange.create("2020-01-09T16:14:55.642Z", "2020-01-09T17:14:55.642Z"))
                 .globalOverride(GlobalOverride.builder()
-                        .timerange(RelativeRange.create(600))
+                        .timerange(AbsoluteRange.create("2020-01-09T17:04:55.642Z", "2020-01-09T17:14:55.642Z"))
                         .build())
                 .build();
 

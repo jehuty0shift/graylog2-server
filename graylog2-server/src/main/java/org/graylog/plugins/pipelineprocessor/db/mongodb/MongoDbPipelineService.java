@@ -16,9 +16,13 @@
  */
 package org.graylog.plugins.pipelineprocessor.db.mongodb;
 
-import com.google.common.collect.ImmutableSet;
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Sorts;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog.plugins.pipelineprocessor.db.PipelineDao;
 import org.graylog.plugins.pipelineprocessor.db.PipelineService;
 import org.graylog.plugins.pipelineprocessor.events.PipelinesChangedEvent;
@@ -26,44 +30,37 @@ import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.NotFoundException;
 import org.graylog2.events.ClusterEventBus;
-import org.mongojack.DBCursor;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
+import org.mongojack.JacksonMongoCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
 
 public class MongoDbPipelineService implements PipelineService {
     private static final Logger log = LoggerFactory.getLogger(MongoDbPipelineService.class);
 
     private static final String COLLECTION = "pipeline_processor_pipelines";
 
-    private final JacksonDBCollection<PipelineDao, String> dbCollection;
+    private final JacksonMongoCollection<PipelineDao> dbCollection;
     private final ClusterEventBus clusterBus;
 
     @Inject
     public MongoDbPipelineService(MongoConnection mongoConnection,
                                   MongoJackObjectMapperProvider mapper,
                                   ClusterEventBus clusterBus) {
-        this.dbCollection = JacksonDBCollection.wrap(
-                mongoConnection.getDatabase().getCollection(COLLECTION),
-                PipelineDao.class,
-                String.class,
-                mapper.get());
+        this.dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(
+                mongoConnection.getMongoDatabase(), COLLECTION, PipelineDao.class, UuidRepresentation.STANDARD);
         this.clusterBus = clusterBus;
-        dbCollection.createIndex(DBSort.asc("title"), new BasicDBObject("unique", true));
+        dbCollection.createIndex(Sorts.ascending("title"), new IndexOptions().unique(true));
     }
 
     @Override
     public PipelineDao save(PipelineDao pipeline) {
-        final WriteResult<PipelineDao, String> save = dbCollection.save(pipeline);
-        final PipelineDao savedPipeline = save.getSavedObject();
+        final UpdateResult save = dbCollection.save(pipeline);
+        final PipelineDao savedPipeline = dbCollection.findOne(Filters.eq("_id",save.getUpsertedId()));
 
         clusterBus.post(PipelinesChangedEvent.updatedPipelineId(savedPipeline.id()));
 
@@ -81,7 +78,7 @@ public class MongoDbPipelineService implements PipelineService {
 
     @Override
     public PipelineDao loadByName(String name) throws NotFoundException {
-        final DBQuery.Query query = DBQuery.is("title", name);
+        final Bson query = Filters.eq("title", name);
         final PipelineDao pipeline = dbCollection.findOne(query);
         if (pipeline == null) {
             throw new NotFoundException("No pipeline with name " + name);
@@ -91,8 +88,8 @@ public class MongoDbPipelineService implements PipelineService {
 
     @Override
     public Collection<PipelineDao> loadAll() {
-        try (DBCursor<PipelineDao> daos = dbCollection.find()) {
-            return ImmutableSet.copyOf((Iterator<PipelineDao>) daos);
+        try {
+            return Collections.unmodifiableSet(dbCollection.find().into(new HashSet<>()));
         } catch (MongoException e) {
             log.error("Unable to load pipelines", e);
             return Collections.emptySet();

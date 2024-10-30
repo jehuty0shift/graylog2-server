@@ -16,12 +16,12 @@
  */
 package org.graylog2.migrations.V20180214093600_AdjustDashboardPositionToNewResolution;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReturnDocument;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.plugin.database.ValidationException;
@@ -33,11 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,7 +65,7 @@ class MigrationDashboardService {
          * a new document will be created if it doesn't.
          */
         BasicDBObject q = new BasicDBObject("_id", new ObjectId(model.getId()));
-        collection().update(q, doc, true, false);
+        collection().findOneAndReplace(q, new Document(doc), new FindOneAndReplaceOptions().returnDocument(ReturnDocument.AFTER).upsert(true));
 
         return model.getId();
     }
@@ -126,31 +122,19 @@ class MigrationDashboardService {
     }
 
     List<MigrationDashboard> all() {
-        final List<DBObject> results = cursorToList(collection().find());
+        final List<Document> results = collection().find().into(new ArrayList<>());
 
         final Stream<MigrationDashboard> dashboardStream = results.stream()
-                .map(o -> new MigrationDashboard((ObjectId) o.get(MigrationDashboard.FIELD_ID), o.toMap()));
+                .map(o -> new MigrationDashboard(o.getObjectId(MigrationDashboard.FIELD_ID), o));
         return dashboardStream
                 .collect(Collectors.toList());
     }
 
-    protected List<DBObject> cursorToList(DBCursor cursor) {
-        if (cursor == null) {
-            return Collections.emptyList();
-        }
-
-        try {
-            return Lists.newArrayList((Iterable<DBObject>) cursor);
-        } finally {
-            cursor.close();
-        }
-    }
-
     long count() {
-        return collection().count();
+        return collection().countDocuments();
     }
 
-    private DBCollection collection() {
-        return mongoConnection.getDatabase().getCollection(COLLECTION);
+    private MongoCollection<Document> collection() {
+        return mongoConnection.getMongoDatabase().getCollection(COLLECTION);
     }
 }

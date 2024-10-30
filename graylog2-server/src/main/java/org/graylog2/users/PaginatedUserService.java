@@ -16,17 +16,19 @@
  */
 package org.graylog2.users;
 
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
 import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
 
 import javax.inject.Inject;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.http.util.TextUtils.isBlank;
@@ -41,31 +43,31 @@ public class PaginatedUserService extends PaginatedDbService<UserOverviewDTO> {
     }
 
     public long count() {
-        return db.count();
+        return db.countDocuments();
     }
 
     public PaginatedList<UserOverviewDTO> findPaginated(SearchQuery searchQuery, int page,
                                                         int perPage, String sortField, String order) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery();
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = searchQuery.toDBQuery();
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
     }
 
     public PaginatedList<UserOverviewDTO> findPaginatedByUserId(SearchQuery searchQuery, int page,
                                                                 int perPage, String sortField, String order,
                                                                 Set<String> userIds) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery()
-                .in("_id", userIds);
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = Filters.and(searchQuery.toDBQuery(),
+                Filters.in("_id", userIds.stream().map(ObjectId::new).collect(Collectors.toList())));
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
     }
 
     public PaginatedList<UserOverviewDTO> findPaginatedByRole(SearchQuery searchQuery, int page,
                                                               int perPage, String sortField, String order,
                                                               Set<String> roleIds) {
-        final DBQuery.Query dbQuery = searchQuery.toDBQuery()
-                .in(UserImpl.ROLES, roleIds);
-        final DBSort.SortBuilder sortBuilder = getSortBuilder(order, sortField);
+        final Bson dbQuery = Filters.and(searchQuery.toDBQuery(),
+                Filters.in(UserImpl.ROLES, roleIds));
+        final Bson sortBuilder = getSortBuilder(order, sortField);
         return findPaginatedWithQueryAndSort(dbQuery, sortBuilder, page, perPage);
     }
 
@@ -77,8 +79,8 @@ public class PaginatedUserService extends PaginatedDbService<UserOverviewDTO> {
                                                                             String authServiceBackendId) {
         checkArgument(!isBlank(authServiceBackendId), "authServiceBackendId cannot be blank");
 
-        final DBQuery.Query query = DBQuery.and(
-                DBQuery.is(UserImpl.AUTH_SERVICE_ID, Optional.of(authServiceBackendId)),
+        final Bson query = Filters.and(
+                Filters.eq(UserImpl.AUTH_SERVICE_ID, Optional.of(authServiceBackendId)),
                 searchQuery.toDBQuery()
         );
         return findPaginatedWithQueryAndSort(query, getSortBuilder(order, sortField), page, perPage);

@@ -17,10 +17,11 @@
 package org.graylog2.alerts;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
+import org.bson.UuidRepresentation;
+import org.bson.conversions.Bson;
 import org.graylog2.alarmcallbacks.AlarmCallbackHistory;
 import org.graylog2.alarmcallbacks.AlarmCallbackHistoryService;
 import org.graylog2.alerts.Alert.AlertState;
@@ -37,22 +38,16 @@ import org.graylog2.rest.models.streams.alerts.requests.CreateConditionRequest;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Seconds;
-import org.mongojack.DBQuery;
-import org.mongojack.DBSort;
-import org.mongojack.JacksonDBCollection;
+import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class AlertServiceImpl implements AlertService {
-    private final JacksonDBCollection<AlertImpl, String> coll;
+    private final JacksonMongoCollection<AlertImpl> coll;
     private final AlertConditionFactory alertConditionFactory;
     private final AlarmCallbackHistoryService alarmCallbackHistoryService;
 
@@ -64,14 +59,13 @@ public class AlertServiceImpl implements AlertService {
         this.alertConditionFactory = alertConditionFactory;
         this.alarmCallbackHistoryService = alarmCallbackHistoryService;
         final String collectionName = AlertImpl.class.getAnnotation(CollectionName.class).value();
-        final DBCollection dbCollection = mongoConnection.getDatabase().getCollection(collectionName);
 
-        dbCollection.createIndex(new BasicDBObject(ImmutableMap.of(
-            AlertImpl.FIELD_TRIGGERED_AT, -1,
-            AlertImpl.FIELD_STREAM_ID, 1
+        this.coll = JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(),collectionName, AlertImpl.class, UuidRepresentation.STANDARD);
+
+        coll.createIndex(new BasicDBObject(Map.of(
+                AlertImpl.FIELD_TRIGGERED_AT, -1,
+                AlertImpl.FIELD_STREAM_ID, 1
         )));
-
-        this.coll = JacksonDBCollection.wrap(dbCollection, AlertImpl.class, String.class, mapperProvider.get());
     }
 
     @Override
@@ -87,20 +81,20 @@ public class AlertServiceImpl implements AlertService {
         }
 
         final DateTime effectiveSince = (since == null ? new DateTime(0L, DateTimeZone.UTC) : since);
-        final DBQuery.Query query = DBQuery.and(
+        final Bson query = Filters.and(
                 getFindAnyStreamQuery(streamIds),
-                DBQuery.greaterThanEquals(AlertImpl.FIELD_TRIGGERED_AT, effectiveSince)
+                Filters.gte(AlertImpl.FIELD_TRIGGERED_AT, effectiveSince)
         );
 
         return Collections.unmodifiableList(this.coll.find(query)
                 .limit(limit)
-                .sort(DBSort.desc(AlertImpl.FIELD_TRIGGERED_AT))
-                .toArray());
+                .sort(Sorts.descending(AlertImpl.FIELD_TRIGGERED_AT))
+                .into(new ArrayList<>()));
     }
 
     @Override
     public List<Alert> loadRecentOfStream(String streamId, DateTime since, int limit) {
-        return loadRecentOfStreams(ImmutableList.of(streamId), since, limit);
+        return loadRecentOfStreams(List.of(streamId), since, limit);
     }
 
     @VisibleForTesting
@@ -122,16 +116,16 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public Optional<Alert> getLastTriggeredAlert(String streamId, String conditionId) {
         final List<AlertImpl> alert = this.coll.find(
-                DBQuery.and(
-                        DBQuery.is(AlertImpl.FIELD_STREAM_ID, streamId),
-                        DBQuery.is(AlertImpl.FIELD_CONDITION_ID, conditionId)
+                Filters.and(
+                        Filters.eq(AlertImpl.FIELD_STREAM_ID, streamId),
+                        Filters.eq(AlertImpl.FIELD_CONDITION_ID, conditionId)
                 )
         )
-                .sort(DBSort.desc(AlertImpl.FIELD_TRIGGERED_AT))
+                .sort(Sorts.descending(AlertImpl.FIELD_TRIGGERED_AT))
                 .limit(1)
-                .toArray();
+                .into(new ArrayList<>());
 
-        if (alert == null || alert.size() == 0) {
+        if (alert.isEmpty()) {
             return Optional.empty();
         }
 
@@ -140,12 +134,12 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public long totalCount() {
-        return this.coll.count();
+        return this.coll.countDocuments();
     }
 
     @Override
     public long totalCountForStream(String streamId) {
-        return totalCountForStreams(ImmutableList.of(streamId), AlertState.ANY);
+        return totalCountForStreams(List.of(streamId), AlertState.ANY);
     }
 
     @Override
@@ -154,13 +148,13 @@ public class AlertServiceImpl implements AlertService {
             return 0;
         }
 
-        DBQuery.Query query = getFindAnyStreamQuery(streamIds);
+        Bson query = getFindAnyStreamQuery(streamIds);
 
         if (state != null && state != AlertState.ANY) {
-            query = DBQuery.and(query, getFindByStateQuery(state));
+            query = Filters.and(query, getFindByStateQuery(state));
         }
 
-        return this.coll.count(this.coll.serializeQuery(query));
+        return this.coll.countDocuments(query);
     }
 
     @Override
@@ -247,22 +241,22 @@ public class AlertServiceImpl implements AlertService {
             return Collections.emptyList();
         }
 
-        DBQuery.Query query = getFindAnyStreamQuery(streamIds);
+        Bson query = getFindAnyStreamQuery(streamIds);
 
         if (state != null && state != AlertState.ANY) {
-            query = DBQuery.and(query, getFindByStateQuery(state));
+            query = Filters.and(query, getFindByStateQuery(state));
         }
 
         return Collections.unmodifiableList(this.coll.find(query)
-                .sort(DBSort.desc(AlertImpl.FIELD_TRIGGERED_AT))
+                .sort(Sorts.descending(AlertImpl.FIELD_TRIGGERED_AT))
                 .skip(skip)
                 .limit(limit)
-                .toArray());
+                .into(new ArrayList<>()));
     }
 
     @Override
     public List<Alert> listForStreamId(String streamId, int skip, int limit) {
-        return listForStreamIds(ImmutableList.of(streamId), AlertState.ANY, skip, limit);
+        return listForStreamIds(List.of(streamId), AlertState.ANY, skip, limit);
     }
 
     @Override
@@ -274,7 +268,7 @@ public class AlertServiceImpl implements AlertService {
     public String save(Alert alert) throws ValidationException {
         checkArgument(alert instanceof AlertImpl, "Supplied argument must be of type " + AlertImpl.class + ", and not " + alert.getClass());
 
-        return this.coll.save((AlertImpl)alert).getSavedId();
+        return Objects.requireNonNull(this.coll.save((AlertImpl) alert).getUpsertedId()).asObjectId().getValue().toHexString();
     }
 
     @Override
@@ -294,22 +288,22 @@ public class AlertServiceImpl implements AlertService {
         return !alert.isInterval() || alert.getResolvedAt() != null;
     }
 
-    private DBQuery.Query getFindAnyStreamQuery(List<String> streamIds) {
-        final List<DBQuery.Query> streamQueries = streamIds.stream()
-                .map(streamId -> DBQuery.is(AlertImpl.FIELD_STREAM_ID, streamId))
+    private Bson getFindAnyStreamQuery(List<String> streamIds) {
+        final List<Bson> streamQueries = streamIds.stream()
+                .map(streamId -> Filters.eq(AlertImpl.FIELD_STREAM_ID, streamId))
                 .collect(Collectors.toList());
-        return DBQuery.or(streamQueries.toArray(new DBQuery.Query[streamQueries.size()]));
+        return Filters.or(streamQueries);
     }
 
-    private DBQuery.Query getFindByStateQuery(AlertState state) {
+    private Bson getFindByStateQuery(AlertState state) {
         if (state == AlertState.RESOLVED) {
             /* Resolved alerts:
              * - Not interval (legacy)
              * - Interval alerts with non-null resolved_at field
              */
-            return DBQuery.or(
-                    DBQuery.notEquals(AlertImpl.FIELD_IS_INTERVAL, true),
-                    DBQuery.notEquals(AlertImpl.FIELD_RESOLVED_AT, null)
+            return Filters.or(
+                    Filters.ne(AlertImpl.FIELD_IS_INTERVAL, true),
+                    Filters.ne(AlertImpl.FIELD_RESOLVED_AT, null)
             );
         }
 
@@ -317,12 +311,12 @@ public class AlertServiceImpl implements AlertService {
             /* Unresolved alerts:
              * - Interval alerts with null resolved_at field
              */
-            return DBQuery.and(
-                    DBQuery.is(AlertImpl.FIELD_IS_INTERVAL, true),
-                    DBQuery.is(AlertImpl.FIELD_RESOLVED_AT, null)
+            return Filters.and(
+                    Filters.eq(AlertImpl.FIELD_IS_INTERVAL, true),
+                    Filters.eq(AlertImpl.FIELD_RESOLVED_AT, null)
             );
         }
 
-        return DBQuery.empty();
+        return Filters.empty();
     }
 }

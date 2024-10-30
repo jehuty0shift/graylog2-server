@@ -33,7 +33,7 @@ import org.graylog.plugins.views.search.filter.AndFilter;
 import org.graylog.plugins.views.search.filter.OrFilter;
 import org.graylog.plugins.views.search.filter.QueryStringFilter;
 import org.graylog.plugins.views.search.filter.StreamFilter;
-import org.graylog.storage.opensearch2.OpensearchClient;
+import org.graylog.storage.opensearch2.OpensearchGraylogClient;
 import org.graylog.storage.opensearch2.TimeRangeQueryFactory;
 import org.graylog.storage.opensearch2.views.searchtypes.pivot.OSSearchTypeHandler;
 import org.graylog2.indexer.ElasticsearchException;
@@ -65,7 +65,7 @@ public class OpensearchBackend implements QueryBackend<OSGeneratedQueryContext> 
 
     private final Map<String, Provider<OSSearchTypeHandler<? extends SearchType>>> elasticsearchSearchTypeHandlers;
     private final QueryStringParser queryStringParser;
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
     private final IndexLookup indexLookup;
     private final QueryStringDecorators queryStringDecorators;
     private final OSGeneratedQueryContext.Factory queryContextFactory;
@@ -74,7 +74,7 @@ public class OpensearchBackend implements QueryBackend<OSGeneratedQueryContext> 
     @Inject
     public OpensearchBackend(Map<String, Provider<OSSearchTypeHandler<? extends SearchType>>> elasticsearchSearchTypeHandlers,
                              QueryStringParser queryStringParser,
-                             OpensearchClient client,
+                             OpensearchGraylogClient client,
                              IndexLookup indexLookup,
                              QueryStringDecorators queryStringDecorators,
                              OSGeneratedQueryContext.Factory queryContextFactory,

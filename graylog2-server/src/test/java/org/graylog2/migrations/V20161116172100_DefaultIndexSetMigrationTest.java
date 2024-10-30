@@ -45,7 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class V20161116172100_DefaultIndexSetMigrationTest {
@@ -160,7 +160,7 @@ public class V20161116172100_DefaultIndexSetMigrationTest {
 
         verify(clusterConfigService).get(DefaultIndexSetCreated.class);
         verifyNoMoreInteractions(clusterConfigService);
-        verifyZeroInteractions(indexSetService);
+        verifyNoMoreInteractions(indexSetService);
     }
 
     private static class StubRotationStrategy implements RotationStrategy {

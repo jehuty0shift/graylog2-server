@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -83,36 +84,41 @@ public class Beats2Codec extends AbstractCodec {
     }
 
     private Message parseEvent(JsonNode event) {
-        final String beatsType = event.path("@metadata").path("beat").asText("beat");
-        final String rootPath = noBeatsPrefix ? "" : beatsType;
-        final String message = event.path("message").asText("-");
-        final String timestampField = event.path("@timestamp").asText();
-        final ZonedDateTime timestamp = Tools.dateTimeFromString(timestampField);
+        try {
+            final String beatsType = event.path("@metadata").path("beat").asText("beat");
+            final String rootPath = noBeatsPrefix ? "" : beatsType;
+            final String message = event.path("message").asText("-");
+            final String timestampField = event.path("@timestamp").asText();
+            final ZonedDateTime timestamp = Tools.dateTimeFromString(timestampField);
 
-        JsonNode agentOrBeat = event.path("agent");
-        // backwards compatibility for beats < 7.0
-        if (agentOrBeat.isMissingNode()) {
-            agentOrBeat = event.path("beat");
+            JsonNode agentOrBeat = event.path("agent");
+            // backwards compatibility for beats < 7.0
+            if (agentOrBeat.isMissingNode()) {
+                agentOrBeat = event.path("beat");
+            }
+            final String hostname = agentOrBeat.path("hostname").asText(BEATS_UNKNOWN);
+
+            final Message gelfMessage = new Message(message, hostname, timestamp.toInstant());
+            gelfMessage.addField("beats_type", beatsType);
+
+            // This field should be stored without a prefix
+            final String gl2SourceCollector = event.path(Message.FIELD_GL2_SOURCE_COLLECTOR).asText();
+            if (!gl2SourceCollector.isEmpty()) {
+                gelfMessage.addField(Message.FIELD_GL2_SOURCE_COLLECTOR, gl2SourceCollector);
+            }
+
+            // Remove fields that should not be duplicated with a prefix
+            if (event.isObject()) {
+                ObjectNode onode = (ObjectNode) event;
+                onode.remove("message");
+                onode.remove(Message.FIELD_GL2_SOURCE_COLLECTOR);
+            }
+            addFlattened(gelfMessage, rootPath, event);
+            return gelfMessage;
+        } catch (DateTimeParseException ex) {
+            LOG.error("Couldn't parse Timestamp",ex);
+            return null;
         }
-        final String hostname = agentOrBeat.path("hostname").asText(BEATS_UNKNOWN);
-
-        final Message gelfMessage = new Message(message, hostname, timestamp.toInstant());
-        gelfMessage.addField("beats_type", beatsType);
-
-        // This field should be stored without a prefix
-        final String gl2SourceCollector = event.path(Message.FIELD_GL2_SOURCE_COLLECTOR).asText();
-        if (!gl2SourceCollector.isEmpty()) {
-            gelfMessage.addField(Message.FIELD_GL2_SOURCE_COLLECTOR, gl2SourceCollector);
-        }
-
-        // Remove fields that should not be duplicated with a prefix
-        if (event.isObject()) {
-            ObjectNode onode = (ObjectNode) event;
-            onode.remove("message");
-            onode.remove(Message.FIELD_GL2_SOURCE_COLLECTOR);
-        }
-        addFlattened(gelfMessage, rootPath, event);
-        return gelfMessage;
     }
 
     private void addFlattened(Message message, String currentPath, JsonNode jsonNode) {

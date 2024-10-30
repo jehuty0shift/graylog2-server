@@ -10,10 +10,10 @@ import javax.inject.Inject;
 import java.util.List;
 
 public class CountsAdapterOS2 implements CountsAdapter {
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
 
     @Inject
-    public CountsAdapterOS2(OpensearchClient client) {
+    public CountsAdapterOS2(OpensearchGraylogClient client) {
         this.client = client;
     }
 

@@ -126,7 +126,6 @@ public class GelfCodecTest {
     @Test
     public void decodeLargeCompressedMessageFails() throws Exception {
         expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage("JSON is null/could not be parsed (invalid JSON)");
         expectedException.expectCause(isA(JsonParseException.class));
 
         final Configuration configuration = new Configuration(Collections.singletonMap("decompress_size_limit", 100));

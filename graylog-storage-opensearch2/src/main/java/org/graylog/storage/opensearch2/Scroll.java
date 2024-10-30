@@ -11,12 +11,12 @@ import java.util.Set;
 
 public class Scroll {
     private static final String DEFAULT_SCROLLTIME = "1m";
-    private final OpensearchClient client;
+    private final OpensearchGraylogClient client;
     private final ScrollResultOS2.Factory scrollResultFactory;
     private final SearchRequestFactory searchRequestFactory;
 
     @Inject
-    public Scroll(OpensearchClient client,
+    public Scroll(OpensearchGraylogClient client,
                   ScrollResultOS2.Factory scrollResultFactory,
                   SearchRequestFactory searchRequestFactory) {
         this.client = client;

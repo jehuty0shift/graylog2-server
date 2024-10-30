@@ -21,8 +21,7 @@ import com.github.joschi.jadconfig.ValidationException;
 import com.github.joschi.jadconfig.ValidatorMethod;
 import com.github.joschi.jadconfig.validators.PositiveIntegerValidator;
 import com.github.joschi.jadconfig.validators.StringNotBlankValidator;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoClientURI;
+import com.mongodb.ConnectionString;
 
 public class MongoDbConfiguration {
     @Parameter(value = "mongodb_max_connections", validator = PositiveIntegerValidator.class)
@@ -51,12 +50,14 @@ public class MongoDbConfiguration {
         this.uri = uri;
     }
 
-    public MongoClientURI getMongoClientURI() {
-        final MongoClientOptions.Builder mongoClientOptionsBuilder = MongoClientOptions.builder()
-                .connectionsPerHost(getMaxConnections())
-                .threadsAllowedToBlockForConnectionMultiplier(getThreadsAllowedToBlockMultiplier());
+    public ConnectionString getMongoClientURI() {
+        try {
+            return new ConnectionString(uri);
 
-        return new MongoClientURI(uri, mongoClientOptionsBuilder);
+        } catch (IllegalArgumentException ex) {
+            //mongodb uri is not valid, will be invalidated
+            return null;
+        }
     }
 
     @ValidatorMethod

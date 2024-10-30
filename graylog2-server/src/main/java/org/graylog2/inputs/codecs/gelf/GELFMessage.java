@@ -48,6 +48,8 @@ public class GELFMessage {
         return Type.determineType(payload[0], payload[1]);
     }
 
+
+
     /**
      * Return the JSON payload of the GELF message
      *
@@ -121,7 +123,7 @@ public class GELFMessage {
          */
         UNCOMPRESSED((byte) 0xff, (byte) 0xff);
 
-        private static final int HEADER_SIZE = 2;
+        public static final int HEADER_SIZE = 2;
 
         private final byte first;
         private final byte second;
@@ -131,7 +133,7 @@ public class GELFMessage {
             this.second = second;
         }
 
-        static Type determineType(final byte first, final byte second) {
+        public static Type determineType(final byte first, final byte second) {
 
             if (first == ZLIB.first()) {
                 // zlib's second byte is for flags and a checksum -

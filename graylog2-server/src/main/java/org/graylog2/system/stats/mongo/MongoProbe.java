@@ -20,10 +20,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 import com.mongodb.BasicDBObject;
-import com.mongodb.CommandResult;
-import com.mongodb.DB;
-import com.mongodb.Mongo;
-import com.mongodb.ServerAddress;
+import com.mongodb.MongoException;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.connection.ServerDescription;
+import org.bson.Document;
 import org.graylog2.database.MongoConnection;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -38,26 +39,27 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Singleton
 public class MongoProbe {
     private static final Logger LOG = LoggerFactory.getLogger(MongoProbe.class);
+    private static final String ADMIN_DB = "admin";
 
-    private final Mongo mongoClient;
-    private final DB db;
-    private final DB adminDb;
+    private final MongoClient mongoClient;
+    private final MongoDatabase db;
+    private final MongoDatabase adminDb;
     private final BuildInfo buildInfo;
     private final HostInfo hostInfo;
 
     @Inject
     public MongoProbe(MongoConnection mongoConnection) {
-        this(mongoConnection.connect(), mongoConnection.getDatabase());
+        this(mongoConnection.connect(), mongoConnection.getMongoDatabase());
     }
 
     @VisibleForTesting
-    MongoProbe(Mongo mongoClient, DB db) {
-        this(mongoClient, db, mongoClient.getDB("admin"),
-                createBuildInfo(mongoClient.getDB("admin")), createHostInfo(mongoClient.getDB("admin")));
+    MongoProbe(MongoClient mongoClient, MongoDatabase db) {
+        this(mongoClient, db, mongoClient.getDatabase(ADMIN_DB),
+                createBuildInfo(mongoClient.getDatabase(ADMIN_DB)), createHostInfo(mongoClient.getDatabase(ADMIN_DB)));
     }
 
     @VisibleForTesting
-    MongoProbe(Mongo mongoClient, DB db, DB adminDB, BuildInfo buildInfo, HostInfo hostInfo) {
+    MongoProbe(MongoClient mongoClient, MongoDatabase db, MongoDatabase adminDB, BuildInfo buildInfo, HostInfo hostInfo) {
         this.mongoClient = checkNotNull(mongoClient);
         this.db = checkNotNull(db);
         this.adminDb = checkNotNull(adminDB);
@@ -65,11 +67,11 @@ public class MongoProbe {
         this.hostInfo = hostInfo;
     }
 
-    private static HostInfo createHostInfo(DB adminDb) {
-        final HostInfo hostInfo;
-        final CommandResult hostInfoResult = adminDb.command("hostInfo");
-        if (hostInfoResult.ok()) {
-            final BasicDBObject systemMap = (BasicDBObject) hostInfoResult.get("system");
+    private static HostInfo createHostInfo(MongoDatabase adminDb) {
+        try {
+
+            final Document hostInfoResult = adminDb.runCommand(new Document("hostInfo", 1));
+            final BasicDBObject systemMap = hostInfoResult.get("system", BasicDBObject.class);
             final HostInfo.System system = HostInfo.System.create(
                     new DateTime(systemMap.getDate("currentTime")),
                     systemMap.getString("hostname"),
@@ -79,14 +81,14 @@ public class MongoProbe {
                     systemMap.getString("cpuArch"),
                     systemMap.getBoolean("numaEnabled")
             );
-            final BasicDBObject osMap = (BasicDBObject) hostInfoResult.get("os");
+            final BasicDBObject osMap = hostInfoResult.get("os", BasicDBObject.class);
             final HostInfo.Os os = HostInfo.Os.create(
                     osMap.getString("type"),
                     osMap.getString("name"),
                     osMap.getString("version")
             );
 
-            final BasicDBObject extraMap = (BasicDBObject) hostInfoResult.get("extra");
+            final BasicDBObject extraMap = hostInfoResult.get("extra", BasicDBObject.class);
             final HostInfo.Extra extra = HostInfo.Extra.create(
                     extraMap.getString("versionString"),
                     extraMap.getString("libcVersion"),
@@ -99,19 +101,19 @@ public class MongoProbe {
                     extraMap.getLong("maxOpenFiles", -1L)
             );
 
-            hostInfo = HostInfo.create(system, os, extra);
-        } else {
-            LOG.debug("Couldn't retrieve MongoDB hostInfo: {}", hostInfoResult.getErrorMessage());
-            hostInfo = null;
+            return HostInfo.create(system, os, extra);
+
+        } catch (MongoException ex) {
+            LOG.debug("Couldn't retrieve MongoDB hostInfo", ex);
         }
 
-        return hostInfo;
+        return null;
     }
 
-    private static BuildInfo createBuildInfo(DB adminDb) {
+    private static BuildInfo createBuildInfo(MongoDatabase adminDb) {
         final BuildInfo buildInfo;
-        final CommandResult buildInfoResult = adminDb.command("buildInfo");
-        if (buildInfoResult.ok()) {
+        try {
+            final Document buildInfoResult = adminDb.runCommand(new Document("buildInfo", 1));
             buildInfo = BuildInfo.create(
                     buildInfoResult.getString("version"),
                     buildInfoResult.getString("gitVersion"),
@@ -119,32 +121,33 @@ public class MongoProbe {
                     buildInfoResult.getString("loaderFlags"),
                     buildInfoResult.getString("compilerFlags"),
                     buildInfoResult.getString("allocator"),
-                    (List<Integer>) buildInfoResult.get("versionArray"),
+                    buildInfoResult.getList("versionArray", Integer.class),
                     buildInfoResult.getString("javascriptEngine"),
-                    buildInfoResult.getInt("bits"),
+                    buildInfoResult.getInteger("bits"),
                     buildInfoResult.getBoolean("debug"),
                     buildInfoResult.getLong("maxBsonObjectSize")
 
             );
-        } else {
-            LOG.debug("Couldn't retrieve MongoDB buildInfo: {}", buildInfoResult.getErrorMessage());
-            buildInfo = null;
-        }
 
-        return buildInfo;
+            return buildInfo;
+        } catch (MongoException ex) {
+            LOG.debug("Couldn't retrieve MongoDB buildInfo", ex);
+        }
+        return null;
     }
 
     public MongoStats mongoStats() {
-        final List<ServerAddress> serverAddresses = mongoClient.getServerAddressList();
-        final List<HostAndPort> servers = Lists.newArrayListWithCapacity(serverAddresses.size());
-        for (ServerAddress serverAddress : serverAddresses) {
-            servers.add(HostAndPort.fromParts(serverAddress.getHost(), serverAddress.getPort()));
-        }
+        try {
 
-        final DatabaseStats dbStats;
-        final CommandResult dbStatsResult = db.command("dbStats");
-        if (dbStatsResult.ok()) {
-            final BasicDBObject extentFreeListMap = (BasicDBObject) dbStatsResult.get("extentFreeList");
+            final List<ServerDescription> serverAddresses = mongoClient.getClusterDescription().getServerDescriptions();
+        final List<HostAndPort> servers = Lists.newArrayListWithCapacity(serverAddresses.size());
+            for (ServerDescription serverAddress : serverAddresses) {
+                servers.add(HostAndPort.fromParts(serverAddress.getAddress().getHost(), serverAddress.getAddress().getPort()));
+        }
+            final DatabaseStats dbStats;
+
+            final Document dbStatsResult = db.runCommand(new Document("dbStats", 1));
+            final BasicDBObject extentFreeListMap = dbStatsResult.get("extentFreeList", BasicDBObject.class);
             final DatabaseStats.ExtentFreeList extentFreeList;
             if (extentFreeListMap == null) {
                 extentFreeList = null;
@@ -176,20 +179,16 @@ public class MongoProbe {
                     dbStatsResult.getLong("numExtents"),
                     dbStatsResult.getLong("indexes"),
                     dbStatsResult.getLong("indexSize"),
-                    dbStatsResult.containsField("fileSize") ? dbStatsResult.getLong("fileSize") : null,
-                    dbStatsResult.containsField("nsSizeMB") ? dbStatsResult.getLong("nsSizeMB") : null,
+                    dbStatsResult.containsKey("fileSize") ? dbStatsResult.getLong("fileSize") : null,
+                    dbStatsResult.containsKey("nsSizeMB") ? dbStatsResult.getLong("nsSizeMB") : null,
                     extentFreeList,
                     dataFileVersion
             );
-        } else {
-            LOG.debug("Couldn't retrieve MongoDB dbStats: {}", dbStatsResult.getErrorMessage());
-            dbStats = null;
-        }
+
 
         final ServerStatus serverStatus;
-        final CommandResult serverStatusResult = adminDb.command("serverStatus");
-        if (serverStatusResult.ok()) {
-            final BasicDBObject connectionsMap = (BasicDBObject) serverStatusResult.get("connections");
+        final Document serverStatusResult = adminDb.runCommand(new Document("serverStatus", 1));
+            final BasicDBObject connectionsMap = serverStatusResult.get("connections", BasicDBObject.class);
             final ServerStatus.Connections connections = ServerStatus.Connections.create(
                     connectionsMap.getInt("current"),
                     connectionsMap.getInt("available"),
@@ -221,26 +220,26 @@ public class MongoProbe {
                 storageEngine = ServerStatus.StorageEngine.create(storageEngineMap.getString("name"));
             }
 
-            final int uptime = serverStatusResult.getInt("uptime", 0);
+            final int uptime = serverStatusResult.getInteger("uptime", 0);
             serverStatus = ServerStatus.create(
                     serverStatusResult.getString("host"),
                     serverStatusResult.getString("version"),
                     serverStatusResult.getString("process"),
-                    serverStatusResult.getLong("pid", 0),
+                    serverStatusResult.containsKey("pid")? serverStatusResult.getLong("pid"):0L,
                     uptime,
-                    serverStatusResult.getLong("uptimeMillis", uptime * 1000L),
-                    serverStatusResult.getInt("uptimeEstimate"),
+                    serverStatusResult.containsKey("uptimeMillis")? serverStatusResult.getLong("uptimeMillis") :  uptime * 1000L,
+                    serverStatusResult.getInteger("uptimeEstimate"),
                     new DateTime(serverStatusResult.getDate("localTime")),
                     connections,
                     network,
                     memory,
                     storageEngine);
-        } else {
-            LOG.debug("Couldn't retrieve MongoDB serverStatus: {}", serverStatusResult.getErrorMessage());
-            serverStatus = null;
-        }
 
         // TODO Collection stats? http://docs.mongodb.org/manual/reference/command/collStats/
-        return MongoStats.create(servers, buildInfo, hostInfo, serverStatus, dbStats);
+            return MongoStats.create(servers, buildInfo, hostInfo, serverStatus, dbStats);
+        } catch (MongoException ex) {
+            LOG.debug("Couldn't retrieve MongoDB dbStats", ex);
+        }
+        return null;
     }
 }

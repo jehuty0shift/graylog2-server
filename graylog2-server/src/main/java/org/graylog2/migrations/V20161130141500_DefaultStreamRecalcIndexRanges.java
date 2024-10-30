@@ -16,6 +16,7 @@
  */
 package org.graylog2.migrations;
 
+import com.mongodb.client.model.Filters;
 import org.graylog2.indexer.IndexSet;
 import org.graylog2.indexer.IndexSetRegistry;
 import org.graylog2.indexer.MongoIndexSet;
@@ -26,7 +27,6 @@ import org.graylog2.indexer.indices.TooManyAliasesException;
 import org.graylog2.indexer.ranges.CreateNewSingleIndexRangeJob;
 import org.graylog2.indexer.ranges.IndexRange;
 import org.graylog2.indexer.ranges.IndexRangeService;
-import org.mongojack.DBQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +74,7 @@ public class V20161130141500_DefaultStreamRecalcIndexRanges extends Migration {
         } catch (IllegalStateException e) {
             // Try to find the default index set manually if the index set registry cannot find it.
             // This is needed if you run this migration with a 2.2.0-beta.2 state before commit 460cac6af.
-            final IndexSetConfig indexSetConfig = indexSetService.findOne(DBQuery.is("default", true))
+            final IndexSetConfig indexSetConfig = indexSetService.findOne(Filters.eq("default", true))
                     .orElseThrow(() -> new IllegalStateException("No default index set configured! This is a bug!"));
             indexSet = indexSetFactory.create(indexSetConfig);
         }

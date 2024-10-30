@@ -165,6 +165,7 @@ public class AuditEventTypes implements PluginAuditEventTypes {
             .add(ALERT_RECEIVER_DELETE)
             .add(ALERT_RECEIVER_UPDATE)
             .add(AUTHENTICATION_CHECK)
+            .add(AUTHENTICATION_PROXIES_UNKNOWN)
             .add(AUTHENTICATION_HTTP_HEADER_CONFIG_UPDATE)
             .add(AUTHENTICATION_PROVIDER_CONFIGURATION_UPDATE)
             .add(AUTHORIZATION_CHECK)

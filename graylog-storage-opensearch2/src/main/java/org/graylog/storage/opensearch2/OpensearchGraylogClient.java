@@ -1,6 +1,7 @@
 package org.graylog.storage.opensearch2;
 
 import com.google.common.collect.Streams;
+import org.apache.http.client.config.RequestConfig;
 import org.graylog2.indexer.IndexNotFoundException;
 import org.opensearch.OpenSearchException;
 import org.opensearch.action.search.MultiSearchRequest;
@@ -18,13 +19,13 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class OpensearchClient {
+public class OpensearchGraylogClient {
     private final RestHighLevelClient client;
     private final boolean compressionEnabled;
 
     @Inject
-    public OpensearchClient(RestHighLevelClient client,
-                            @Named("elasticsearch_compression_enabled") boolean compressionEnabled) {
+    public OpensearchGraylogClient(RestHighLevelClient client,
+                                   @Named("elasticsearch_compression_enabled") boolean compressionEnabled) {
         this.client = client;
         this.compressionEnabled = compressionEnabled;
     }
@@ -91,7 +92,7 @@ public class OpensearchClient {
         return compressionEnabled
                 ? RequestOptions.DEFAULT.toBuilder()
                 .addHeader("Accept-Encoding", "gzip")
-                .addHeader("Content-type", "application/json")
+                .setRequestConfig(RequestConfig.copy(RequestConfig.DEFAULT).setContentCompressionEnabled(true).build())
                 .build()
                 : RequestOptions.DEFAULT;
     }

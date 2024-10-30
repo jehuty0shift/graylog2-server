@@ -23,7 +23,6 @@ import org.graylog.events.contentpack.entities.EventProcessorConfigEntity;
 import org.graylog.scheduler.JobDefinitionConfig;
 import org.graylog.scheduler.clock.JobSchedulerClock;
 import org.graylog2.contentpacks.ContentPackable;
-import org.graylog2.contentpacks.EntityDescriptorIds;
 import org.graylog2.plugin.rest.ValidationResult;
 
 import java.util.Collections;
@@ -32,10 +31,10 @@ import java.util.Set;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        include = JsonTypeInfo.As.PROPERTY,
         property = EventProcessorConfig.TYPE_FIELD,
         visible = true,
-        defaultImpl = EventProcessorConfig.FallbackConfig.class)
+        defaultImpl = EventProcessorFallbackConfig.class)
 public interface EventProcessorConfig extends ContentPackable<EventProcessorConfigEntity> {
     String TYPE_FIELD = "type";
 
@@ -78,20 +77,5 @@ public interface EventProcessorConfig extends ContentPackable<EventProcessorConf
         SELF type(String type);
     }
 
-    class FallbackConfig implements EventProcessorConfig {
-        @Override
-        public String type() {
-            throw new UnsupportedOperationException();
-        }
 
-        @Override
-        public ValidationResult validate() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public EventProcessorConfigEntity toContentPackEntity(EntityDescriptorIds entityDescriptorIds) {
-            return null;
-        }
-    }
 }
