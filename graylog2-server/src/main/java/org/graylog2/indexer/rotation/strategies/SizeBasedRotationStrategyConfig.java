@@ -20,6 +20,7 @@ package org.graylog2.indexer.rotation.strategies;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.github.joschi.jadconfig.util.Size;
 import com.google.auto.value.AutoValue;
 import org.graylog.autovalue.WithBeanGetter;
@@ -29,6 +30,7 @@ import javax.validation.constraints.Min;
 
 @JsonAutoDetect
 @AutoValue
+@JsonDeserialize(builder = SizeBasedRotationStrategyConfig.Builder.class)
 @WithBeanGetter
 public abstract class SizeBasedRotationStrategyConfig implements RotationStrategyConfig {
     private static final long DEFAULT_MAX_SIZE = Size.gigabytes(1L).toBytes();
@@ -39,7 +41,10 @@ public abstract class SizeBasedRotationStrategyConfig implements RotationStrateg
     @JsonCreator
     public static SizeBasedRotationStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                          @JsonProperty("max_size") @Min(1) long maxSize) {
-        return new AutoValue_SizeBasedRotationStrategyConfig(type, maxSize);
+        return SizeBasedRotationStrategyConfig.Builder.builder()
+                .type(type)
+                .maxSize(maxSize)
+                .build();
     }
 
     @JsonCreator
@@ -50,4 +55,23 @@ public abstract class SizeBasedRotationStrategyConfig implements RotationStrateg
     public static SizeBasedRotationStrategyConfig createDefault() {
         return create(DEFAULT_MAX_SIZE);
     }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+
+        @JsonCreator
+        public static Builder builder() { return new AutoValue_SizeBasedRotationStrategyConfig.Builder();}
+
+
+        @JsonProperty(TYPE_FIELD)
+        public abstract Builder type(String type);
+
+        @JsonProperty("max_size")
+        public abstract Builder maxSize(long maxSize);
+
+        public abstract SizeBasedRotationStrategyConfig build();
+
+    }
+
+
 }
