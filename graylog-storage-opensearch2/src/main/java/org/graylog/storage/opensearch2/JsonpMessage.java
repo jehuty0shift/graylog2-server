@@ -75,15 +75,11 @@ public class JsonpMessage implements JsonpSerializable {
 
         }
 
-        if (message.getStreamIds().size() > 1) {
-            generator.writeStartArray(Message.FIELD_STREAMS);
-            for (String streamId : message.getStreamIds()) {
-                generator.write(streamId);
-            }
-            generator.writeEnd();
-        } else if (message.getStreamIds().size() == 1) {
-            generator.write(Message.FIELD_STREAMS, message.getStreamIds().iterator().next());
+        generator.writeStartArray(Message.FIELD_STREAMS);
+        for (String streamId : message.getStreamIds()) {
+            generator.write(streamId);
         }
+        generator.writeEnd();
 
         generator.writeEnd();
     }
