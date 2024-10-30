@@ -238,6 +238,21 @@ public final class Tools {
     }
 
     /**
+     * Decompress ZLIB (RFC 1950) compressed data
+     *
+     * @param compressedData A byte array containing the ZLIB-compressed data.
+     * @param maxBytes       The maximum number of uncompressed bytes to read.
+     * @return A byte[] containing the decompressed data
+     */
+    public static byte[] decompressZlibToByte(byte[] compressedData, long maxBytes) throws IOException {
+        try (final ByteArrayInputStream dataStream = new ByteArrayInputStream(compressedData);
+             final InflaterInputStream in = new InflaterInputStream(dataStream);
+             final InputStream limited = ByteStreams.limit(in, maxBytes)) {
+            return ByteStreams.toByteArray(limited);
+        }
+    }
+
+    /**
      * Decompress GZIP (RFC 1952) compressed data
      *
      * @param compressedData A byte array containing the GZIP-compressed data.
@@ -246,6 +261,22 @@ public final class Tools {
     public static String decompressGzip(byte[] compressedData) throws IOException {
         return decompressGzip(compressedData, Long.MAX_VALUE);
     }
+
+
+    /**
+     * Decompress GZIP (RFC 1952) compressed data
+     *
+     * @param compressedData A byte array containing the GZIP-compressed data.
+     * @return A byte[] containing the decompressed data
+     */
+    public static byte[] decompressGzipToByte(byte[] compressedData, long maxBytes) throws IOException {
+        try (final ByteArrayInputStream dataStream = new ByteArrayInputStream(compressedData);
+             final GZIPInputStream in = new GZIPInputStream(dataStream);
+             final InputStream limited = ByteStreams.limit(in, maxBytes)) {
+            return ByteStreams.toByteArray(limited);
+        }
+    }
+
 
     /**
      * Decompress GZIP (RFC 1952) compressed data

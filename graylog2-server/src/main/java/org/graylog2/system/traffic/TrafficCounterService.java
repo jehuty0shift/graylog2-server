@@ -78,7 +78,7 @@ public class TrafficCounterService {
                         Updates.inc("input." + nodeId.toString(), inLastMinute),
                         Updates.inc("output." + nodeId.toString(), outLastMinute),
                         Updates.inc("decoded." + nodeId.toString(), decodedLastMinute)), new UpdateOptions().upsert(true));
-        if (update.getModifiedCount() == 0 && update.getUpsertedId() == null) {
+        if (update.getMatchedCount() == 0 && update.getModifiedCount() == 0 && update.getUpsertedId() == null) {
             LOG.warn("Unable to update traffic of node {}: {}", nodeId, update);
         }
     }
