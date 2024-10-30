@@ -92,14 +92,14 @@ public class PersistedServiceImpl implements PersistedService {
     }
 
     protected long count(DBObject query, String collectionName) {
-        return collection(collectionName).countDocuments(DBObjectToBson(query));
+        return collection(collectionName).countDocuments(dBObjectToBson(query));
     }
 
     protected <T extends Persisted> long count(Class<T> modelClass, DBObject query) {
-        return collection(modelClass).countDocuments(DBObjectToBson(query));
+        return collection(modelClass).countDocuments(dBObjectToBson(query));
     }
 
-    public static BasicDBObject DBObjectToBson(DBObject object) {
+    public static BasicDBObject dBObjectToBson(DBObject object) {
         return new BasicDBObject(object.toMap());
     }
 
@@ -122,7 +122,7 @@ public class PersistedServiceImpl implements PersistedService {
     }
 
     protected <T extends Persisted> DBObject findOne(Class<T> model, DBObject query) {
-        return collection(model).find(DBObjectToBson(query)).first();
+        return collection(model).find(dBObjectToBson(query)).first();
     }
 
     protected <T extends Persisted> DBObject findOne(Class<T> model, Bson query) {
@@ -130,15 +130,15 @@ public class PersistedServiceImpl implements PersistedService {
     }
 
     protected <T extends Persisted> DBObject findOne(Class<T> model, DBObject query, DBObject sort) {
-        return collection(model).find(DBObjectToBson(query)).sort(DBObjectToBson(sort)).first();
+        return collection(model).find(dBObjectToBson(query)).sort(dBObjectToBson(sort)).first();
     }
 
     protected DBObject findOne(DBObject query, String collectionName) {
-        return collection(collectionName).find(DBObjectToBson(query)).first();
+        return collection(collectionName).find(dBObjectToBson(query)).first();
     }
 
     protected DBObject findOne(DBObject query, DBObject sort, String collectioName) {
-        return collection(collectioName).find(DBObjectToBson(query)).sort(DBObjectToBson(sort)).first();
+        return collection(collectioName).find(dBObjectToBson(query)).sort(dBObjectToBson(sort)).first();
     }
 
     protected long totalCount(String collectionName) {
@@ -164,11 +164,11 @@ public class PersistedServiceImpl implements PersistedService {
     }
 
     protected int destroy(DBObject query, String collectionName) {
-        return (int)collection(collectionName).deleteMany(DBObjectToBson(query)).getDeletedCount();
+        return (int)collection(collectionName).deleteMany(dBObjectToBson(query)).getDeletedCount();
     }
 
     protected <T extends Persisted> int destroyAll(Class<T> modelClass, DBObject query) {
-        return (int)collection(modelClass).deleteMany(DBObjectToBson(query)).getDeletedCount();
+        return (int)collection(modelClass).deleteMany(dBObjectToBson(query)).getDeletedCount();
     }
 
     @Override

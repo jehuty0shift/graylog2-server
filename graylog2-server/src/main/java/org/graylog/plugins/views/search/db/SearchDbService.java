@@ -73,9 +73,7 @@ public class SearchDbService {
         }
 
         final InsertOneResult save = db.insertOne(searchToSave);
-        final Search savedSearch = db.findOne(Filters.eq("_id", save.getInsertedId()));
-
-        return savedSearch;
+        return db.findOne(Filters.eq("_id", save.getInsertedId()));
     }
 
     public PaginatedList<Search> findPaginated(Bson search, Bson sort, int page, int perPage) {

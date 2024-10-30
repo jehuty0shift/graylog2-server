@@ -16,7 +16,6 @@
  */
 package org.graylog2.indexer.fieldtypes;
 
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
@@ -54,7 +53,7 @@ public class IndexFieldTypesService {
                 IndexFieldTypesDTO.class,
                 UuidRepresentation.STANDARD);
 
-        this.db.createIndex(new BasicDBObject(ImmutableMap.of(
+        this.db.createIndex(new BasicDBObject(Map.of(
                 IndexFieldTypesDTO.FIELD_INDEX_NAME, 1,
                 IndexFieldTypesDTO.FIELD_INDEX_SET_ID, 1
         )), new IndexOptions().unique(true));

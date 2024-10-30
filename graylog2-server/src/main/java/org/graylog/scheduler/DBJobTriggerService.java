@@ -342,13 +342,15 @@ public class DBJobTriggerService {
         update.add(Updates.set(FIELD_LOCK_OWNER, null));
 
         // An empty next time indicates that this trigger should not be fired anymore. (e.g. for "once" schedules)
-        if (triggerUpdate.nextTime().isPresent()) {
-            if (triggerUpdate.status().isPresent()) {
-                update.add(Updates.set(FIELD_STATUS, triggerUpdate.status().get()));
+        Optional<DateTime> nextTime = triggerUpdate.nextTime();
+        Optional<JobTriggerStatus> status = triggerUpdate.status();
+        if (nextTime.isPresent()) {
+            if (status.isPresent()) {
+                update.add(Updates.set(FIELD_STATUS, status.get()));
             } else {
                 update.add(Updates.set(FIELD_STATUS, JobTriggerStatus.RUNNABLE));
             }
-            update.add(Updates.set(FIELD_NEXT_TIME, triggerUpdate.nextTime().get()));
+            update.add(Updates.set(FIELD_NEXT_TIME, nextTime.get()));
         } else {
             update.add(Updates.set(FIELD_STATUS, JobTriggerStatus.COMPLETE));
         }

@@ -59,6 +59,7 @@ import static org.graylog2.audit.AuditEventTypes.ES_INDEX_RANGE_DELETE;
 public class MongoIndexRangeService implements IndexRangeService {
     private static final Logger LOG = LoggerFactory.getLogger(MongoIndexRangeService.class);
     private static final String COLLECTION_NAME = "index_ranges";
+    private static final String START_KEY = "start";
 
     private final Indices indices;
     private final IndexSetRegistry indexSetRegistry;
@@ -85,13 +86,13 @@ public class MongoIndexRangeService implements IndexRangeService {
         eventBus.register(this);
 
         collection.createIndex(new BasicDBObject(MongoIndexRange.FIELD_INDEX_NAME, 1));
-        collection.createIndex(Indexes.ascending(MongoIndexRange.FIELD_BEGIN, MongoIndexRange.FIELD_END));
+        collection.createIndex(Indexes.ascending(IndexRange.FIELD_BEGIN, IndexRange.FIELD_END));
     }
 
     @Override
     public IndexRange get(String index) throws NotFoundException {
         final Bson query = Filters.and(
-            Filters.exists("start", false),
+            Filters.exists(START_KEY, false),
             Filters.eq(IndexRange.FIELD_INDEX_NAME, index));
         final MongoIndexRange indexRange = collection.findOne(query);
         if (indexRange == null) {
@@ -105,12 +106,12 @@ public class MongoIndexRangeService implements IndexRangeService {
     public SortedSet<IndexRange> find(DateTime begin, DateTime end) {
         final Bson query = Filters.or(
                 Filters.and(
-                        Filters.exists("start", false),  // "start" has been used by the old index ranges in MongoDB
+                        Filters.exists(START_KEY, false),  // "start" has been used by the old index ranges in MongoDB
                         Filters.lte(IndexRange.FIELD_BEGIN, end.getMillis()),
                         Filters.gte(IndexRange.FIELD_END, begin.getMillis())
                 ),
                 Filters.and(
-                        Filters.exists("start", false),  // "start" has been used by the old index ranges in MongoDB
+                        Filters.exists(START_KEY, false),  // "start" has been used by the old index ranges in MongoDB
                         Filters.lte(IndexRange.FIELD_BEGIN, 0L),
                         Filters.gte(IndexRange.FIELD_END, 0L)
                 )
@@ -122,7 +123,7 @@ public class MongoIndexRangeService implements IndexRangeService {
 
     @Override
     public SortedSet<IndexRange> findAll() {
-            return Collections.unmodifiableSortedSet(collection.find(Filters.exists("start", false)).into(new TreeSet<>(IndexRange.COMPARATOR)));
+            return Collections.unmodifiableSortedSet(collection.find(Filters.exists(START_KEY, false)).into(new TreeSet<>(IndexRange.COMPARATOR)));
     }
 
     @Override
@@ -148,8 +149,7 @@ public class MongoIndexRangeService implements IndexRangeService {
     @Override
     public UpdateResult save(IndexRange indexRange) {
         remove(indexRange.indexName());
-        final UpdateResult save = collection.save(MongoIndexRange.create(indexRange));
-        return save;
+        return collection.save(MongoIndexRange.create(indexRange));
     }
 
     @Override

@@ -186,9 +186,9 @@ public class StreamRuleServiceImpl extends PersistedServiceImpl implements Strea
         final ImmutableMap.Builder<String, Long> streamRules = ImmutableMap.builder();
         AggregateIterable<BasicDBObject> results = collection(StreamImpl.class).aggregate(List.of(Aggregates.group("$stream_id", Accumulators.sum("count",1))));
         for(BasicDBObject result: results) {
-            ObjectId stream_id = result.getObjectId("_id");
+            ObjectId streamId = result.getObjectId("_id");
             int count = result.getInt("count");
-            streamRules.put(stream_id.toHexString(), Long.valueOf(count));
+            streamRules.put(streamId.toHexString(), Long.valueOf(count));
         }
         return streamRules.build();
     }

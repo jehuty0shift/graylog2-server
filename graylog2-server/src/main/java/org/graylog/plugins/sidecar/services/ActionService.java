@@ -36,6 +36,7 @@ import java.util.List;
 
 public class ActionService {
     private static final String COLLECTION_NAME = "sidecar_collector_actions";
+    private static final String SIDECARD_KEY = "sidecard_id";
     private final JacksonMongoCollection<CollectorActions> dbCollection;
 
     @Inject
@@ -78,14 +79,14 @@ public class ActionService {
 
     public CollectorActions findActionBySidecar(String sidecarId, boolean remove) {
         if (remove) {
-            CollectorActions collectorActions = dbCollection.findOne(Filters.eq("sidecard_id",sidecarId));
-            DeleteResult deleteResult=  dbCollection.deleteOne(Filters.eq("sidecar_id", sidecarId));
+            CollectorActions collectorActions = dbCollection.findOne(Filters.eq(SIDECARD_KEY,sidecarId));
+            DeleteResult deleteResult=  dbCollection.deleteOne(Filters.eq(SIDECARD_KEY, sidecarId));
             if (!deleteResult.wasAcknowledged()) {
                 throw new MongoException("Couldn't delete the CollectorActions");
             }
             return collectorActions;
         } else {
-            return dbCollection.findOne(Filters.eq("sidecar_id", sidecarId));
+            return dbCollection.findOne(Filters.eq(SIDECARD_KEY, sidecarId));
         }
     }
 }

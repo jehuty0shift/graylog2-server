@@ -23,7 +23,6 @@ import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.ReturnDocument;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.graylog.plugins.sidecar.rest.models.*;
 import org.graylog.plugins.sidecar.rest.requests.ConfigurationAssignment;
 import org.graylog.plugins.sidecar.rest.requests.RegistrationRequest;

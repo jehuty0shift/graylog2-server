@@ -53,8 +53,7 @@ public class DBNotificationGracePeriodService extends PaginatedDbService<EventNo
     }
 
     public List<EventNotificationStatus> getAllStatuses() {
-        List<EventNotificationStatus> result = db.find().into(new ArrayList<>());
-        return result;
+        return db.find().into(new ArrayList<>());
     }
 
     public int deleteStatus(String statusId) {

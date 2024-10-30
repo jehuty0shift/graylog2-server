@@ -193,7 +193,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
     }
 
     private List<Stream> loadAll(DBObject query) {
-        return loadAll((Bson) DBObjectToBson(query));
+        return loadAll((Bson) dBObjectToBson(query));
     }
 
     private List<Stream> loadAll(Bson query) {
@@ -527,7 +527,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
         // from the upsert call.
         final ImmutableSet<String> updatedStreams;
 
-        FindIterable<BasicDBObject> streamsImpl = collection(StreamImpl.class).find(DBObjectToBson(match));
+        FindIterable<BasicDBObject> streamsImpl = collection(StreamImpl.class).find(dBObjectToBson(match));
         updatedStreams = StreamSupport.stream(streamsImpl.spliterator(), false)
                     .map(stream -> stream.get("_id"))
                     .filter(Objects::nonNull)
@@ -535,7 +535,7 @@ public class StreamServiceImpl extends PersistedServiceImpl implements StreamSer
                     .collect(ImmutableSet.toImmutableSet());
 
 
-        collection(StreamImpl.class).updateMany(DBObjectToBson(match), DBObjectToBson(modify), new UpdateOptions().upsert(false));
+        collection(StreamImpl.class).updateMany(dBObjectToBson(match), dBObjectToBson(modify), new UpdateOptions().upsert(false));
 
         clusterEventBus.post(StreamsChangedEvent.create(updatedStreams));
     }

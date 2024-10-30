@@ -19,7 +19,6 @@ package org.graylog2.cluster;
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.graylog2.Configuration;
@@ -153,7 +152,7 @@ public class NodeServiceImpl extends PersistedServiceImpl implements NodeService
         query.put("node_id", new BasicDBObject("$ne", nodeId.toString()));
         query.put("is_master", true);
 
-        return query(NodeImpl.class, (Bson)query).size() == 0;
+        return query(NodeImpl.class, (Bson)query).isEmpty();
     }
 
     @Override
@@ -163,6 +162,6 @@ public class NodeServiceImpl extends PersistedServiceImpl implements NodeService
         query.put("last_seen", new BasicDBObject("$gte", Tools.getUTCTimestamp() - pingTimeout));
         query.put("is_master", true);
 
-        return query(NodeImpl.class, (Bson)query).size() > 0;
+        return !query(NodeImpl.class, (Bson)query).isEmpty();
     }
 }

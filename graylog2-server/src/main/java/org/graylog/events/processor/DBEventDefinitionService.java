@@ -17,9 +17,7 @@
 package org.graylog.events.processor;
 
 import com.mongodb.client.model.Filters;
-import org.bson.types.ObjectId;
 import org.graylog.events.notifications.EventNotificationConfig;
-import org.graylog.events.notifications.NotificationDto;
 import org.graylog.security.entities.EntityOwnershipService;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -33,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public class DBEventDefinitionService extends PaginatedDbService<EventDefinitionDto> {

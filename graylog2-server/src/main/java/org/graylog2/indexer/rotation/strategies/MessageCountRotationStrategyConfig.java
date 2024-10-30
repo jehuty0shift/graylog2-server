@@ -57,7 +57,7 @@ public abstract class MessageCountRotationStrategyConfig implements RotationStra
     }
 
     @AutoValue.Builder
-    public static abstract class Builder {
+    public abstract static class Builder {
 
         @JsonCreator
         public static Builder builder() {

@@ -59,6 +59,9 @@ public class GelfCodec extends AbstractCodec {
     private static final String CK_DECOMPRESS_SIZE_LIMIT = "decompress_size_limit";
     private static final int DEFAULT_DECOMPRESS_SIZE_LIMIT = 8388608;
     private static final String  PREFIX_INVALID_MESSAGE = "GELF message <%s> %s";
+    private static final String MESSAGE_KEY = "short_message";
+    private static final String LEVEL_KEY = "level";
+    private static final String FACILITY_KEY = "facility";
 
     private final GelfChunkAggregator aggregator;
     private static final ObjectMapper objectMapper = JsonMapper.builder()
@@ -151,7 +154,7 @@ public class GelfCodec extends AbstractCodec {
             // is a mandatory JRE encoding which is always present. So we only need to mention the decompress exceptions here.
             throw new IllegalStateException("Failed to decompress the GELF message payload", e);
         }
-        return null;
+        return new byte[0];
     }
 
     @Nullable
@@ -167,9 +170,8 @@ public class GelfCodec extends AbstractCodec {
                 throw new IOException("null result");
             }
         } catch (final Exception e) {
-            log.error("Could not parse JSON, first 400 characters: " +
+            throw new IllegalStateException("JSON is null/could not be parsed. Could not parse JSON, first 400 characters: " +
                     StringUtils.abbreviate(new String(jsonBytes, StandardCharsets.UTF_8), 403), e);
-            throw new IllegalStateException("JSON is null/could not be parsed (invalid JSON)", e);
         }
 
         validateGELFMessage(node, rawMessage);
@@ -185,7 +187,7 @@ public class GelfCodec extends AbstractCodec {
         }
 
         final Message message = new Message(
-                stringValue(node, "short_message"),
+                stringValue(node, MESSAGE_KEY),
                 stringValue(node, "host"),
                 timestamp
         );
@@ -204,15 +206,15 @@ public class GelfCodec extends AbstractCodec {
         }
 
         // Level is set by server if not specified by client.
-        final int level = intValue(node, "level");
+        final int level = intValue(node, LEVEL_KEY);
         if (level > -1) {
-            message.addField("level", level);
+            message.addField(LEVEL_KEY, level);
         }
 
         // Facility is set by server if not specified by client.
-        final String facility = stringValue(node, "facility");
+        final String facility = stringValue(node, FACILITY_KEY);
         if (facility != null && !facility.isEmpty()) {
-            message.addField("facility", facility);
+            message.addField(FACILITY_KEY, facility);
         }
 
         // Add additional data if there is some.
@@ -233,11 +235,11 @@ public class GelfCodec extends AbstractCodec {
             }
 
             // We already set short_message and host as message and source. Do not add as fields again.
-            if ("short_message".equals(key) ||
+            if (MESSAGE_KEY.equals(key) ||
                     "host".equals(key) ||
                     "line".equals(key) ||
-                    "level".equals(key) ||
-                    "facility".equals(key) ||
+                    LEVEL_KEY.equals(key) ||
+                    FACILITY_KEY.equals(key) ||
                     Message.FIELD_FULL_MESSAGE.equals(key)
             ) {
                 continue;
@@ -282,7 +284,9 @@ public class GelfCodec extends AbstractCodec {
 
         final JsonNode hostNode = jsonNode.path("host");
         if (hostNode.isMissingNode()) {
-            log.warn("{}is missing mandatory \"host\" field.", invalidGelfMessageFormat(rawMessage));
+            if(log.isWarnEnabled()) {
+                log.warn("{}is missing mandatory \"host\" field.", invalidGelfMessageFormat(rawMessage));
+            }
         } else {
             if (!hostNode.isTextual()) {
                 throw new IllegalArgumentException(invalidGelfMessageFormat(rawMessage)+ "has invalid \"host\": " + hostNode.asText());
@@ -315,7 +319,7 @@ public class GelfCodec extends AbstractCodec {
         }
 
         final JsonNode timestampNode = jsonNode.path("timestamp");
-        if (timestampNode.isValueNode() && !timestampNode.isNumber()) {
+        if (timestampNode.isValueNode() && !timestampNode.isNumber() && log.isWarnEnabled()) {
             log.warn("{}has invalid \"timestamp\": {}  (type: {})", invalidGelfMessageFormat(rawMessage), timestampNode.asText(), timestampNode.getNodeType().name());
         }
     }

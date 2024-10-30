@@ -130,7 +130,7 @@ public class ContentPackInstallationPersistenceService {
         final Bson query = Filters.elemMatch(ContentPackInstallation.FIELD_ENTITIES,
                 Filters.and(
                         Filters.eq(NativeEntityDescriptor.FIELD_ENTITY_FOUND_ON_SYSTEM, true),
-                        Filters.eq(NativeEntityDescriptor.FIELD_META_ID, entityId.id())));
+                        Filters.eq(NativeEntityDescriptor.CONTENT_PACK_ENTITY_ID, entityId.id())));
 
         return dbCollection.countDocuments(query);
     }

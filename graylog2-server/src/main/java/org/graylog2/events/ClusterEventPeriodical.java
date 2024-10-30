@@ -53,6 +53,7 @@ public class ClusterEventPeriodical extends Periodical {
 
     @VisibleForTesting
     static final String COLLECTION_NAME = "cluster_events";
+    private static final String CONSUMERS_KEY = "consumers";
 
     private final JacksonMongoCollection<ClusterEvent> dbCollection;
     private final NodeId nodeId;
@@ -99,7 +100,7 @@ public class ClusterEventPeriodical extends Periodical {
         coll.createIndex(Sorts.orderBy(
                 Sorts.ascending("timestamp"),
                 Sorts.ascending("producer"),
-                Sorts.ascending("consumers")));
+                Sorts.ascending(CONSUMERS_KEY)));
 
 
         return coll;
@@ -194,13 +195,13 @@ public class ClusterEventPeriodical extends Periodical {
         // Resorting to ugly MongoDB Java Client because of https://github.com/devbliss/mongojack/issues/88
         final BasicDBList consumersList = new BasicDBList();
         consumersList.add(nodeId.toString());
-        final Bson query = Filters.nin("consumers", consumersList);
+        final Bson query = Filters.nin(CONSUMERS_KEY, consumersList);
 
         return dbCollection.find(query).sort(Sorts.ascending("timestamp"));
     }
 
     private void updateConsumers(final String eventId, final NodeId nodeId) {
-        dbCollection.updateById(eventId, Updates.addToSet("consumers", nodeId.toString()));
+        dbCollection.updateById(eventId, Updates.addToSet(CONSUMERS_KEY, nodeId.toString()));
     }
 
     private Object extractPayload(Object payload, String eventClass) {

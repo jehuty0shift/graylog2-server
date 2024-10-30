@@ -52,6 +52,7 @@ public class MongoDbRuleService implements RuleService {
     private static final Logger log = LoggerFactory.getLogger(MongoDbRuleService.class);
 
     private static final String COLLECTION = "pipeline_processor_rules";
+    private static final String TITLE_KEY = "title";
 
     private final MongoCollection<RuleDao> dbCollection;
     private final ClusterEventBus clusterBus;
@@ -62,7 +63,7 @@ public class MongoDbRuleService implements RuleService {
                               ClusterEventBus clusterBus) {
         this.dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), COLLECTION, RuleDao.class, UuidRepresentation.STANDARD);
         this.clusterBus = clusterBus;
-        dbCollection.createIndex(Indexes.ascending("title"), new IndexOptions().unique(true));
+        dbCollection.createIndex(Indexes.ascending(TITLE_KEY), new IndexOptions().unique(true));
     }
 
     @Override
@@ -87,7 +88,7 @@ public class MongoDbRuleService implements RuleService {
 
     @Override
     public RuleDao loadByName(String name) throws NotFoundException {
-        final Bson query = Filters.eq("title", name);
+        final Bson query = Filters.eq(TITLE_KEY, name);
         final RuleDao rule = dbCollection.find(query).first();
         if (rule == null) {
             throw new NotFoundException("No rule with name " + name);
@@ -98,7 +99,7 @@ public class MongoDbRuleService implements RuleService {
     @Override
     public Collection<RuleDao> loadAll() {
         try {
-            FindIterable<RuleDao> ruleDaos = dbCollection.find().sort(Sorts.ascending("title"));
+            FindIterable<RuleDao> ruleDaos = dbCollection.find().sort(Sorts.ascending(TITLE_KEY));
             return ImmutableSet.copyOf(ruleDaos);
         } catch (MongoException e) {
             log.error("Unable to load processing rules", e);
@@ -118,7 +119,7 @@ public class MongoDbRuleService implements RuleService {
     @Override
     public Collection<RuleDao> loadNamed(Collection<String> ruleNames) {
         try {
-            FindIterable<RuleDao> ruleDaos = dbCollection.find(Filters.in("title", ruleNames));
+            FindIterable<RuleDao> ruleDaos = dbCollection.find(Filters.in(TITLE_KEY, ruleNames));
             return ImmutableSet.copyOf(ruleDaos);
         } catch (MongoException e) {
             log.error("Unable to bulk load rules", e);

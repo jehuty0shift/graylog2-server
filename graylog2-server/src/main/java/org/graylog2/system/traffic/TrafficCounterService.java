@@ -72,7 +72,7 @@ public class TrafficCounterService {
             LOG.debug("Updating traffic for node {} at {}:  in/decoded/out {}/{}/{} bytes",
                     nodeId.toString(), dayBucket, inLastMinute, decodedLastMinute, outLastMinute);
         }
-        final UpdateResult update = db.updateOne(Filters.eq("bucket", dayBucket),
+        final UpdateResult update = db.updateOne(Filters.eq(BUCKET, dayBucket),
                 // sigh DBUpdate.inc only takes integers, but we have a long.
                 Updates.combine(
                         Updates.inc("input." + nodeId.toString(), inLastMinute),

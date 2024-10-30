@@ -45,6 +45,7 @@ public class MongoDbPipelineStreamConnectionsService implements PipelineStreamCo
     private static final Logger log = LoggerFactory.getLogger(MongoDbPipelineStreamConnectionsService.class);
 
     private static final String COLLECTION = "pipeline_processor_pipelines_streams";
+    private static final String STREAM_ID_KEY = "stream_id";
 
     private final JacksonMongoCollection<PipelineConnections> dbCollection;
     private final ClusterEventBus clusterBus;
@@ -58,12 +59,12 @@ public class MongoDbPipelineStreamConnectionsService implements PipelineStreamCo
                 PipelineConnections.class,
                 UuidRepresentation.STANDARD);
         this.clusterBus = clusterBus;
-        dbCollection.createIndex(Sorts.ascending("stream_id"), new IndexOptions().unique(true));
+        dbCollection.createIndex(Sorts.ascending(STREAM_ID_KEY), new IndexOptions().unique(true));
     }
 
     @Override
     public PipelineConnections save(PipelineConnections connections) {
-        PipelineConnections existingConnections = dbCollection.findOne(Filters.eq("stream_id", connections.streamId()));
+        PipelineConnections existingConnections = dbCollection.findOne(Filters.eq(STREAM_ID_KEY, connections.streamId()));
         if (existingConnections == null) {
             existingConnections = PipelineConnections.create(null, connections.streamId(), Collections.emptySet());
         }
@@ -80,7 +81,7 @@ public class MongoDbPipelineStreamConnectionsService implements PipelineStreamCo
 
     @Override
     public PipelineConnections load(String streamId) throws NotFoundException {
-        final PipelineConnections oneById = dbCollection.findOne(Filters.eq("stream_id", streamId));
+        final PipelineConnections oneById = dbCollection.findOne(Filters.eq(STREAM_ID_KEY, streamId));
         if (oneById == null) {
             throw new NotFoundException("No pipeline connections with for stream " + streamId);
         }

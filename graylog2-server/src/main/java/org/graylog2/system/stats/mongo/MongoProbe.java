@@ -39,6 +39,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Singleton
 public class MongoProbe {
     private static final Logger LOG = LoggerFactory.getLogger(MongoProbe.class);
+    private static final String ADMIN_DB = "admin";
 
     private final MongoClient mongoClient;
     private final MongoDatabase db;
@@ -53,8 +54,8 @@ public class MongoProbe {
 
     @VisibleForTesting
     MongoProbe(MongoClient mongoClient, MongoDatabase db) {
-        this(mongoClient, db, mongoClient.getDatabase("admin"),
-                createBuildInfo(mongoClient.getDatabase("admin")), createHostInfo(mongoClient.getDatabase("admin")));
+        this(mongoClient, db, mongoClient.getDatabase(ADMIN_DB),
+                createBuildInfo(mongoClient.getDatabase(ADMIN_DB)), createHostInfo(mongoClient.getDatabase(ADMIN_DB)));
     }
 
     @VisibleForTesting

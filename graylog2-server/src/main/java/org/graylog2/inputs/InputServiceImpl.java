@@ -444,7 +444,7 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
         final DBObject query = new BasicDBObject(InputImpl.EMBEDDED_EXTRACTORS, new BasicDBObject("$exists", true));
         long extractorsCount = 0;
 
-        FindIterable<BasicDBObject> inputs = dbCollection.find(DBObjectToBson(query)).sort(Sorts.ascending(InputImpl.EMBEDDED_EXTRACTORS));
+        FindIterable<BasicDBObject> inputs = dbCollection.find(dBObjectToBson(query)).sort(Sorts.ascending(InputImpl.EMBEDDED_EXTRACTORS));
         for (DBObject input : inputs) {
             final BasicDBList extractors = (BasicDBList) input.get(InputImpl.EMBEDDED_EXTRACTORS);
             extractorsCount += extractors.size();
@@ -456,7 +456,7 @@ public class InputServiceImpl extends PersistedServiceImpl implements InputServi
     @Override
     public Map<Extractor.Type, Long> totalExtractorCountByType() {
         final DBObject query = new BasicDBObject(InputImpl.EMBEDDED_EXTRACTORS, new BasicDBObject("$exists", true));
-        FindIterable<BasicDBObject> inputs = dbCollection.find(DBObjectToBson(query)).sort(Sorts.ascending(InputImpl.EMBEDDED_EXTRACTORS));
+        FindIterable<BasicDBObject> inputs = dbCollection.find(dBObjectToBson(query)).sort(Sorts.ascending(InputImpl.EMBEDDED_EXTRACTORS));
         final Map<Extractor.Type, Long> extractorsCountByType = new HashMap<>();
             for (DBObject input : inputs) {
                 final BasicDBList extractors = (BasicDBList) input.get(InputImpl.EMBEDDED_EXTRACTORS);

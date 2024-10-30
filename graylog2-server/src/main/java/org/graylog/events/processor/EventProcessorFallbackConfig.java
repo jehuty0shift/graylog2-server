@@ -1,6 +1,5 @@
 package org.graylog.events.processor;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.graylog.events.contentpack.entities.EventProcessorConfigEntity;
 import org.graylog2.contentpacks.EntityDescriptorIds;

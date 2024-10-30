@@ -17,7 +17,6 @@
 package org.graylog2.alerts;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
@@ -63,7 +62,7 @@ public class AlertServiceImpl implements AlertService {
 
         this.coll = JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(),collectionName, AlertImpl.class, UuidRepresentation.STANDARD);
 
-        coll.createIndex(new BasicDBObject(ImmutableMap.of(
+        coll.createIndex(new BasicDBObject(Map.of(
                 AlertImpl.FIELD_TRIGGERED_AT, -1,
                 AlertImpl.FIELD_STREAM_ID, 1
         )));
@@ -126,7 +125,7 @@ public class AlertServiceImpl implements AlertService {
                 .limit(1)
                 .into(new ArrayList<>());
 
-        if (alert == null || alert.size() == 0) {
+        if (alert.isEmpty()) {
             return Optional.empty();
         }
 

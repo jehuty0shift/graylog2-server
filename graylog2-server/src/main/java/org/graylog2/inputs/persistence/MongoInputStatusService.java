@@ -71,8 +71,7 @@ public class MongoInputStatusService implements InputStatusService {
     @Override
     public InputStatusRecord save(InputStatusRecord statusRecord) {
         final UpdateResult save = statusCollection.save(statusRecord);
-        InputStatusRecord isr = statusCollection.findOneById(save.getUpsertedId());
-        return isr;
+        return statusCollection.findOneById(save.getUpsertedId());
     }
 
     @Override

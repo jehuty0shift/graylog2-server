@@ -45,11 +45,7 @@ public class SystemSetting extends PersistedServiceImpl {
             return false;
         }
 
-        if (result.getBoolean("value", false)) {
-            return true;
-        }
-
-        return false;
+         return result.getBoolean("value", false);
     }
 
     public BasicDBList getList(String key) {

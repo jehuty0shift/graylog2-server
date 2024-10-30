@@ -43,6 +43,7 @@ import java.util.*;
 @Produces(MediaType.APPLICATION_JSON)
 public class MetricsHistoryResource extends RestResource {
     private final MongoConnection mongoConnection;
+    private static final String TIMESTAMP_KEY = "timestamp";
 
     @Inject
     public MetricsHistoryResource(MongoConnection mongoConnection) {
@@ -78,7 +79,7 @@ public class MetricsHistoryResource extends RestResource {
         andQuery.put("$and", obj);
 
         final MongoCollection<Document> dbCollection = mongoConnection.getMongoDatabase().getCollection("graylog2_metrics");
-        FindIterable<Document> cursor = dbCollection.find(andQuery).sort(Sorts.ascending("timestamp"));
+        FindIterable<Document> cursor = dbCollection.find(andQuery).sort(Sorts.ascending(TIMESTAMP_KEY));
         final Map<String, Object> metricsData = Maps.newHashMap();
         metricsData.put("name", metricName);
         final List<Object> values = Lists.newArrayList();
@@ -91,7 +92,7 @@ public class MetricsHistoryResource extends RestResource {
             Map<String, Object> dataPoint = Maps.newHashMap();
             values.add(dataPoint);
 
-            dataPoint.put("timestamp", value.get("timestamp"));
+            dataPoint.put(TIMESTAMP_KEY, value.get(TIMESTAMP_KEY));
             metricsData.put("type", metricType.toString().toLowerCase(Locale.ENGLISH));
 
             switch (metricType) {
