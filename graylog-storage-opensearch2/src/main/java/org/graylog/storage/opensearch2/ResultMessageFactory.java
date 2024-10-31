@@ -1,7 +1,7 @@
 package org.graylog.storage.opensearch2;
 
 import org.graylog2.indexer.results.ResultMessage;
-import org.opensearch.common.text.Text;
+import org.opensearch.core.common.text.Text;
 import org.opensearch.search.SearchHit;
 import org.opensearch.search.fetch.subphase.highlight.HighlightField;
 

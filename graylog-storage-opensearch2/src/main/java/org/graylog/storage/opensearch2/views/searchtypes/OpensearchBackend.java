@@ -39,11 +39,11 @@ import org.graylog.storage.opensearch2.views.searchtypes.pivot.OSSearchTypeHandl
 import org.graylog2.indexer.ElasticsearchException;
 import org.graylog2.indexer.FieldTypeException;
 import org.graylog2.plugin.Message;
-import org.opensearch.action.ShardOperationFailedException;
 import org.opensearch.action.search.MultiSearchResponse;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
 import org.opensearch.action.support.IndicesOptions;
+import org.opensearch.core.action.ShardOperationFailedException;
 import org.opensearch.index.query.BoolQueryBuilder;
 import org.opensearch.index.query.QueryBuilder;
 import org.opensearch.index.query.QueryBuilders;
