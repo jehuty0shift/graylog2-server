@@ -22,7 +22,7 @@ import org.opensearch.client.opensearch.core.bulk.IndexOperation;
 import org.opensearch.client.opensearch.indices.AnalyzeRequest;
 import org.opensearch.client.opensearch.indices.AnalyzeResponse;
 import org.opensearch.client.opensearch.indices.analyze.AnalyzeToken;
-import org.opensearch.rest.RestStatus;
+import org.opensearch.core.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
