@@ -10,12 +10,8 @@ import org.apache.http.client.CredentialsProvider;
 import org.graylog2.system.shutdown.GracefulShutdownService;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
-import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.sniff.NodesSniffer;
-import org.opensearch.client.sniff.OpenSearchNodesSniffer;
-import org.opensearch.client.sniff.Sniffer;
 import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.slf4j.Logger;
@@ -28,8 +24,6 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.net.URI;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class OpenSearchJavaClientProvider implements Provider<OpenSearchClient> {
