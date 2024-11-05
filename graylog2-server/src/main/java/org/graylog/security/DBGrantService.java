@@ -57,33 +57,21 @@ public class DBGrantService extends PaginatedDbService<GrantDTO> {
         super(mongoConnection, mapper, GrantDTO.class, COLLECTION_NAME);
         this.grnRegistry = grnRegistry;
 
-        db.createIndex(new BasicDBObject(GrantDTO.FIELD_GRANTEE, 1));
-        db.createIndex(new BasicDBObject(GrantDTO.FIELD_TARGET, 1));
-        db.createIndex(
-                new BasicDBObject(GrantDTO.FIELD_GRANTEE, 1)
-                        .append(GrantDTO.FIELD_CAPABILITY, 1)
-                        .append(GrantDTO.FIELD_TARGET, 1),
-                new IndexOptions().unique(true));
-        db.createIndex(
-                new BasicDBObject(GrantDTO.FIELD_GRANTEE, 1)
-                        .append(GrantDTO.FIELD_TARGET, 1),
-                new IndexOptions().unique(true));
+        if (db.listIndexes().into(new ArrayList<>()).size() < 4) {
+            db.createIndex(new BasicDBObject(GrantDTO.FIELD_GRANTEE, 1), new IndexOptions().background(true));
+            db.createIndex(new BasicDBObject(GrantDTO.FIELD_TARGET, 1), new IndexOptions().background(true));
+            db.createIndex(
+                    new BasicDBObject(GrantDTO.FIELD_GRANTEE, 1)
+                            .append(GrantDTO.FIELD_CAPABILITY, 1)
+                            .append(GrantDTO.FIELD_TARGET, 1),
+                    new IndexOptions().unique(true).background(true));
+            db.createIndex(
+                    new BasicDBObject(GrantDTO.FIELD_GRANTEE, 1)
+                            .append(GrantDTO.FIELD_TARGET, 1),
+                    new IndexOptions().unique(true).background(true));
+        }
         // TODO: Add more indices
 
-        // TODO: Inline migration for development. Must be removed before shipping 4.0 GA!
-        final MongoCollection<Document> collection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME);
-        collection.updateMany(
-                Filters.eq(GrantDTO.FIELD_CAPABILITY, "grn::::capability:54e3deadbeefdeadbeef0000"),
-                Updates.set(GrantDTO.FIELD_CAPABILITY, Capability.VIEW.toId())
-        );
-        collection.updateMany(
-                Filters.eq(GrantDTO.FIELD_CAPABILITY, "grn::::capability:54e3deadbeefdeadbeef0001"),
-                Updates.set(GrantDTO.FIELD_CAPABILITY, Capability.MANAGE.toId())
-        );
-        collection.updateMany(
-                Filters.eq(GrantDTO.FIELD_CAPABILITY, "grn::::capability:54e3deadbeefdeadbeef0002"),
-                Updates.set(GrantDTO.FIELD_CAPABILITY, Capability.OWN.toId())
-        );
     }
 
     public ImmutableSet<GrantDTO> getForGranteesOrGlobal(Set<GRN> grantees) {

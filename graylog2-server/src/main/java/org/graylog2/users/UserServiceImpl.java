@@ -27,9 +27,12 @@ import com.google.common.eventbus.EventBus;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Sorts;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.permission.WildcardPermission;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.graylog.grn.GRN;
 import org.graylog.grn.GRNRegistry;
@@ -103,7 +106,11 @@ public class UserServiceImpl extends PersistedServiceImpl implements UserService
         this.permissionAndRoleResolver = permissionAndRoleResolver;
 
         // ensure that the users' roles array is indexed
-        collection(UserImpl.class).createIndex(Sorts.ascending(UserImpl.ROLES));
+        MongoCollection<BasicDBObject> collection = collection(UserImpl.class);
+        List<Document> list = collection.listIndexes().into(new ArrayList<>());
+        if (list.size() < 2) {
+            collection.createIndex(Sorts.ascending(UserImpl.ROLES), new IndexOptions().background(true));
+        }
     }
 
     @Override

@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -57,7 +58,9 @@ public class TrafficCounterService {
         db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "traffic",
                 TrafficDto.class,
                 UuidRepresentation.STANDARD);
-        db.createIndex(new BasicDBObject(BUCKET, 1), new IndexOptions().unique(true));
+        if (db.listIndexes().into(new ArrayList<>()).size() < 2) {
+            db.createIndex(new BasicDBObject(BUCKET, 1), new IndexOptions().unique(true).background(true));
+        }
     }
 
     private static DateTime getDayBucket(DateTime observationTime) {

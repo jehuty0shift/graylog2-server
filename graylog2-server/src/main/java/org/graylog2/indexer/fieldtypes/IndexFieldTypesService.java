@@ -53,13 +53,15 @@ public class IndexFieldTypesService {
                 IndexFieldTypesDTO.class,
                 UuidRepresentation.STANDARD);
 
-        this.db.createIndex(new BasicDBObject(Map.of(
-                IndexFieldTypesDTO.FIELD_INDEX_NAME, 1,
-                IndexFieldTypesDTO.FIELD_INDEX_SET_ID, 1
-        )), new IndexOptions().unique(true));
-        this.db.createIndex(new BasicDBObject(IndexFieldTypesDTO.FIELD_INDEX_NAME, 1), new IndexOptions().unique(true));
-        this.db.createIndex(new BasicDBObject(FIELDS_FIELD_NAMES, 1));
-        this.db.createIndex(new BasicDBObject(IndexFieldTypesDTO.FIELD_INDEX_SET_ID, 1));
+        if (db.listIndexes().into(new ArrayList<>()).size() < 4) {
+            this.db.createIndex(new BasicDBObject(Map.of(
+                    IndexFieldTypesDTO.FIELD_INDEX_NAME, 1,
+                    IndexFieldTypesDTO.FIELD_INDEX_SET_ID, 1
+            )), new IndexOptions().unique(true).background(true));
+            this.db.createIndex(new BasicDBObject(IndexFieldTypesDTO.FIELD_INDEX_NAME, 1), new IndexOptions().unique(true).background(true));
+            this.db.createIndex(new BasicDBObject(FIELDS_FIELD_NAMES, 1), new IndexOptions().background(true));
+            this.db.createIndex(new BasicDBObject(IndexFieldTypesDTO.FIELD_INDEX_SET_ID, 1), new IndexOptions().background(true));
+        }
     }
 
     public Optional<IndexFieldTypesDTO> get(String idOrIndexName) {

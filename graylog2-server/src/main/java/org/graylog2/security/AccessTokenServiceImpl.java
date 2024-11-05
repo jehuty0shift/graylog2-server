@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,9 @@ public class AccessTokenServiceImpl extends PersistedServiceImpl implements Acce
     public AccessTokenServiceImpl(MongoConnection mongoConnection, AccessTokenCipher accessTokenCipher) {
         super(mongoConnection);
         this.cipher = accessTokenCipher;
-        collection(AccessTokenImpl.class).createIndex(new BasicDBObject(AccessTokenImpl.TOKEN_TYPE, 1));
+        if (collection(AccessTokenImpl.class).listIndexes().into(new ArrayList<>()).size() < 2) {
+            collection(AccessTokenImpl.class).createIndex(new BasicDBObject(AccessTokenImpl.TOKEN_TYPE, 1), new IndexOptions().background(true));
+        }
     }
 
     @Override

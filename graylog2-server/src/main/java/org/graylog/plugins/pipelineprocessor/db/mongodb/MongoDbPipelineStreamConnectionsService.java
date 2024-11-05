@@ -59,7 +59,7 @@ public class MongoDbPipelineStreamConnectionsService implements PipelineStreamCo
                 PipelineConnections.class,
                 UuidRepresentation.STANDARD);
         this.clusterBus = clusterBus;
-        dbCollection.createIndex(Sorts.ascending(STREAM_ID_KEY), new IndexOptions().unique(true));
+        dbCollection.createIndex(Sorts.ascending(STREAM_ID_KEY), new IndexOptions().unique(true).background(true));
     }
 
     @Override

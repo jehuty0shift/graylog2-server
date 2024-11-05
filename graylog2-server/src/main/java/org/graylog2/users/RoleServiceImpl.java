@@ -76,8 +76,9 @@ public class RoleServiceImpl implements RoleService {
         dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(
                 mongoConnection.getMongoDatabase(), ROLES,RoleImpl.class, UuidRepresentation.STANDARD);
         // lower case role names are unique, this allows arbitrary naming, but still uses an index
-        dbCollection.createIndex(new BasicDBObject(NAME_LOWER, 1), new IndexOptions().unique(true));
-
+        if (dbCollection.listIndexes().into(new ArrayList<>()).size() < 2) {
+            dbCollection.createIndex(new BasicDBObject(NAME_LOWER, 1), new IndexOptions().unique(true).background(true));
+        }
         // make sure the two built-in roles actually exist
         adminRoleObjectId = checkNotNull(ensureBuiltinRole(ADMIN_ROLENAME, Sets.newHashSet("*"), "Admin",
                                                            "Grants all permissions for Graylog administrators (built-in)"));
