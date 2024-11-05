@@ -237,9 +237,6 @@ public class GelfCodec extends AbstractCodec {
             // We already set short_message and host as message and source. Do not add as fields again.
             if (MESSAGE_KEY.equals(key) ||
                     "host".equals(key) ||
-                    "line".equals(key) ||
-                    LEVEL_KEY.equals(key) ||
-                    FACILITY_KEY.equals(key) ||
                     Message.FIELD_FULL_MESSAGE.equals(key)
             ) {
                 continue;
