@@ -19,11 +19,9 @@ package org.graylog.events.processor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.*;
 import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -36,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -60,10 +60,13 @@ public class DBEventProcessorStateService {
                                         MongoJackObjectMapperProvider mapper) {
         this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), COLLECTION_NAME, EventProcessorStateDto.class, UuidRepresentation.STANDARD);
 
+        List<Document> indexes = db.listIndexes().into( new ArrayList<>());
         // There should only be one state document for each event processor.
-        db.createIndex(new BasicDBObject(FIELD_EVENT_DEFINITION_ID, 1), new IndexOptions().unique(true));
-        db.createIndex(new BasicDBObject(FIELD_MIN_PROCESSED_TIMESTAMP, 1));
-        db.createIndex(new BasicDBObject(FIELD_MAX_PROCESSED_TIMESTAMP, 1));
+        if (indexes.size() < 3) {
+            db.createIndex(new BasicDBObject(FIELD_EVENT_DEFINITION_ID, 1), new IndexOptions().unique(true).background(true));
+            db.createIndex(new BasicDBObject(FIELD_MIN_PROCESSED_TIMESTAMP, 1), new IndexOptions().background(true));
+            db.createIndex(new BasicDBObject(FIELD_MAX_PROCESSED_TIMESTAMP, 1), new IndexOptions().background(true));
+        }
     }
 
     /**

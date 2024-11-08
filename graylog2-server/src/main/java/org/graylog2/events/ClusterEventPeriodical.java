@@ -28,6 +28,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.model.Updates;
 import org.bson.UuidRepresentation;
@@ -44,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -97,11 +99,12 @@ public class ClusterEventPeriodical extends Periodical {
 
         MongoCollection<ClusterEvent> coll = db.getCollection(COLLECTION_NAME, ClusterEvent.class).withWriteConcern(WriteConcern.JOURNALED);
 
-        coll.createIndex(Sorts.orderBy(
-                Sorts.ascending("timestamp"),
-                Sorts.ascending("producer"),
-                Sorts.ascending(CONSUMERS_KEY)));
-
+        if (coll.listIndexes().into(new ArrayList<>()).size() < 2) {
+            coll.createIndex(Sorts.orderBy(
+                    Sorts.ascending("timestamp"),
+                    Sorts.ascending("producer"),
+                    Sorts.ascending(CONSUMERS_KEY)), new IndexOptions().background(true));
+        }
 
         return coll;
     }

@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -63,7 +64,9 @@ public class MongoDbRuleService implements RuleService {
                               ClusterEventBus clusterBus) {
         this.dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), COLLECTION, RuleDao.class, UuidRepresentation.STANDARD);
         this.clusterBus = clusterBus;
-        dbCollection.createIndex(Indexes.ascending(TITLE_KEY), new IndexOptions().unique(true));
+        if (dbCollection.listIndexes().into(new ArrayList<>()).size()< 2) {
+            dbCollection.createIndex(Indexes.ascending(TITLE_KEY), new IndexOptions().unique(true).background(true));
+        }
     }
 
     @Override

@@ -55,7 +55,9 @@ public class SearchDbService {
                               SearchRequirements.Factory searchRequirementsFactory) {
         this.searchRequirementsFactory = searchRequirementsFactory;
         db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), "searches",Search.class, UuidRepresentation.STANDARD);
-        db.createIndex(new BasicDBObject("created_at", 1), new IndexOptions().unique(false));
+        if (db.listIndexes().into(new ArrayList<>()).size() < 2) {
+            db.createIndex(new BasicDBObject("created_at", 1), new IndexOptions().unique(false).background(true));
+        }
     }
 
     public Optional<Search> get(String id) {

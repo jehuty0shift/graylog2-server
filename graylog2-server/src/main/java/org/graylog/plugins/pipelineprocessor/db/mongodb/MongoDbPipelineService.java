@@ -54,7 +54,7 @@ public class MongoDbPipelineService implements PipelineService {
         this.dbCollection = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(
                 mongoConnection.getMongoDatabase(), COLLECTION, PipelineDao.class, UuidRepresentation.STANDARD);
         this.clusterBus = clusterBus;
-        dbCollection.createIndex(Sorts.ascending("title"), new IndexOptions().unique(true));
+        dbCollection.createIndex(Sorts.ascending("title"), new IndexOptions().unique(true).background(true));
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.graylog2.alarmcallbacks;
 
 import com.google.common.collect.Maps;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.bson.UuidRepresentation;
 import org.bson.types.ObjectId;
@@ -41,7 +42,9 @@ public class AlarmCallbackConfigurationServiceImpl implements AlarmCallbackConfi
                                                  MongoJackObjectMapperProvider mapperProvider) {
         final String collectionName = AlarmCallbackConfigurationImpl.class.getAnnotation(CollectionName.class).value();
         this.coll = JacksonMongoCollection.builder().withObjectMapper(mapperProvider.get()).build(mongoConnection.getMongoDatabase(), collectionName, AlarmCallbackConfigurationImpl.class, UuidRepresentation.STANDARD);
-        coll.createIndex(Indexes.ascending(AlarmCallbackConfigurationImpl.FIELD_STREAM_ID));
+        if (coll.listIndexes().into(new ArrayList<>()).size() < 2) {
+            coll.createIndex(Indexes.ascending(AlarmCallbackConfigurationImpl.FIELD_STREAM_ID), new IndexOptions().background(true));
+        }
     }
 
     @Override

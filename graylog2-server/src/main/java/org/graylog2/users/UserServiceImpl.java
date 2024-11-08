@@ -27,9 +27,12 @@ import com.google.common.eventbus.EventBus;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Sorts;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.permission.WildcardPermission;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.graylog.grn.GRN;
 import org.graylog.grn.GRNRegistry;
@@ -54,6 +57,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,6 +73,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+@Singleton
 public class UserServiceImpl extends PersistedServiceImpl implements UserService {
     private static final Logger LOG = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -103,7 +108,11 @@ public class UserServiceImpl extends PersistedServiceImpl implements UserService
         this.permissionAndRoleResolver = permissionAndRoleResolver;
 
         // ensure that the users' roles array is indexed
-        collection(UserImpl.class).createIndex(Sorts.ascending(UserImpl.ROLES));
+        MongoCollection<BasicDBObject> collection = collection(UserImpl.class);
+        List<Document> list = collection.listIndexes().into(new ArrayList<>());
+        if (list.size() < 2) {
+            collection.createIndex(Sorts.ascending(UserImpl.ROLES), new IndexOptions().background(true));
+        }
     }
 
     @Override

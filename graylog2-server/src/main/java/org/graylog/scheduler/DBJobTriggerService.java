@@ -72,12 +72,14 @@ public class DBJobTriggerService {
         this.clock = clock;
         this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(), COLLECTION_NAME,JobTriggerDto.class, UuidRepresentation.STANDARD);
 
-        db.createIndex(new BasicDBObject(FIELD_JOB_DEFINITION_ID, 1));
-        db.createIndex(new BasicDBObject(FIELD_LOCK_OWNER, 1));
-        db.createIndex(new BasicDBObject(FIELD_STATUS, 1));
-        db.createIndex(new BasicDBObject(FIELD_START_TIME, 1));
-        db.createIndex(new BasicDBObject(FIELD_END_TIME, 1));
-        db.createIndex(new BasicDBObject(FIELD_NEXT_TIME, 1));
+        if (db.listIndexes().into(new ArrayList<>()).size() < 7) {
+            db.createIndex(new BasicDBObject(FIELD_JOB_DEFINITION_ID, 1), new IndexOptions().background(true));
+            db.createIndex(new BasicDBObject(FIELD_LOCK_OWNER, 1), new IndexOptions().background(true));
+            db.createIndex(new BasicDBObject(FIELD_STATUS, 1), new IndexOptions().background(true));
+            db.createIndex(new BasicDBObject(FIELD_START_TIME, 1), new IndexOptions().background(true));
+            db.createIndex(new BasicDBObject(FIELD_END_TIME, 1), new IndexOptions().background(true));
+            db.createIndex(new BasicDBObject(FIELD_NEXT_TIME, 1), new IndexOptions().background(true));
+        }
     }
 
     /**

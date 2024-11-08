@@ -24,6 +24,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.primitives.Ints;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -48,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -85,8 +87,10 @@ public class MongoIndexRangeService implements IndexRangeService {
             UuidRepresentation.STANDARD);
         eventBus.register(this);
 
-        collection.createIndex(new BasicDBObject(MongoIndexRange.FIELD_INDEX_NAME, 1));
-        collection.createIndex(Indexes.ascending(IndexRange.FIELD_BEGIN, IndexRange.FIELD_END));
+        if (collection.listIndexes().into(new ArrayList<>()).size() < 3) {
+            collection.createIndex(new BasicDBObject(MongoIndexRange.FIELD_INDEX_NAME, 1), new IndexOptions().background(true));
+            collection.createIndex(Indexes.ascending(IndexRange.FIELD_BEGIN, IndexRange.FIELD_END), new IndexOptions().background(true));
+        }
     }
 
     @Override

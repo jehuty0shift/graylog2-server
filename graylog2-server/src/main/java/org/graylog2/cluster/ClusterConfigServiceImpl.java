@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Set;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
@@ -84,8 +85,10 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
 
         MongoCollection<ClusterConfig> mongoCollection = mongoConnection.getMongoDatabase().getCollection(COLLECTION_NAME, ClusterConfig.class).withWriteConcern(WriteConcern.JOURNALED);
 
-        mongoCollection.createIndex(Sorts.ascending("type"), new IndexOptions().name("unique_type").unique(true));
-
+        if (mongoCollection.listIndexes().into(new ArrayList<>()).size() < 2) {
+            mongoCollection.createIndex(Sorts.ascending("type"), new IndexOptions().name("unique_type").unique(true).background(true));
+        }
+        
         return mongoCollection;
     }
 
