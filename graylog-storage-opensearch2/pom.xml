@@ -14,7 +14,7 @@
     <groupId>org.graylog</groupId>
     <artifactId>graylog-storage-opensearch2</artifactId>
     <name>graylog-storage-opensearch2</name>
-    <description>Graylog Storage Module for Elasticsearch 6</description>
+    <description>Graylog Storage Module for OpenSearch 2</description>
 
     <properties>
         <opensearch-client.version>2.20.0</opensearch-client.version>
@@ -38,11 +38,6 @@
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-java</artifactId>
             <version>${opensearch-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-            <version>5.4.2</version>
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>

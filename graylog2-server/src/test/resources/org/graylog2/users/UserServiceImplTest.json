@@ -38,18 +38,6 @@
     },
     {
       "_id": {
-        "$oid": "54e3deadbeefdeadbeef0004"
-      },
-      "username": "user-duplicate",
-      "email": "user-duplicate@example.com",
-      "full_name": "User Duplicate",
-      "password": "NO LOGIN",
-      "session_timeout_ms": -1,
-      "timezone": "UTC",
-      "permissions": []
-    },
-    {
-      "_id": {
         "$oid": "54e3deadbeefdeadbeef0005"
       },
       "auth_service_id": "54e3deadbeefdeadbeef0001",

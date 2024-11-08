@@ -24,6 +24,7 @@
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+        <create.symlink>false</create.symlink>
     </properties>
 
     <build>
@@ -54,6 +55,43 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>create-symlink-profile</id>
+            <activation>
+                <property>
+                    <name>create.symlink</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>create-symlink</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>ln</executable>
+                                    <arguments>
+                                        <argument>-sfnv</argument>
+                                        <argument>${project.basedir}/../target/assembly/graylog-${project.version}-${maven.build.timestamp}-graylog-server-tarball.tar.gz</argument>
+                                        <argument>${project.basedir}/../target/assembly/graylog-4.0.0.tar.gz</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>org.graylog</groupId>

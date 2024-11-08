@@ -16,17 +16,13 @@
  */
 package org.graylog2.security.realm;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import edu.emory.mathcs.backport.java.util.Arrays;
-import org.apache.kafka.clients.admin.Admin;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
-import org.apache.shiro.authz.permission.AllPermission;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.graylog.security.authservice.AuthServiceAuthenticator;
 import org.graylog.security.authservice.AuthServiceCredentials;
@@ -39,13 +35,9 @@ import org.graylog2.plugin.cluster.ClusterConfigService;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.security.headerauth.HTTPHeaderAuthConfig;
 import org.graylog2.shared.security.HttpHeadersToken;
-import org.graylog2.shared.security.Permissions;
-import org.graylog2.shared.security.RestPermissions;
 import org.graylog2.shared.security.ShiroSecurityContext;
 import org.graylog2.shared.users.UserService;
 import org.graylog2.users.RoleService;
-import org.graylog2.users.RoleServiceImpl;
-import org.graylog2.users.UserImpl;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

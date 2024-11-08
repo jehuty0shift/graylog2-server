@@ -51,6 +51,22 @@ const AppConfig = {
     return window.appConfig.webUICommunityLink;
   },
 
+  oidcProviders() {
+    const oidcProviders = {};
+    for (let i = 0; i < window.appConfig.oidcProviders.length; i++) {
+      oidcProviders[window.appConfig.oidcProviders[i]] = { oidcConnectUrl: window.appConfig.oidcConnectUrls[i], oidcClientId: window.appConfig.oidcClientIds[i], oidcDisplayName: window.appConfig.oidcProvidersDisplayName[i] } ;
+    }
+    return oidcProviders;
+  },
+
+  oidcDefaultProvider() {
+    return window.appConfig.oidcDefaultProvider;
+  },
+
+  httpExternalUri() {
+    return window.appConfig.httpExternalUri;
+  }
+
 };
 
 export default AppConfig;

@@ -17,13 +17,13 @@
 package org.graylog2.plugin;
 
 import com.codahale.metrics.Meter;
-import com.eaio.uuid.UUIDGen;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import com.google.common.net.InetAddresses;
+import org.graylog.util.uuid.ConcurrentUUID;
 import org.graylog2.indexer.IndexSet;
 import org.graylog2.indexer.messages.Indexable;
 import org.graylog2.plugin.streams.Stream;
@@ -239,7 +239,7 @@ public class Message implements Messages, Indexable {
 
     public Message(final String message, final String source, final Instant timestamp) {
         fields = Maps.newHashMap();
-        fields.put(FIELD_ID, new UUID(UUIDGen.newTime(), UUIDGen.getClockSeqAndNode()).toString());
+        fields.put(FIELD_ID, ConcurrentUUID.generateRandomUuid().toString());
         addRequiredField(FIELD_MESSAGE, message);
         addRequiredField(FIELD_SOURCE, source);
         addRequiredField(FIELD_TIMESTAMP, timestamp);

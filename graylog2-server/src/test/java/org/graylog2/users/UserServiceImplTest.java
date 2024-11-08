@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,6 +23,7 @@ import com.google.common.eventbus.EventBus;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
+import com.mongodb.MongoCommandException;
 import com.mongodb.client.model.Filters;
 import org.apache.shiro.authz.permission.WildcardPermission;
 import org.bson.conversions.Bson;
@@ -47,12 +48,14 @@ import org.graylog2.shared.security.RestPermissions;
 import org.graylog2.shared.users.Role;
 import org.graylog2.shared.users.UserService;
 import org.joda.time.DateTimeZone;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.testcontainers.shaded.org.checkerframework.framework.qual.EnsuresQualifier;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,6 +103,7 @@ public class UserServiceImplTest {
 
         when(roleService.getAdminRoleObjectId()).thenReturn("deadbeef");
     }
+
 
     @Test
     @MongoDBFixtures("UserServiceImplTest.json")
@@ -158,10 +162,21 @@ public class UserServiceImplTest {
         assertThat(users.get(0).getEmail()).isEmpty();
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = MongoCommandException.class)
     @MongoDBFixtures("UserServiceImplTest.json")
     public void testLoadDuplicateUser() throws Exception {
-        userService.load("user-duplicate");
+        assertThat(userService.loadAll()).hasSize(4);
+        List<User> users = userService.loadAll();
+        User user = userService.create();
+        user.setName("user-duplicate");
+        user.setEmail("user-duplicate@example.com");
+        user.setFullName("User Duplicate");
+        user.setExternal(true);
+        user.setPassword("NO LOGIN");
+        user.setTimeZone(DateTimeZone.UTC);
+        user.setSessionTimeoutMs(-1);
+        user.setPermissions(List.of());
+        userService.save(user);
     }
 
     @Test
@@ -200,14 +215,14 @@ public class UserServiceImplTest {
     @MongoDBFixtures("UserServiceImplTest.json")
     public void testDelete() throws Exception {
         assertThat(userService.delete("user1")).isEqualTo(1);
-        assertThat(userService.delete("user-duplicate")).isEqualTo(2);
+        assertThat(userService.delete("user-duplicate")).isEqualTo(1);
         assertThat(userService.delete("user-does-not-exist")).isEqualTo(0);
     }
 
     @Test
     @MongoDBFixtures("UserServiceImplTest.json")
     public void testLoadAll() throws Exception {
-        assertThat(userService.loadAll()).hasSize(5);
+        assertThat(userService.loadAll()).hasSize(4);
     }
 
     @Test
@@ -222,8 +237,7 @@ public class UserServiceImplTest {
 
         final String id = userService.save(user);
         final Bson query = Filters.eq("_id", new ObjectId(id));
-        @SuppressWarnings("deprecation")
-        final DBObject dbObject = mongoConnection.getMongoDatabase().getCollection(UserImpl.COLLECTION_NAME, BasicDBObject.class).find(query).first();
+        @SuppressWarnings("deprecation") final DBObject dbObject = mongoConnection.getMongoDatabase().getCollection(UserImpl.COLLECTION_NAME, BasicDBObject.class).find(query).first();
         assertThat(dbObject.get("username")).isEqualTo("test");
         assertThat(dbObject.get("full_name")).isEqualTo("TEST");
         assertThat(dbObject.get("email")).isEqualTo("test@example.com");
@@ -241,7 +255,7 @@ public class UserServiceImplTest {
     @Test
     @MongoDBFixtures("UserServiceImplTest.json")
     public void testCount() throws Exception {
-        assertThat(userService.count()).isEqualTo(5L);
+        assertThat(userService.count()).isEqualTo(4L);
     }
 
     public static class UserImplFactory implements UserImpl.Factory {

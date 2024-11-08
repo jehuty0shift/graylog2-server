@@ -61,12 +61,12 @@ public class AuthServiceAuthenticator {
         return authenticate(authCredentials, authServiceConfig.getDefaultBackend());
     }
 
-    private AuthServiceResult authenticate(AuthServiceCredentials authCredentials, AuthServiceBackend backend) {
+    public AuthServiceResult authenticate(AuthServiceCredentials authCredentials, AuthServiceBackend backend) {
         final Optional<UserDetails> userDetails = backend.authenticateAndProvision(authCredentials, provisionerService);
 
         if (userDetails.isPresent()) {
             return AuthServiceResult.builder()
-                    .username(authCredentials.username())
+                    .username(userDetails.get().username())
                     .userProfileId(userDetails.get().databaseId().get())
                     .backendType(backend.backendType())
                     .backendId(backend.backendId())

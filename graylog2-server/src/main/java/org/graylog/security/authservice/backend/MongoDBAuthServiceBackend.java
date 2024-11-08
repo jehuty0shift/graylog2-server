@@ -80,15 +80,17 @@ public class MongoDBAuthServiceBackend implements AuthServiceBackend {
             LOG.warn("Account for user <{}> is disabled.", user.getName());
             return Optional.empty();
         }
-        if (user.isExternalUser()) {
-            // We don't store passwords for users synced from an authentication service, so we can't handle them here.
-            LOG.trace("Skipping mongodb-based password check for external user {}", authCredentials.username());
-            return Optional.empty();
-        }
 
         LOG.debug("fSU: {}, username: {}/{}", forceSSOUsers, username, user.getName());
 
         if (!authCredentials.isAuthenticated()) {
+
+            if (user.isExternalUser()) {
+                // We don't store passwords for users synced from an authentication service, so we can't handle them here.
+                LOG.trace("Skipping mongodb-based password check for external user {}", authCredentials.username());
+                return Optional.empty();
+            }
+
             if (forceSSOUsers.contains(user.getName())) {
                 LOG.warn("trying to authenticate user <{}>, present in force_sso_users list, denying", username);
                 return Optional.empty();

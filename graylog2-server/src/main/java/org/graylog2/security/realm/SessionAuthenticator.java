@@ -23,9 +23,9 @@ import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.session.Session;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
-import org.graylog2.plugin.database.users.User;
 import org.graylog2.shared.security.SessionIdToken;
 import org.graylog2.shared.security.ShiroRequestHeadersBinder;
 import org.graylog2.shared.users.UserService;
@@ -54,16 +54,18 @@ public class SessionAuthenticator extends AuthenticatingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         SessionIdToken sessionIdToken = (SessionIdToken) token;
-        final Subject subject = new Subject.Builder().sessionId(sessionIdToken.getSessionId()).buildSubject();
-        final Session session = subject.getSession(false);
+        SessionIdHolder holder = new SessionIdHolder(sessionIdToken.getSessionId());
+
+        final Subject tempSubject = new Subject.Builder().sessionId(sessionIdToken.getSessionId()).buildSubject();
+        final Session session = tempSubject.getSession(false);
         if (session == null) {
             LOG.debug("Invalid session. Either it has expired or did not exist.");
             return null;
         }
 
-        final Object userId = subject.getPrincipal();
-        final User user = userService.loadById(String.valueOf(userId));
-        if (user == null) {
+        final Object userId = tempSubject.getPrincipal();
+
+        if (!userService.userExists(String.valueOf(userId))) {
             LOG.debug("No user with userId {} found for this session", userId);
             return null;
         }
@@ -78,8 +80,16 @@ public class SessionAuthenticator extends AuthenticatingRealm {
         } else {
             session.touch();
         }
-        ThreadContext.bind(subject);
 
-        return new SimpleAccount(user.getId(), null, "session authenticator");
+        SimplePrincipalCollection principals = new SimplePrincipalCollection();
+        principals.add(userId,NAME);
+        principals.add(holder, SessionIdHolder.SESSION_REALM_KEY);
+
+        final Subject boundSubject = new Subject.Builder().principals(new SimplePrincipalCollection(principals)).sessionId(sessionIdToken.getSessionId()).buildSubject();
+
+        ThreadContext.bind(boundSubject);
+
+        LOG.debug("all principals {}" ,principals);
+        return new SimpleAccount(principals, null,NAME);
     }
 }

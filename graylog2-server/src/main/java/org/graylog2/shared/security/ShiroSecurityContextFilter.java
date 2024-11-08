@@ -104,7 +104,7 @@ public class ShiroSecurityContextFilter implements ContainerRequestFilter {
         if (LOG.isDebugEnabled()) {
             LOG.debug("mustAudit {}", mustAudit);
             if(!mustAudit) {
-                LOG.debug("must Audt False, no audit key {}",noAuditAuthKey.orElse("nothing").substring(0,7));
+                LOG.debug("must Audit False, no audit key {}",noAuditAuthKey.orElse("nothing").substring(0,7));
             }
             LOG.debug("has Annotation method; {}", Optional.ofNullable(resourceInfo.getResourceMethod()).map(m -> m.getAnnotation(NoAuditAuthAllowed.class) != null).orElse(Boolean.FALSE));
             LOG.debug("no audit key: {}", extendedUriInfo.getQueryParameters().getOrDefault(Util.NO_AUDIT_URI_PARAM, Collections.emptyList()));
@@ -167,7 +167,7 @@ public class ShiroSecurityContextFilter implements ContainerRequestFilter {
             authToken = new AccessTokenAuthToken(userName, host, mustAudit);
         } else if ("token".equalsIgnoreCase(userName)) {
             authToken = new AccessTokenAuthToken(credential, host, mustAudit);
-        }else if (userName == null) { // without a username we default to using the header environment as potentially containing tokens used by plugins
+        } else if (userName == null) { // without a username we default to using the header environment as potentially containing tokens used by plugins
             authToken = new HttpHeadersToken(headers, host, remoteAddr, mustAudit);
         } else { // otherwise we use the "standard" username/password combination
             authToken = new AuditableUsernamePasswordToken(userName, credential, host, mustAudit);

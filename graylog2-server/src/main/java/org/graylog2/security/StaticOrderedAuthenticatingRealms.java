@@ -19,11 +19,7 @@ package org.graylog2.security;
 import com.google.common.collect.ImmutableList;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.Realm;
-import org.graylog2.security.realm.AccessTokenAuthenticator;
-import org.graylog2.security.realm.AuthServiceRealm;
-import org.graylog2.security.realm.HTTPHeaderAuthenticationRealm;
-import org.graylog2.security.realm.RootAccountRealm;
-import org.graylog2.security.realm.SessionAuthenticator;
+import org.graylog2.security.realm.*;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -45,6 +41,8 @@ public class StaticOrderedAuthenticatingRealms extends AbstractCollection<Realm>
             SessionAuthenticator.NAME,
             AccessTokenAuthenticator.NAME,
             HTTPHeaderAuthenticationRealm.NAME,
+            HTTPHeaderJWTAuthenticatingRealm.NAME,
+            SessionJWTAuthenticatingRealm.NAME,
             AuthServiceRealm.NAME,
             RootAccountRealm.NAME // Should come last because it's (hopefully) not used that often
     );

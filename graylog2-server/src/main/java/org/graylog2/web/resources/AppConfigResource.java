@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
@@ -65,14 +67,20 @@ public class AppConfigResource {
         }
 
         final URI baseUri = RestTools.buildExternalUri(headers.getRequestHeaders(), httpConfiguration.getHttpExternalUri());
-        final Map<String, Object> model = ImmutableMap.of(
-            "rootTimeZone", configuration.getRootTimeZone(),
-            "serverUri", baseUri.resolve(HttpConfiguration.PATH_API),
-            "appPathPrefix", baseUri.getPath().equals("/")?"":baseUri.getPath(),
-            "customUsername", configuration.getCustomUsername(),
-            "badgeText", configuration.getBadgeText(),
-            "webUIGuideLink", configuration.getWebUIGuideLink(),
-            "webUICommunityLink", configuration.getWebUICommunityLink());
+        final Map<String, Object> model = new HashMap<>();
+        model.put("rootTimeZone", configuration.getRootTimeZone());
+        model.put("serverUri", baseUri.resolve(HttpConfiguration.PATH_API));
+        model.put("appPathPrefix", baseUri.getPath().equals("/") ? "" : baseUri.getPath());
+        model.put("customUsername", configuration.getCustomUsername());
+        model.put("badgeText", configuration.getBadgeText());
+        model.put("webUIGuideLink", configuration.getWebUIGuideLink());
+        model.put("webUICommunityLink", configuration.getWebUICommunityLink());
+        model.put("oidcDefaultProvider", configuration.getOidcDefaultProvider());
+        model.put("oidcProviders", configuration.getOidcProviders());
+        model.put("oidcProvidersDisplayName", (configuration.getOidcProvidersDisplayName() != null && !configuration.getOidcProvidersDisplayName().isEmpty()) ? configuration.getOidcProvidersDisplayName() : configuration.getOidcProviders());
+        model.put("oidcClientIds", configuration.getOidcClientIds());
+        model.put("oidcConnectUrls", configuration.getOidcConnectUrls());
+        model.put("httpExternalUri", httpConfiguration.getHttpPublishUri());
 
         return templateEngine.transform(template, model);
     }

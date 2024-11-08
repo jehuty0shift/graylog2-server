@@ -10,6 +10,7 @@ import authStyles from 'theme/styles/authStyles';
 import CombinedProvider from 'injection/CombinedProvider';
 
 import LoadingPage from './LoadingPage';
+import LoginSelector from "../components/login/LoginSelector";
 
 const { SessionActions } = CombinedProvider.get('Session');
 
@@ -59,8 +60,9 @@ const LoginPage = () => {
         onErrorChange: setLastError,
       });
     }
+    console.log("components " + loginComponent.toString());
+    return <LoginSelector onErrorChange={setLastError} />;
 
-    return <LoginForm onErrorChange={setLastError} />;
   };
 
   if (!didValidateSession) {
