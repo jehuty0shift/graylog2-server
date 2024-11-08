@@ -39,6 +39,7 @@ import org.graylog2.security.SafeClassesProvider;
 import org.graylog2.shared.bindings.providers.ObjectMapperProvider;
 import org.graylog2.shared.plugins.ChainingClassLoader;
 import org.graylog2.streams.StreamService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -269,6 +270,7 @@ public class MongoIndexSetServiceTest {
                 false
         );
 
+
         final IndexSetConfig savedIndexSetConfig = indexSetService.save(indexSetConfig);
 
         final Optional<IndexSetConfig> retrievedIndexSetConfig = indexSetService.get(savedIndexSetConfig.id());
@@ -278,6 +280,69 @@ public class MongoIndexSetServiceTest {
         assertThat(subscriber.getEvents())
                 .hasSize(1)
                 .containsExactly(IndexSetCreatedEvent.create(savedIndexSetConfig));
+    }
+
+
+    @Test
+    public void modify() throws Exception {
+        final IndexSetCreatedSubscriber subscriber = new IndexSetCreatedSubscriber();
+        clusterEventBus.registerClusterEventSubscriber(subscriber);
+        final IndexSetConfig indexSetConfig = IndexSetConfig.create(
+                "Test 3",
+                null,
+                true,
+                "test_3",
+                10,
+                0,
+                MessageCountRotationStrategy.class.getCanonicalName(),
+                MessageCountRotationStrategyConfig.create(10000),
+                NoopRetentionStrategy.class.getCanonicalName(),
+                NoopRetentionStrategyConfig.create(5),
+                ZonedDateTime.of(2016, 10, 4, 12, 0, 0, 0, ZoneOffset.UTC),
+                "standard",
+                "index-template",
+                IndexSetConfig.TemplateType.EVENTS,
+                1,
+                false
+        );
+
+
+        final IndexSetConfig savedIndexSetConfig = indexSetService.save(indexSetConfig);
+
+        final Optional<IndexSetConfig> retrievedIndexSetConfig = indexSetService.get(savedIndexSetConfig.id());
+
+        assertThat(retrievedIndexSetConfig)
+                .isPresent()
+                .contains(savedIndexSetConfig);
+        assertThat(subscriber.getEvents())
+                .hasSize(1)
+                .containsExactly(IndexSetCreatedEvent.create(savedIndexSetConfig));
+
+        final IndexSetConfig indexSetConfig2 = IndexSetConfig.create(
+                retrievedIndexSetConfig.get().id(),
+                "Test 3",
+                null,
+                true,
+                "test_3",
+                10,
+                0,
+                MessageCountRotationStrategy.class.getCanonicalName(),
+                MessageCountRotationStrategyConfig.create(10000),
+                NoopRetentionStrategy.class.getCanonicalName(),
+                NoopRetentionStrategyConfig.create(5),
+                ZonedDateTime.of(2016, 10, 4, 12, 0, 0, 0, ZoneOffset.UTC),
+                "standard",
+                "index-template-3",
+                IndexSetConfig.TemplateType.EVENTS,
+                1,
+                false
+        );
+
+        final IndexSetConfig modifiedIndexSetConfig = indexSetService.save(indexSetConfig2);
+
+        Assert.assertEquals(indexSetConfig2.indexTemplateName(), modifiedIndexSetConfig.indexTemplateName());
+
+
     }
 
     @Test

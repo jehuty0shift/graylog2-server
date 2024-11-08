@@ -158,7 +158,12 @@ public class MongoIndexSetService implements IndexSetService {
     @Override
     public IndexSetConfig save(IndexSetConfig indexSetConfig) {
         final UpdateResult writeResult = collection.save(indexSetConfig);
-        final IndexSetConfig savedObject = collection.findOneById(writeResult.getUpsertedId());
+        final IndexSetConfig savedObject;
+        if (indexSetConfig.id() == null && writeResult.getUpsertedId() != null) {
+            savedObject = collection.findOneById(writeResult.getUpsertedId());
+        } else {
+            savedObject = indexSetConfig;
+        }
 
         final IndexSetCreatedEvent createdEvent = IndexSetCreatedEvent.create(savedObject);
         clusterEventBus.post(createdEvent);
