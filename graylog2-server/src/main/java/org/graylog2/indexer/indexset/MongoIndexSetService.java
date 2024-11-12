@@ -36,12 +36,14 @@ import org.graylog2.streams.StreamService;
 import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
+@Singleton
 public class MongoIndexSetService implements IndexSetService {
     private static final String COLLECTION_NAME = "index_sets";
 

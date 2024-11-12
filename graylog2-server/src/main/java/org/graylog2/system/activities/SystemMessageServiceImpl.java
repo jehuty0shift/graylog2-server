@@ -31,11 +31,13 @@ import org.graylog2.database.PersistedServiceImpl;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@Singleton
 public class SystemMessageServiceImpl extends PersistedServiceImpl implements SystemMessageService {
     private static final int PER_PAGE = 30;
     private static final String TIMESTAMP_KEY = "timestamp";

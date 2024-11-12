@@ -33,6 +33,7 @@ import org.graylog2.database.PaginatedList;
 import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,6 +46,8 @@ import java.util.stream.Stream;
  * Indices can be added in the constructor.
  * </p>
  */
+
+@Singleton
 public class SearchDbService {
     protected final JacksonMongoCollection<Search> db;
     private final SearchRequirements.Factory searchRequirementsFactory;

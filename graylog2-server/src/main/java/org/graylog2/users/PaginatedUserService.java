@@ -26,6 +26,7 @@ import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.http.util.TextUtils.isBlank;
 
+@Singleton
 public class PaginatedUserService extends PaginatedDbService<UserOverviewDTO> {
     private static final String COLLECTION_NAME = "users";
 

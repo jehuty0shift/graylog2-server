@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,7 @@ import static org.graylog2.system.processing.ProcessingStatusDto.FIELD_UPDATED_A
 /**
  * Manages the database collection for processing status.
  */
+@Singleton
 public class DBProcessingStatusService {
     public static final String COLLECTION_NAME = "processing_status";
     private static final String FIELD_WRITTEN_MESSAGES_1M = ProcessingStatusDto.FIELD_INPUT_JOURNAL + "." + ProcessingStatusDto.JournalInfo.FIELD_WRITTEN_MESSAGES_1M_RATE;
@@ -83,7 +85,7 @@ public class DBProcessingStatusService {
         this.updateThreshold = updateThreshold;
         this.journalWriteRateThreshold = ((Number) journalWriteRateThreshold).doubleValue();
         this.inputService = inputService;
-        this.inputNodeSet = inputService.all().stream().map(i -> i.isGlobal()?nodeId.toString():i.getNodeId()).collect(Collectors.toSet());
+        this.inputNodeSet = Collections.synchronizedSet(inputService.all().stream().map(i -> i.isGlobal()?nodeId.toString():i.getNodeId()).collect(Collectors.toSet()));
         this.baseConfiguration = baseConfiguration;
         this.db = JacksonMongoCollection.builder().withObjectMapper(mapper.get()).build(mongoConnection.getMongoDatabase(),COLLECTION_NAME, ProcessingStatusDto.class, UuidRepresentation.STANDARD);
 

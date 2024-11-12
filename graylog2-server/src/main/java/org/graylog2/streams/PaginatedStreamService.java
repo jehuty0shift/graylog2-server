@@ -24,8 +24,10 @@ import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.function.Predicate;
 
+@Singleton
 public class PaginatedStreamService extends PaginatedDbService<StreamDTO> {
     private static final String COLLECTION_NAME = "streams";
 

@@ -25,8 +25,10 @@ import org.graylog2.plugin.database.users.User;
 import org.graylog2.search.SearchQuery;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.function.Predicate;
 
+@Singleton
 public class DBNotificationService extends PaginatedDbService<NotificationDto> {
     private static final String NOTIFICATION_COLLECTION_NAME = "event_notifications";
 

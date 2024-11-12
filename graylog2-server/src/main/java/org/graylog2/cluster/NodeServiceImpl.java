@@ -29,10 +29,12 @@ import org.graylog2.plugin.database.ValidationException;
 import org.graylog2.plugin.system.NodeId;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Singleton
 public class NodeServiceImpl extends PersistedServiceImpl implements NodeService {
     private final long pingTimeout;
 

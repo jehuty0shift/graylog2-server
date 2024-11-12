@@ -32,12 +32,14 @@ import org.graylog2.streams.StreamService;
 import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Manages the "index_field_types" MongoDB collection.
  */
+@Singleton
 public class IndexFieldTypesService {
     private static final String FIELDS_FIELD_NAMES = String.format(Locale.US, "%s.%s", IndexFieldTypesDTO.FIELD_FIELDS, FieldTypeDTO.FIELD_NAME);
 

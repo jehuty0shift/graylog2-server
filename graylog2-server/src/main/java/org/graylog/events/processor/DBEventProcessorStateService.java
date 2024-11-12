@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,6 +50,7 @@ import static org.graylog.events.processor.EventProcessorStateDto.*;
  */
 // This class does NOT use PaginatedDbService because we don't want to allow overwriting records via "save()"
 // and other methods.
+@Singleton
 public class DBEventProcessorStateService {
     private static final Logger LOG = LoggerFactory.getLogger(DBEventProcessorStateService.class);
     private static final String COLLECTION_NAME = "event_processor_state";

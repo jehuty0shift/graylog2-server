@@ -28,10 +28,12 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Singleton
 public class ImportService extends PaginatedDbService<CollectorUpload> {
     private static final String COLLECTION_NAME = "collector_uploads";
 

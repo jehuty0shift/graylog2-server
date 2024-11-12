@@ -39,9 +39,11 @@ import org.graylog2.streams.events.StreamsChangedEvent;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Singleton
 public class StreamRuleServiceImpl extends PersistedServiceImpl implements StreamRuleService {
     private final ClusterEventBus clusterEventBus;
 

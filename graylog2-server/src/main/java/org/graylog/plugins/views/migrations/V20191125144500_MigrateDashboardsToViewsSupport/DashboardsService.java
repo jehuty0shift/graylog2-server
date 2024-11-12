@@ -24,8 +24,10 @@ import org.graylog2.database.MongoConnection;
 import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.stream.Stream;
 
+@Singleton
 class DashboardsService {
     private static final String COLLECTION_NAME = "dashboards";
     private final JacksonMongoCollection<Dashboard> db;

@@ -35,6 +35,7 @@ import org.joda.time.DateTime;
 import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ import static java.util.Objects.requireNonNull;
 
 // This class does NOT use PaginatedDbService because we use the triggers collection for locking and need to handle
 // updates very carefully.
+@Singleton
 public class DBJobTriggerService {
     static final String COLLECTION_NAME = "scheduler_triggers";
     private static final String FIELD_ID = "_id";

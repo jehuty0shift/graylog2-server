@@ -27,6 +27,7 @@ import org.graylog2.database.PaginatedList;
 import org.graylog2.rest.PaginationParameters;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -35,6 +36,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+@Singleton
 public class DBAuthServiceBackendService extends PaginatedDbService<AuthServiceBackendDTO> {
     private final Map<String, AuthServiceBackend.Factory<? extends AuthServiceBackend>> backendFactories;
     private final EventBus eventBus;

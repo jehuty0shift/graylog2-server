@@ -33,6 +33,7 @@ import org.graylog2.plugin.database.users.User;
 import org.graylog2.search.SearchQuery;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -42,6 +43,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+@Singleton
 public class ViewService extends PaginatedDbService<ViewDTO> {
     private static final String COLLECTION_NAME = "views";
 
