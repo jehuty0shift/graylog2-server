@@ -27,10 +27,12 @@ import org.graylog2.database.PaginatedDbService;
 import org.joda.time.DateTime;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Singleton
 public class DBNotificationGracePeriodService extends PaginatedDbService<EventNotificationStatus> {
     private static final String NOTIFICATION_STATUS_COLLECTION_NAME = "event_notification_status";
 

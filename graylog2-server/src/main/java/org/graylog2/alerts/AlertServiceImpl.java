@@ -41,11 +41,13 @@ import org.joda.time.Seconds;
 import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+@Singleton
 public class AlertServiceImpl implements AlertService {
     private final JacksonMongoCollection<AlertImpl> coll;
     private final AlertConditionFactory alertConditionFactory;

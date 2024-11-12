@@ -28,10 +28,12 @@ import org.graylog2.database.NotFoundException;
 import org.mongojack.JacksonMongoCollection;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+@Singleton
 public class DecoratorServiceImpl implements DecoratorService {
     private final JacksonMongoCollection<DecoratorImpl> coll;
 

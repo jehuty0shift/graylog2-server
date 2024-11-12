@@ -40,12 +40,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Set;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Singleton
 public class ClusterConfigServiceImpl implements ClusterConfigService {
     private static final Logger LOG = LoggerFactory.getLogger(ClusterConfigServiceImpl.class);
 
@@ -88,7 +90,7 @@ public class ClusterConfigServiceImpl implements ClusterConfigService {
         if (mongoCollection.listIndexes().into(new ArrayList<>()).size() < 2) {
             mongoCollection.createIndex(Sorts.ascending("type"), new IndexOptions().name("unique_type").unique(true).background(true));
         }
-        
+
         return mongoCollection;
     }
 

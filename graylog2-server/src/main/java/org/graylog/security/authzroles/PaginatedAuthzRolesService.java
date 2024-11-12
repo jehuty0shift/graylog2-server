@@ -32,11 +32,13 @@ import org.graylog2.search.SearchQuery;
 import org.graylog2.shared.users.UserService;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@Singleton
 public class PaginatedAuthzRolesService extends PaginatedDbService<AuthzRoleDTO> {
     private static final String COLLECTION_NAME = "roles";
 

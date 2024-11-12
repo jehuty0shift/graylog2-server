@@ -41,11 +41,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+@Singleton
 public class TrafficCounterService {
     private static final Logger LOG = LoggerFactory.getLogger(TrafficCounterService.class);
     private static final String BUCKET = "bucket";

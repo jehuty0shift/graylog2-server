@@ -32,9 +32,11 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 
+@Singleton
 public class FreeEnterpriseService {
     private static final Logger LOG = LoggerFactory.getLogger(FreeEnterpriseService.class);
 

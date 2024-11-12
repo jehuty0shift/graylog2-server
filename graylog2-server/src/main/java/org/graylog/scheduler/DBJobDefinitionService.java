@@ -27,9 +27,11 @@ import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 import java.util.function.Function;
 
+@Singleton
 public class DBJobDefinitionService extends PaginatedDbService<JobDefinitionDto> {
     private static final String COLLECTION_NAME = "scheduler_job_definitions";
 

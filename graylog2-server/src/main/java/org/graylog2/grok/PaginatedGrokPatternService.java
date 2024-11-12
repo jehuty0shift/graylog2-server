@@ -17,6 +17,7 @@
 package org.graylog2.grok;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.bson.conversions.Bson;
 import org.graylog2.bindings.providers.MongoJackObjectMapperProvider;
 import org.graylog2.database.MongoConnection;
@@ -24,6 +25,7 @@ import org.graylog2.database.PaginatedDbService;
 import org.graylog2.database.PaginatedList;
 import org.graylog2.search.SearchQuery;
 
+@Singleton
 public class PaginatedGrokPatternService extends PaginatedDbService<GrokPattern> {
     private static final String COLLECTION_NAME = "grok_patterns";
 
