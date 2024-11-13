@@ -22,6 +22,7 @@ import org.graylog2.indexer.IndexSet;
 import org.graylog2.indexer.indices.Indices;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 /**
  * This class can be used to poll index field type information for indices in an {@link IndexSet}.
  */
+@Singleton
 public class IndexFieldTypePoller {
     private final Indices indices;
     private final Timer pollTimer;

@@ -35,8 +35,10 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.util.*;
 
+@Singleton
 public class MongoDBAuthServiceBackend implements AuthServiceBackend {
     public static final String NAME = "internal-mongodb";
     private static final Logger LOG = LoggerFactory.getLogger(MongoDBAuthServiceBackend.class);
