@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { List } from 'immutable';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import mockAction from 'helpers/mocking/MockAction';
 import asMock from 'helpers/mocking/AsMock';
 

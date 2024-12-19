@@ -1,6 +1,7 @@
 import React from 'react';
 import Immutable from 'immutable';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 
 import WidgetPosition from 'views/logic/widgets/WidgetPosition';
 import Widget from 'views/components/widgets/Widget';

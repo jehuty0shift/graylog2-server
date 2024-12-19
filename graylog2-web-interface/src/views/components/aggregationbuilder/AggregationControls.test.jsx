@@ -2,6 +2,7 @@
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import { render } from 'wrappedTestingLibrary';
 import { PluginStore } from 'graylog-web-plugin/plugin';
 import asMock from 'helpers/mocking/AsMock';

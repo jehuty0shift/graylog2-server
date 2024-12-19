@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { List, OrderedSet } from 'immutable';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import mockComponent from 'helpers/mocking/MockComponent';
 
 import FieldTypeMapping from 'views/logic/fieldtypes/FieldTypeMapping';

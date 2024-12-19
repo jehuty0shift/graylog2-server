@@ -1,6 +1,7 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 
 import Trend, { TREND_BAD, TREND_GOOD, TREND_NEUTRAL } from './Trend';
 

@@ -1,6 +1,7 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import * as Immutable from 'immutable';
 import mockComponent from 'helpers/mocking/MockComponent';
 import { StoreMock as MockStore } from 'helpers/mocking';

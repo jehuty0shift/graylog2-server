@@ -2,6 +2,7 @@
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 
 import Series from 'views/logic/aggregationbuilder/Series';
 import Pivot from 'views/logic/aggregationbuilder/Pivot';

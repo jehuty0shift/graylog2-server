@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 
 import MeasureDimensions from './MeasureDimensions';
 

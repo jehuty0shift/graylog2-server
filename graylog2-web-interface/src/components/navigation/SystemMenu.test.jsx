@@ -1,6 +1,7 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import { admin } from 'fixtures/users';
 
 import CurrentUserContext from 'contexts/CurrentUserContext';

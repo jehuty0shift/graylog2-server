@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import { simpleFields, simpleQueryFields } from 'fixtures/fields';
 
 import FieldTypesContext from 'views/components/contexts/FieldTypesContext';

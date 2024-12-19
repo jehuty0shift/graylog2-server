@@ -1,6 +1,7 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import * as Immutable from 'immutable';
 import { simpleFields, simpleQueryFields } from 'fixtures/fields';
 import suppressConsole from 'helpers/suppressConsole';

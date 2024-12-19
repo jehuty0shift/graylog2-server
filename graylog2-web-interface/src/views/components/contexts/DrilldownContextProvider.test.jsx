@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useContext } from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import { StoreMock as mockStore, asMock } from 'helpers/mocking';
 
 import View from 'views/logic/views/View';

@@ -1,6 +1,7 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 
 import type { ColorRule } from 'views/stores/ChartColorRulesStore';
 import { ChartColorRulesActions } from 'views/stores/ChartColorRulesStore';

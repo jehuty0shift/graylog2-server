@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import PropTypes from 'prop-types';
 import { StoreMock as MockStore } from 'helpers/mocking';
 

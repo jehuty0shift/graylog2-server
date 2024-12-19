@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import { PluginStore } from 'graylog-web-plugin/plugin';
 import mockComponent from 'helpers/mocking/MockComponent';
 import { viewsManager } from 'fixtures/users';

@@ -1,6 +1,7 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import mockAction from 'helpers/mocking/MockAction';
 
 import { QueriesActions } from 'views/stores/QueriesStore';

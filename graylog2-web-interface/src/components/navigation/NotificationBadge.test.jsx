@@ -1,5 +1,6 @@
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import { CombinedProviderMock, StoreMock } from 'helpers/mocking';
 
 jest.mock('stores/connect', () => (x) => x);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
+import { render, screen } from '@testing-library/react';
 import mockComponent from 'helpers/mocking/MockComponent';
 
 import DataAdapterCreate from './DataAdapterCreate';
