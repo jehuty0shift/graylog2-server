@@ -1,7 +1,6 @@
 // @flow strict
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 
 import { AdditionalContext } from 'views/logic/ActionContext';
 

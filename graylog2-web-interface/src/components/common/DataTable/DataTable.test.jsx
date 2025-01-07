@@ -1,6 +1,5 @@
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import { cloneDeep } from 'lodash';
 
 import DataTable from 'components/common/DataTable';

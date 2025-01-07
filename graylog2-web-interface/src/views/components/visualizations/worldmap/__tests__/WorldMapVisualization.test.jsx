@@ -2,7 +2,6 @@
 import * as React from 'react';
 import * as Immutable from 'immutable';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 
 import AggregationWidgetConfig from 'views/logic/aggregationbuilder/AggregationWidgetConfig';
 import Viewport from 'views/logic/aggregationbuilder/visualizations/Viewport';

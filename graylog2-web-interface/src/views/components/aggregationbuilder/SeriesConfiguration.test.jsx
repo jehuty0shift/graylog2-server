@@ -1,6 +1,5 @@
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 
 import Series from 'views/logic/aggregationbuilder/Series';
 import SeriesConfig from 'views/logic/aggregationbuilder/SeriesConfig';

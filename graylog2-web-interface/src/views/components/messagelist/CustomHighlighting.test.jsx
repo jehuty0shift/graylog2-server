@@ -1,7 +1,6 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 
 import HighlightingRulesContext from 'views/components/contexts/HighlightingRulesContext';
 import HighlightingRule from 'views/logic/views/formatting/highlighting/HighlightingRule';

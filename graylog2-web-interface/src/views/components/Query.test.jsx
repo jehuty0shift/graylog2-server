@@ -1,6 +1,5 @@
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import Immutable from 'immutable';
 import mockComponent from 'helpers/mocking/MockComponent';
 

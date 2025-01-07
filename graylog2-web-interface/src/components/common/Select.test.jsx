@@ -1,6 +1,5 @@
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import SelectComponent, { components as Components } from 'react-select';
 
 import Select from './Select';

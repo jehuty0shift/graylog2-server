@@ -2,7 +2,6 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import Reflux from 'reflux';
 import PropTypes from 'prop-types';
 import { Map, List } from 'immutable';

@@ -1,7 +1,6 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import { StoreMock as MockStore } from 'helpers/mocking';
 import asMock from 'helpers/mocking/AsMock';
 import mockComponent from 'helpers/mocking/MockComponent';

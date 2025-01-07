@@ -1,7 +1,6 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import { List } from 'immutable';
 
 import FieldTypeMapping from 'views/logic/fieldtypes/FieldTypeMapping';

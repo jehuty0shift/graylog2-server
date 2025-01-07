@@ -1,6 +1,5 @@
 import React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import ClipboardJS from 'clipboard';
 
 import ClipboardButton from './ClipboardButton';

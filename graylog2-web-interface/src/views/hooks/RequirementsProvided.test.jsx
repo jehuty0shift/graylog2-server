@@ -1,7 +1,6 @@
 // @flow strict
 import * as React from 'react';
 import { mount } from 'wrappedEnzyme';
-import { render, screen } from '@testing-library/react';
 import { PluginStore } from 'graylog-web-plugin/plugin';
 
 import type { PluginMetadata } from 'views/logic/views/View';
