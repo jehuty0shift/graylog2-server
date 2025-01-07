@@ -3,7 +3,7 @@ window.appConfig = {
   gl2AppPathPrefix: '',
   rootTimeZone: 'Europe/Berlin',
   customUsername: 'Username',
-  badgeText: 'BHS30',
+  badgeText: 'BHS1-DEV',
   webUIGuideLink: 'https://docs.ovh.com/gb/en/logs-data-platform/',
   webUICommunityLink: 'https://community.ovh.com/c/platform/data-platforms',
 };

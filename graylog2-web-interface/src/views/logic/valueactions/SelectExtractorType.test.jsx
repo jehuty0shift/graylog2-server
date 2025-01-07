@@ -1,7 +1,6 @@
 // @flow strict
 import * as React from 'react';
-import { mount } from 'wrappedEnzyme';
-
+import { render, screen } from '@testing-library/react';
 import { AdditionalContext } from 'views/logic/ActionContext';
 
 import SelectExtractorType from './SelectExtractorType';
@@ -26,7 +25,7 @@ describe('SelectExtractorType', () => {
   };
 
   it('should render', () => {
-    const wrapper = mount(
+    render(
       <AdditionalContext.Provider key="message-key" value={{ message }}>
         <SelectExtractorType onClose={() => {}} value={value} field={field} queryId="foo" type={FieldType.Unknown} />
       </AdditionalContext.Provider>,
@@ -37,24 +36,34 @@ describe('SelectExtractorType', () => {
     expect(bootstrapModalForm).toHaveProp('show', true);
   });
 
-  it('should select a extractor and open a new window', () => {
-    const wrapper = mount(
-      <AdditionalContext.Provider key="message-key" value={{ message }}>
-        <SelectExtractorType onClose={() => {}} value={value} field={field} queryId="foo" type={FieldType.Unknown} />
-      </AdditionalContext.Provider>,
+  it('should select a extractor and open a new window', async () => {
+    render(
+      <AdditionalContext.Provider value={{ message }}>
+        <SelectExtractorType
+          onClose={() => {}}
+          value={value}
+          field={field}
+          queryId="foo"
+          type={FieldType.Unknown}
+        />
+      </AdditionalContext.Provider>
     );
-    const select = wrapper.find('Select');
-    const { onChange } = select.at(0).props();
 
-    const form = wrapper.find('form');
+    // Find the select element by its placeholder text
+    const select = screen.getByPlaceholderText('Select extractor type');
 
-    expect(select).toExist();
-    expect(select.at(0)).toHaveProp('placeholder', 'Select extractor type');
+    // Simulate user selecting an option
+    await userEvent.selectOptions(select, 'grok');
 
-    onChange('grok');
-    form.simulate('submit');
+    // Find the form element
+    const form = screen.getByRole('form');
 
+    // Submit the form
+    fireEvent.submit(form);
+
+    // Assert that window.open was called
     expect(window.open).toHaveBeenCalled();
-    expect(focus).toHaveBeenCalled();
+    // Assert that focus was called on the new window
+    expect(window.open().focus).toHaveBeenCalled();
   });
 });

@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled, { withTheme } from 'styled-components';
-import d3 from 'd3';
 
 import { Label } from 'components/graylog';
 
@@ -16,17 +15,15 @@ const ColorLabelWrap = styled.span(({ size, theme }) => {
 });
 
 const ColorLabel = ({ color, size, text, theme }) => {
-  const backgroundColor = d3.hsl(color);
-  const borderColor = backgroundColor.darker();
-  // Use dark font on brighter backgrounds and light font in darker backgrounds
-  const textColor = backgroundColor.l > 0.6 ? d3.rgb(theme.colors.global.textDefault) : d3.rgb(theme.colors.global.textAlt);
+  const borderColor = theme.utils.colorLevel(color, 5); //backgroundColor.darker();
+  const textColor = theme.utils.contrastingColor(color);
 
   return (
     <ColorLabelWrap size={size}>
       <Label style={{
-        backgroundColor: backgroundColor.toString(),
-        border: `1px solid ${borderColor.toString()}`,
-        color: textColor.toString(),
+        backgroundColor: color,
+        border: `1px solid ${borderColor}`,
+        color: textColor,
       }}>
         {text}
       </Label>

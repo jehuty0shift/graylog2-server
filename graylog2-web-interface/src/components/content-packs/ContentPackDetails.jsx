@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import marked from 'marked';
+import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
 import { Col, Row, Well } from 'components/graylog';
@@ -13,7 +13,7 @@ import { hasAcceptedProtocol } from 'util/URLUtils';
 
 const ContentPackDetails = (props) => {
   const { contentPack, offset, verbose, constraints, showConstraints } = props;
-  const markdownDescription = DOMPurify.sanitize(marked(contentPack.description || ''));
+  const markdownDescription = DOMPurify.sanitize(marked.parse(contentPack.description || ''));
   let contentPackAnchor = contentPack.url;
 
   try {
