@@ -20,7 +20,7 @@ type Props = {
   viewMetadata: ViewMetadata,
 };
 
-export const Container: StyledComponent<{ sidebarIsPinned: boolean }, ThemeInterface, HTMLDivElement> = styled.div(({ theme, sidebarIsPinned }) => css`
+export const Container: StyledComponent<{ sidebarIsPinned: boolean }, ThemeInterface, HTMLDivElement> = styled.div.withConfig({shouldForwardProp: (prop) => !['sidebarIsPinned'].includes(prop)})(({ theme, sidebarIsPinned }) => css`
   position: ${sidebarIsPinned ? 'relative' : 'fixed'};
   width: 270px;
   height:  ${sidebarIsPinned ? '100%' : 'calc(100% - 50px)'}; // subtract the nav height

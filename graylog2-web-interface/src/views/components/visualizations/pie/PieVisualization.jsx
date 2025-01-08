@@ -65,11 +65,16 @@ const setChartColor = (chart, colorMap) => {
   return { marker: { colors } };
 };
 
-const PieVisualization: VisualizationComponent = makeVisualization(({ config, data }: VisualizationComponentProps) => (
-  <GenericPlot chartData={chartData(config, data.chart || Object.values(data)[0], 'pie', _generateSeries)}
+const PieVisualization: VisualizationComponent = makeVisualization(({ config, data }: VisualizationComponentProps) => {
+  const newChartData = chartData(config, data.chart || Object.values(data)[0], 'pie', _generateSeries).map((chart) => {
+      chart.hovertemplate= '<b>%{label}:</b> %{value}<br>'+
+                                '%{percent}<extra></extra>'
+    return chart;
+  })
+  return (<GenericPlot chartData={newChartData}
                getChartColor={getChartColor}
-               setChartColor={setChartColor} />
-), 'pie');
+               setChartColor={setChartColor} />)
+}, 'pie');
 
 PieVisualization.propTypes = {
   config: AggregationType.isRequired,

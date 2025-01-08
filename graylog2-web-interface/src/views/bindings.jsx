@@ -47,6 +47,7 @@ import WorldMapVisualizationConfig from 'views/logic/aggregationbuilder/visualiz
 import BarVisualizationConfig from 'views/logic/aggregationbuilder/visualizations/BarVisualizationConfig';
 import ShowDocumentsHandler from 'views/logic/valueactions/ShowDocumentsHandler';
 import HighlightValueHandler from 'views/logic/valueactions/HighlightValueHandler';
+import CopyValueHandler from 'views/logic/valueactions/CopyValueHandler';
 import FieldNameCompletion from 'views/components/searchbar/completions/FieldNameCompletion';
 import OperatorCompletion from 'views/components/searchbar/completions/OperatorCompletion';
 import requirementsProvided from 'views/hooks/RequirementsProvided';
@@ -253,6 +254,12 @@ export default {
       handler: HighlightValueHandler,
       isEnabled: HighlightValueHandler.isEnabled,
     },
+    {
+      type: 'copy-value',
+      title: 'Copy Value',
+      handler: CopyValueHandler,
+      isEnabled: CopyValueHandler.isEnabled,
+    }
   ],
   visualizationTypes: [
     {

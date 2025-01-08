@@ -31,6 +31,14 @@ const webpackConfig = {
     library: '__[name]',
   },
   plugins: [
+
+    ...(process.env.NODE_ENV === 'development'
+      ? [
+          new webpack.DefinePlugin({
+            '__REACT_DEVTOOLS_GLOBAL_HOOK__': '({ isEnabled: true, renderers: new Map() })',
+          }),
+        ]
+      : []),
     new webpack.DllPlugin({
       path: path.resolve(MANIFESTS_PATH, '[name]-manifest.json'),
       name: '__[name]',
@@ -70,6 +78,8 @@ const webpackConfig = {
     }),
   ],
   recordsPath: path.resolve(ROOT_PATH, 'webpack/vendor-module-ids.json'),
+  devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false, // Useful for debugging in dev
+
 };
 
 

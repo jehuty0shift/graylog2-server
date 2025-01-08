@@ -16,7 +16,7 @@ type Props = {
   toggleSidebar: () => void,
 };
 
-const Container: StyledComponent<{isOpen: boolean, sidebarIsPinned: boolean}, ThemeInterface, HTMLDivElement> = styled.div(({ isOpen, sidebarIsPinned, theme }) => css`
+const Container: StyledComponent<{isOpen: boolean, sidebarIsPinned: boolean}, ThemeInterface, HTMLDivElement> = styled.div.withConfig({shouldForwardProp: (prop) => !['isOpen','sidebarIsPinned'].includes(prop)})(({ isOpen, sidebarIsPinned, theme }) => css`
   background: ${theme.colors.global.navigationBackground};
   color: ${theme.utils.contrastingColor(theme.colors.global.navigationBackground, 'AA')};
   box-shadow: ${(sidebarIsPinned && isOpen) ? 'none' : `3px 3px 3px ${theme.colors.global.navigationBoxShadow}`};
@@ -25,7 +25,7 @@ const Container: StyledComponent<{isOpen: boolean, sidebarIsPinned: boolean}, Th
   position:relative;
   z-index: 1031;
 
-  ::before {
+  &::before {
     content: '';
     position: absolute;
     top: 0px;
@@ -43,7 +43,7 @@ const SectionList = styled.div`
   > * {
     margin-bottom: 5px;
 
-    :last-child {
+    &:last-child {
       margin-bottom: 0;
     }
   }

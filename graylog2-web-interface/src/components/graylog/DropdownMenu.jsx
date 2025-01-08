@@ -11,10 +11,10 @@ type Props = {
   show: boolean,
 };
 
-const StyledDropdownMenu: StyledComponent<{show: boolean}, ThemeInterface, HTMLUListElement> = styled.ul.attrs(() => ({
+const StyledDropdownMenu: StyledComponent<{$show: boolean}, ThemeInterface, HTMLUListElement> = styled.ul.attrs(() => ({
   className: 'dropdown-menu', /* stylelint-disable-line property-no-unknown */
-}))(({ show, theme }) => css`
-  display: ${show ? 'block' : 'none'};
+}))(({ $show, theme }) => css`
+  display: ${$show ? 'block' : 'none'};
   min-width: max-content;
   color: ${theme.colors.variant.dark.default};
   background-color: ${theme.colors.variant.lightest.default};
@@ -46,7 +46,7 @@ const StyledDropdownMenu: StyledComponent<{show: boolean}, ThemeInterface, HTMLU
 
 const DropdownMenu = ({ show, children, ...restProps }: Props) => {
   return (
-    <StyledDropdownMenu {...restProps} show={show}>
+    <StyledDropdownMenu {...restProps} $show={show.toString()}>
       {children}
     </StyledDropdownMenu>
   );
