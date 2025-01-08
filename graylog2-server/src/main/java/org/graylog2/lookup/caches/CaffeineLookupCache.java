@@ -270,7 +270,8 @@ public class CaffeineLookupCache extends LookupCache {
         public void recordLoadFailure(long loadTime) {}
 
         @Override
-        public void recordEviction(@NonNegative int i, RemovalCause removalCause) {}
+        // This method need params in version 3.0.0
+        public void recordEviction(@NonNegative int weight, RemovalCause removalCause) {}
 
         @Override
         public @NonNull CacheStats snapshot() {
