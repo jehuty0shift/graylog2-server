@@ -25,11 +25,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import com.github.benmanes.caffeine.cache.stats.StatsCounter;
 import com.google.auto.value.AutoValue;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.graylog.autovalue.WithBeanGetter;
 import org.graylog2.plugin.lookup.LookupCache;
@@ -268,7 +270,7 @@ public class CaffeineLookupCache extends LookupCache {
         public void recordLoadFailure(long loadTime) {}
 
         @Override
-        public void recordEviction() {}
+        public void recordEviction(@NonNegative int i, RemovalCause removalCause) {}
 
         @Override
         public @NonNull CacheStats snapshot() {
