@@ -1,5 +1,3 @@
-import type { ActionHandlerCondition } from 'views/components/actions/ActionHandler';
-
 import type { ValueActionHandler } from './ValueActionHandler';
 
 const CopyValueHandler: ValueActionHandler = ({value}) => {
