@@ -60,7 +60,7 @@ const XYPlot = ({
 }: Props) => {
   const currentUser = useContext(CurrentUserContext);
   const timezone = currentUser?.timezone ?? AppConfig.rootTimeZone();
-  const yaxis = { fixedrange: true, rangemode: 'tozero', tickformat: ',~g' };
+  const yaxis = { fixedrange: true, rangemode: 'tozero', tickformat: ',~r' };
   const defaultLayout: {
     yaxis: { fixedrange?: boolean},
     legend?: {y?: number},
