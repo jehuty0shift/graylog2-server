@@ -86,7 +86,7 @@ describe('XYPlot', () => {
     const genericPlot = wrapper.find('GenericPlot');
 
     expect(genericPlot).toHaveProp('layout', {
-      yaxis: { fixedrange: true, rangemode: 'tozero', tickformat: ',g' },
+      yaxis: { fixedrange: true, rangemode: 'tozero', tickformat: ',~g' },
       xaxis: { fixedrange: true },
     });
 

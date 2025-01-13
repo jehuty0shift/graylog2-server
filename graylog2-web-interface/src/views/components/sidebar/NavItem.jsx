@@ -45,7 +45,7 @@ const Title: StyledComponent<{}, ThemeInterface, HTMLDivElement> = styled.div(({
   }
 `);
 
-const IconWrap: StyledComponent<{}, ThemeInterface, HTMLSpanElement> = styled.span`
+const IconWrap: StyledComponent<{}, ThemeInterface, HTMLSpanElement> = styled.span(() => css`
   display: flex;
   width: 100%;
   height: 100%;
@@ -53,7 +53,8 @@ const IconWrap: StyledComponent<{}, ThemeInterface, HTMLSpanElement> = styled.sp
   justify-content: center;
   position: relative;
 
-  ::after {
+  &::after {
+    display: 'none';
     content: ' ';
     position: absolute;
     left: 82.5%;
@@ -62,9 +63,9 @@ const IconWrap: StyledComponent<{}, ThemeInterface, HTMLSpanElement> = styled.sp
     height: 18px;
     transform: rotate(45deg);
   }
-`;
+`);
 
-const Container: StyledComponent<ContainerProps, ThemeInterface, HTMLDivElement> = styled.div(({ theme, isSelected, showTitleOnHover, sidebarIsPinned }) => css`
+const Container: StyledComponent<ContainerProps, ThemeInterface, HTMLDivElement> = styled.div.withConfig({ shouldForwardProp: (prop) => !['isSelected','showTitleOnHover','sidebarIsPinned'].includes(prop)})(({ theme, isSelected, showTitleOnHover, sidebarIsPinned }) => css`
   position: relative;
   z-index: 4; /* to render over SidebarNav::before */
   width: 100%;
@@ -75,27 +76,31 @@ const Container: StyledComponent<ContainerProps, ThemeInterface, HTMLDivElement>
   color: ${theme.colors.variant.darkest.default};
   background: ${isSelected ? theme.colors.gray[90] : theme.colors.global.contentBackground};
 
-  :hover {
+  &:hover {
     color: ${isSelected ? theme.colors.variant.darkest.default : theme.colors.variant.darker.default};
     background: ${isSelected ? theme.colors.gray[80] : theme.colors.variant.lightest.default};
 
-    ${Title} {
-      display: ${(showTitleOnHover && !isSelected) ? 'flex' : 'none'};
-    }
+  }
 
-    ${IconWrap}::after {
+  &:hover > ${Title} {
+       display: ${(showTitleOnHover && !isSelected) ? 'flex' : 'none'};
+     }
+
+  &:hover > ${IconWrap} {
+    &::after {
       display: ${(showTitleOnHover) ? 'block' : 'none'};
     }
   }
+  
 
-  :active {
+  &:active > span {
     background: ${theme.colors.variant.lighter.default};
   }
   
   /* stylelint-disable indentation, selector-max-empty-lines */
   ${(isSelected && !sidebarIsPinned) && css`
-    ::before,
-    ::after {
+    &::before,
+    &::after {
       content: '';
       position: absolute;
       right: -5px;
@@ -104,12 +109,12 @@ const Container: StyledComponent<ContainerProps, ThemeInterface, HTMLDivElement>
       background-color: ${theme.colors.global.contentBackground};
     }
 
-    ::before {
+    &::before {
       transform: skewY(-45deg);
       top: calc(50% - 12px);
     }
-    
-    ::after {
+
+    &::after {
       transform: skewY(45deg);
       bottom: calc(50% - 12px);
     }
@@ -119,7 +124,7 @@ const Container: StyledComponent<ContainerProps, ThemeInterface, HTMLDivElement>
   ${IconWrap} {
     overflow: hidden;
 
-    ::after {
+    &::after {
       display: ${isSelected ? 'block' : 'none'};
       box-shadow: ${(isSelected && !sidebarIsPinned) ? `inset 2px -2px 2px 0 ${theme.colors.global.navigationBoxShadow}` : 'none'};
       background-color: ${isSelected ? theme.colors.global.contentBackground : theme.colors.variant.lightest.info};

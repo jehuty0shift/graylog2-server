@@ -9,8 +9,8 @@ const ErrorMessage = styled.span(({ theme }) => `
   color: ${theme.colors.variant.danger};
 `);
 
-const HelpMessage = styled.span(({ theme, hasError }) => `
-  color: ${hasError ? theme.colors.gray[50] : 'inherit'};
+const HelpMessage = styled.span(({ theme, $hasError }) => `
+  color: ${$hasError ? theme.colors.gray[50] : 'inherit'};
 `);
 
 type Props = {
@@ -36,7 +36,7 @@ const InputDescription = ({ help, error }: Props) => {
       )}
       {(!!error && !!help) && <br />}
       {help && (
-        <HelpMessage hasError={!!error}>
+        <HelpMessage $hasError={!!error}>
           {help}
         </HelpMessage>
       )}

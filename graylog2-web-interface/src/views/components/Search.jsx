@@ -47,7 +47,7 @@ import HighlightingRulesProvider from 'views/components/contexts/HighlightingRul
 import SearchPageLayoutProvider from 'views/components/contexts/SearchPageLayoutProvider';
 import usePluginEntities from 'views/logic/usePluginEntities';
 
-const GridContainer: StyledComponent<{ interactive: boolean }, void, HTMLDivElement> = styled.div`
+const GridContainer: StyledComponent<{ interactive: boolean }, void, HTMLDivElement> = styled.div.withConfig({shouldForwardProp: (prop) => prop != 'interactive'})`
   ${({ interactive }) => (interactive ? css`
     height: calc(100vh - 50px);
     display: flex;

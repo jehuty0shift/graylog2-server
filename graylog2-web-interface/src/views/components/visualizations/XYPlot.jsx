@@ -60,7 +60,7 @@ const XYPlot = ({
 }: Props) => {
   const currentUser = useContext(CurrentUserContext);
   const timezone = currentUser?.timezone ?? AppConfig.rootTimeZone();
-  const yaxis = { fixedrange: true, rangemode: 'tozero', tickformat: ',g' };
+  const yaxis = { fixedrange: true, rangemode: 'tozero', tickformat: ',~g' };
   const defaultLayout: {
     yaxis: { fixedrange?: boolean},
     legend?: {y?: number},
@@ -93,8 +93,14 @@ const XYPlot = ({
     };
   }
 
+  const newChartData = chartData.map((chart) => {
+    chart.hovertemplate = '<br><b>Value:</b> %{y}</br>' +
+                          '<b>Timestamp:</b> %{x}<extra></extra>'
+    return chart;
+  });
+
   return (
-    <GenericPlot chartData={chartData}
+    <GenericPlot chartData={newChartData}
                  layout={layout}
                  onZoom={_onZoom}
                  getChartColor={getChartColor}

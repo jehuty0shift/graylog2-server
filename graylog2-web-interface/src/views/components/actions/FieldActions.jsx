@@ -32,15 +32,15 @@ type State = {
 };
 
 type FieldElementProps = {
-  active: boolean,
-  disabled: boolean,
+  $active: boolean,
+  $disabled: boolean,
 };
 
 const FieldElement: StyledComponent<FieldElementProps, ThemeInterface, HTMLSpanElement> = styled.span.attrs({
   className: 'field-element',
-})(({ active, disabled, theme }) => css`
-  color: ${active ? theme.colors.variant.info : 'currentColor'};
-  opacity: ${disabled ? '0.3' : '1'};
+})(({ $active, $disabled, theme }) => css`
+  color: ${$active ? theme.colors.variant.info : 'currentColor'};
+  opacity: ${$disabled ? '0.3' : '1'};
 `);
 
 class FieldActions extends React.Component<Props, State> {
@@ -61,7 +61,7 @@ class FieldActions extends React.Component<Props, State> {
     const { children, disabled, element, menuContainer, name, type, queryId } = this.props;
     const { open } = this.state;
 
-    const wrappedElement = <FieldElement active={open} disabled={disabled}>{element}</FieldElement>;
+    const wrappedElement = <FieldElement $active={open} $disabled={disabled}>{element}</FieldElement>;
     const handlerArgs = { queryId, field: name, type, contexts: this.context };
     const fieldActions: Array<ActionDefinition> = PluginStore.exports('fieldActions')
       .filter((action: ActionDefinition) => {
