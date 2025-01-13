@@ -82,6 +82,24 @@ public class GelfCodecTest {
     }
 
     @Test
+    public void decodeDiscardsEmptyKeys() throws Exception {
+        final String json = "{"
+                + "\"version\": \"1.1\","
+                + "\"host\": \"example.org\","
+                + "\"short_message\": \"A short message that helps you identify what is going on\","
+                + "\"\": \"discarded\","
+                + "\"_\": \"discarded again\""
+                + "}";
+
+        final RawMessage rawMessage = new RawMessage(json.getBytes(StandardCharsets.UTF_8));
+        final Message message = codec.decode(rawMessage);
+
+        assertThat(message).isNotNull();
+        assertThat(message.getField("")).isNull();
+        assertThat(message.getField("_")).isNull();
+    }
+
+    @Test
     public void decodeAllowsSettingCustomVersionField() throws Exception {
         final String json = "{"
                 + "\"version\": \"1.1\","
