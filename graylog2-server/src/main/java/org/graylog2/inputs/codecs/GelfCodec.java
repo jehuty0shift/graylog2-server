@@ -230,8 +230,13 @@ public class GelfCodec extends AbstractCodec {
             }
 
             // Don't include GELF syntax underscore in message field key.
-            if (key.startsWith("_") && key.length() > 1) {
+            if (key.startsWith("_")) {
                 key = key.substring(1);
+            }
+
+            // if key contains just ("_"), we discard the content of the value
+            if (key.isEmpty()) {
+                continue;
             }
 
             // We already set short_message and host as message and source. Do not add as fields again.
