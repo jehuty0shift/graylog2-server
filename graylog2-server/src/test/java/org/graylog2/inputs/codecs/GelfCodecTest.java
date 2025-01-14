@@ -88,7 +88,8 @@ public class GelfCodecTest {
                 + "\"host\": \"example.org\","
                 + "\"short_message\": \"A short message that helps you identify what is going on\","
                 + "\"\": \"discarded\","
-                + "\"_\": \"discarded again\""
+                + "\"_\": \"discarded again\","
+                + "\"_  \": \"discarded more\""
                 + "}";
 
         final RawMessage rawMessage = new RawMessage(json.getBytes(StandardCharsets.UTF_8));
@@ -97,6 +98,8 @@ public class GelfCodecTest {
         assertThat(message).isNotNull();
         assertThat(message.getField("")).isNull();
         assertThat(message.getField("_")).isNull();
+        assertThat(message.getField("  ")).isNull();
+        assertThat(message.getField("ovh_warn_empty_field")).isNotNull();
     }
 
     @Test

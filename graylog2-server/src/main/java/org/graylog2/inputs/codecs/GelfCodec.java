@@ -16,7 +16,6 @@
  */
 package org.graylog2.inputs.codecs;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,19 +48,22 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Codec(name = "gelf", displayName = "GELF")
 public class GelfCodec extends AbstractCodec {
     private static final Logger log = LoggerFactory.getLogger(GelfCodec.class);
     private static final String CK_DECOMPRESS_SIZE_LIMIT = "decompress_size_limit";
     private static final int DEFAULT_DECOMPRESS_SIZE_LIMIT = 8388608;
-    private static final String  PREFIX_INVALID_MESSAGE = "GELF message <%s> %s";
+    private static final String PREFIX_INVALID_MESSAGE = "GELF message <%s> %s";
     private static final String MESSAGE_KEY = "short_message";
     private static final String LEVEL_KEY = "level";
     private static final String FACILITY_KEY = "facility";
+    private static final String EMPTY_FIELD_WARNING_KEY = "ovh_warn_empty_field";
+    private static final String EMPTY_FIELD_WARNING_VALUE = "This value has no field: ";
+    private static final String MALFORMED_FIELDS_KEY = "ovh_warn_malformed_field";
+    private static final String MALFORMED_FIELDS_VALUE = "These fields are malformed: ";
 
     private final GelfChunkAggregator aggregator;
     private static final ObjectMapper objectMapper = JsonMapper.builder()
@@ -176,6 +178,8 @@ public class GelfCodec extends AbstractCodec {
 
         validateGELFMessage(node, rawMessage);
 
+        final List<String> malformedFields = new ArrayList<>();
+
         // Timestamp.
         final BigDecimal messageTimestamp = timestampValue(node);
         final Instant timestamp;
@@ -224,6 +228,9 @@ public class GelfCodec extends AbstractCodec {
             final Map.Entry<String, JsonNode> entry = fields.next();
 
             String key = entry.getKey();
+
+            final JsonNode value = entry.getValue();
+
             // Do not index useless GELF "version" field.
             if ("version".equals(key)) {
                 continue;
@@ -232,10 +239,14 @@ public class GelfCodec extends AbstractCodec {
             // Don't include GELF syntax underscore in message field key.
             if (key.startsWith("_")) {
                 key = key.substring(1);
+            } else {
+                // We already set short_message and host as message and source. Do not add as fields again. Also ensure we don't add them as malformed
+                addMalformedIfInvalid(key,malformedFields);
             }
 
-            // if key contains just ("_"), we discard the content of the value
-            if (key.isEmpty()) {
+            // if key contains just "_" or spaces, we discard the content of the value
+            if (key.isBlank()) {
+                message.addField(EMPTY_FIELD_WARNING_KEY, EMPTY_FIELD_WARNING_VALUE + ((value == null || value.isNull()) ? "<NULL>" : value.toString()));
                 continue;
             }
 
@@ -252,9 +263,8 @@ public class GelfCodec extends AbstractCodec {
                 continue;
             }
 
-            // Convert JSON containers to Strings, and pick a suitable number representation.
-            final JsonNode value = entry.getValue();
 
+            // Convert JSON containers to Strings, and pick a suitable number representation.
             final Object fieldValue;
             if (value.isContainerNode()) {
                 fieldValue = value.toString();
@@ -275,8 +285,28 @@ public class GelfCodec extends AbstractCodec {
             message.addField(key, fieldValue);
         }
 
+        if (!malformedFields.isEmpty()) {
+            message.addField(MALFORMED_FIELDS_KEY, MALFORMED_FIELDS_VALUE + malformedFields.stream().collect(Collectors.joining()));
+        }
+
         return message;
     }
+
+    private void addMalformedIfInvalid(final String key, final List<String> malformedFields) {
+        if (MESSAGE_KEY.equals(key) ||
+                "host".equals(key) ||
+                "line".equals(key) ||
+                LEVEL_KEY.equals(key) ||
+                FACILITY_KEY.equals(key) ||
+                Message.FIELD_FULL_MESSAGE.equals(key) ||
+                Message.RESERVED_FIELDS.contains(key) ||
+                Message.RESERVED_SETTABLE_FIELDS.contains(key)
+        ) {
+            return;
+        }
+        malformedFields.add(key);
+    }
+
 
     private String invalidGelfMessageFormat(RawMessage rawMessage) {
         return String.format(Locale.ENGLISH, PREFIX_INVALID_MESSAGE, rawMessage.getId(), (rawMessage.getRemoteAddress() == null ? "" : "(received from <" + rawMessage.getRemoteAddress() + ">) "));
@@ -286,29 +316,24 @@ public class GelfCodec extends AbstractCodec {
 
         final JsonNode hostNode = jsonNode.path("host");
         if (hostNode.isMissingNode()) {
-            if(log.isWarnEnabled()) {
+            if (log.isWarnEnabled()) {
                 log.warn("{}is missing mandatory \"host\" field.", invalidGelfMessageFormat(rawMessage));
             }
         } else {
             if (!hostNode.isTextual()) {
-                throw new IllegalArgumentException(invalidGelfMessageFormat(rawMessage)+ "has invalid \"host\": " + hostNode.asText());
+                throw new IllegalArgumentException(invalidGelfMessageFormat(rawMessage) + "has invalid \"host\": " + hostNode.asText());
             }
             if (StringUtils.isBlank(hostNode.asText())) {
                 throw new IllegalArgumentException(invalidGelfMessageFormat(rawMessage) + "has empty mandatory \"host\" field.");
             }
         }
 
-        final JsonNode shortMessageNode = jsonNode.path("short_message");
+        final JsonNode shortMessageNode = jsonNode.path(MESSAGE_KEY);
         final JsonNode messageNode = jsonNode.path("message");
         if (!shortMessageNode.isMissingNode()) {
             if (!shortMessageNode.isTextual()) {
                 throw new IllegalArgumentException(invalidGelfMessageFormat(rawMessage) + "has invalid \"short_message\": " + shortMessageNode.asText());
             }
-            /*
-            if (StringUtils.isBlank(shortMessageNode.asText()) && StringUtils.isBlank(messageNode.asText())) {
-                throw new IllegalArgumentException(prefix + "has empty mandatory \"short_message\" field.");
-            }
-            */
         } else if (!messageNode.isMissingNode()) {
             if (!messageNode.isTextual()) {
                 throw new IllegalArgumentException(invalidGelfMessageFormat(rawMessage) + "has invalid \"message\": " + messageNode.asText());
