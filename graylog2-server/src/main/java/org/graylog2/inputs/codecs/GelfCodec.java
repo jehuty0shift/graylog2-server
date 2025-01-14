@@ -296,8 +296,8 @@ public class GelfCodec extends AbstractCodec {
         if (MESSAGE_KEY.equals(key) ||
                 "host".equals(key) ||
                 "line".equals(key) ||
-                "level".equals(key) ||
-                "facility".equals(key) ||
+                LEVEL_KEY.equals(key) ||
+                FACILITY_KEY.equals(key) ||
                 Message.FIELD_FULL_MESSAGE.equals(key) ||
                 Message.RESERVED_FIELDS.contains(key) ||
                 Message.RESERVED_SETTABLE_FIELDS.contains(key)
