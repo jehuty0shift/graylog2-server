@@ -61,7 +61,7 @@ public class GelfCodec extends AbstractCodec {
     private static final String LEVEL_KEY = "level";
     private static final String FACILITY_KEY = "facility";
     private static final String EMPTY_FIELD_WARNING_KEY = "ovh_warn_empty_field";
-    private static final String EMPTY_FIELD_WARNING_VALUE = "This value has no field: ";
+    private static final String EMPTY_FIELD_WARNING_VALUE = "These values have no or empty keys: ";
     private static final String MALFORMED_FIELDS_KEY = "ovh_warn_malformed_field";
     private static final String MALFORMED_FIELDS_VALUE = "These fields are malformed: ";
 
@@ -179,6 +179,7 @@ public class GelfCodec extends AbstractCodec {
         validateGELFMessage(node, rawMessage);
 
         final List<String> malformedFields = new ArrayList<>();
+        final List<String> emptyFields = new ArrayList<>();
 
         // Timestamp.
         final BigDecimal messageTimestamp = timestampValue(node);
@@ -246,7 +247,7 @@ public class GelfCodec extends AbstractCodec {
 
             // if key contains just "_" or spaces, we discard the content of the value
             if (key.isBlank()) {
-                message.addField(EMPTY_FIELD_WARNING_KEY, EMPTY_FIELD_WARNING_VALUE + ((value == null || value.isNull()) ? "<NULL>" : value.toString()));
+                emptyFields.add((value == null || value.isNull()) ? "<NULL>" : value.toString());
                 continue;
             }
 
@@ -286,7 +287,11 @@ public class GelfCodec extends AbstractCodec {
         }
 
         if (!malformedFields.isEmpty()) {
-            message.addField(MALFORMED_FIELDS_KEY, MALFORMED_FIELDS_VALUE + malformedFields.stream().collect(Collectors.joining()));
+            message.addField(MALFORMED_FIELDS_KEY, MALFORMED_FIELDS_VALUE + "[".concat(String.join(", ", malformedFields)).concat("]"));
+        }
+
+        if (!emptyFields.isEmpty()) {
+                message.addField(EMPTY_FIELD_WARNING_KEY, EMPTY_FIELD_WARNING_VALUE + "[".concat(String.join(", ", emptyFields)).concat("]"));
         }
 
         return message;
@@ -298,13 +303,16 @@ public class GelfCodec extends AbstractCodec {
                 "line".equals(key) ||
                 LEVEL_KEY.equals(key) ||
                 FACILITY_KEY.equals(key) ||
+                "X-OVH-INPUT".equals(key) || //to remove when fixed in flowgger.
                 Message.FIELD_FULL_MESSAGE.equals(key) ||
                 Message.RESERVED_FIELDS.contains(key) ||
                 Message.RESERVED_SETTABLE_FIELDS.contains(key)
         ) {
             return;
         }
-        malformedFields.add(key);
+        if (!key.isBlank()) {
+            malformedFields.add(key);
+        }
     }
 
 
