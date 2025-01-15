@@ -39,7 +39,6 @@ public abstract class NoopRetentionStrategyConfig implements RetentionStrategyCo
     @JsonProperty("max_number_of_indices")
     public abstract int maxNumberOfIndices();
 
-    @JsonCreator
     public static NoopRetentionStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                      @JsonProperty("max_number_of_indices") @Min(1) int maxNumberOfIndices) {
         return NoopRetentionStrategyConfig.Builder.builder().type(type).maxNumberOfIndices(maxNumberOfIndices).build();

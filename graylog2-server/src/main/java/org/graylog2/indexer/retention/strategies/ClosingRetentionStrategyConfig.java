@@ -38,7 +38,6 @@ public abstract class ClosingRetentionStrategyConfig implements RetentionStrateg
     @JsonProperty("max_number_of_indices")
     public abstract int maxNumberOfIndices();
 
-    @JsonCreator
     public static ClosingRetentionStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                         @JsonProperty("max_number_of_indices") @Min(1) int maxNumberOfIndices) {
         return ClosingRetentionStrategyConfig.Builder.builder().type(type)

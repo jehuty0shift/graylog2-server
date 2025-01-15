@@ -38,7 +38,6 @@ public abstract class SizeBasedRotationStrategyConfig implements RotationStrateg
     @JsonProperty("max_size")
     public abstract long maxSize();
 
-    @JsonCreator
     public static SizeBasedRotationStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                          @JsonProperty("max_size") @Min(1) long maxSize) {
         return SizeBasedRotationStrategyConfig.Builder.builder()

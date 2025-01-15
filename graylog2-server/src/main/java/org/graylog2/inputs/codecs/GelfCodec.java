@@ -49,7 +49,6 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Codec(name = "gelf", displayName = "GELF")
 public class GelfCodec extends AbstractCodec {
@@ -286,8 +285,8 @@ public class GelfCodec extends AbstractCodec {
             message.addField(key, fieldValue);
         }
 
-        if (!malformedFields.isEmpty()) {
-            message.addField(MALFORMED_FIELDS_KEY, MALFORMED_FIELDS_VALUE + "[".concat(String.join(", ", malformedFields)).concat("]"));
+        if (log.isTraceEnabled() && !malformedFields.isEmpty()) {
+            log.trace("{}: {} {}",MALFORMED_FIELDS_KEY, MALFORMED_FIELDS_VALUE, "[".concat(String.join(", ", malformedFields)).concat("]"));
         }
 
         if (!emptyFields.isEmpty()) {
