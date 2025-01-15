@@ -38,7 +38,6 @@ public abstract class MessageCountRotationStrategyConfig implements RotationStra
     @JsonProperty("max_docs_per_index")
     public abstract int maxDocsPerIndex();
 
-    @JsonCreator
     public static MessageCountRotationStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                             @JsonProperty("max_docs_per_index") @Min(1) int maxDocsPerIndex) {
         return   MessageCountRotationStrategyConfig.Builder.builder()

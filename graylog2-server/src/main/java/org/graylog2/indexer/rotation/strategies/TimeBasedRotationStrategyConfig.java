@@ -38,7 +38,6 @@ public abstract class TimeBasedRotationStrategyConfig implements RotationStrateg
     @JsonProperty("rotation_period")
     public abstract Period rotationPeriod();
 
-    @JsonCreator
     public static TimeBasedRotationStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                          @JsonProperty("rotation_period") @NotNull Period maxTimePerIndex) {
         return TimeBasedRotationStrategyConfig.Builder.builder().type(type).rotationPeriod(maxTimePerIndex).build();

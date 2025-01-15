@@ -38,7 +38,6 @@ public abstract class DeletionRetentionStrategyConfig implements RetentionStrate
     @JsonProperty("max_number_of_indices")
     public abstract int maxNumberOfIndices();
 
-    @JsonCreator
     public static DeletionRetentionStrategyConfig create(@JsonProperty(TYPE_FIELD) String type,
                                                          @JsonProperty("max_number_of_indices") @Min(1) int maxNumberOfIndices) {
         return DeletionRetentionStrategyConfig.Builder.builder().type(type).maxNumberOfIndices(maxNumberOfIndices).build();
