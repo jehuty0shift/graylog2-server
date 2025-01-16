@@ -96,7 +96,7 @@
         <apache-httpclient.version>4.5.14</apache-httpclient.version>
         <auto-value.version>1.11.0</auto-value.version>
         <auto-value-javabean.version>2.5.2</auto-value-javabean.version>
-        <bouncycastle.version>1.79</bouncycastle.version>
+        <bouncycastle.version>1.80</bouncycastle.version>
         <caffeine.version>3.1.8</caffeine.version>
         <cef-parser.version>0.0.1.10</cef-parser.version>
         <commons-codec.version>1.17.2</commons-codec.version>
