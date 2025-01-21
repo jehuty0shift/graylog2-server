@@ -93,7 +93,7 @@ public abstract class PaginatedDbService<DTO> {
         if (save.wasAcknowledged()) {
             if (save.getUpsertedId() != null) {
                 return db.find(Filters.eq("_id", save.getUpsertedId().asObjectId())).first();
-            } else if (save.getModifiedCount() == 1) {
+            } else if (save.getModifiedCount() == 1 || save.getMatchedCount() == 1) {
                 return dto;
             } else {
                 throw new MongoException("Object does not exist and no upsert has been made");
