@@ -1,7 +1,5 @@
 package org.graylog.security.authservice;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.mongodb.DuplicateKeyException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.proc.BadJOSEException;
@@ -24,6 +22,7 @@ import javax.inject.Inject;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
 
@@ -37,7 +36,7 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
     private final RoleService roleService;
     private final OidcProviderHandler providerHandler;
     private static final String UNKNOWN_USER = "unknown";
-    
+
 
     @Inject
     public IdTokenJwtServiceAuthenticator(final AuditEventSender auditEventSender, final RoleService roleService, final OidcProviderHandler providerHandler) {
@@ -70,7 +69,7 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
             final String username = extractUsernameFromClaims(userClaims);
 
             // if no exception here, it means the user is valid, we can safely provide the user.
-            Map<String, Object> details = ImmutableMap.of(
+            Map<String, Object> details = Map.of(
                     "auth_realm", this.getClass().toString());
             if (authCredentials.mustAuditSuccess()) {
                 auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
@@ -82,7 +81,7 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
                     .base64AuthServiceUid(com.nimbusds.jose.util.Base64.encode(userClaims.getSubject().getValue()).toString())
                     .fullName(Optional.ofNullable(userClaims.getStringClaim("name")).orElse(username))
                     .username(username)
-                    .defaultRoles(ImmutableSet.of(roleService.getReaderRoleObjectId()))
+                    .defaultRoles(Set.of(roleService.getReaderRoleObjectId()))
                     .email(Optional.ofNullable(userClaims.getStringClaim("email")).orElse(username + "@observability.ovhcloud.com"))
                     .accountIsEnabled(true)
                     .build());

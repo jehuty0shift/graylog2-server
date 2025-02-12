@@ -17,7 +17,7 @@ const LoginSelector = ({onErrorChange}) => {
 
   const extractIdProvider = () => {
     if (window.location.pathname.startsWith('/oidc/login')) {
-      var arr = idProviderExtractor.exec(window.location.pathname);
+      const arr = idProviderExtractor.exec(window.location.pathname);
       if (AppConfig.oidcProviders()[arr[1]]) {
         return arr[1];
       }

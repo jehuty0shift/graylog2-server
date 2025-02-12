@@ -1,6 +1,5 @@
 package org.graylog2.security.realm;
 
-import com.google.common.collect.ImmutableMap;
 import com.nimbusds.jwt.JWT;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -86,7 +85,7 @@ public class SessionJWTAuthenticatingRealm extends AuthenticatingRealm {
                 log.debug("Successfully authenticated username <{}> for user profile <{}> with backend <{}/{}/{}>",
                         result.username(), result.userProfileId(), result.backendTitle(), result.backendType(), result.backendId());
             }
-            Map<String, Object> details = ImmutableMap.of(
+            Map<String, Object> details = Map.of(
                     "auth_realm", this.getClass().toString(),
                     "identity_provider", jwtToken.getIdProvider(),
                     "remote_address", jwtToken.getRemoteAddress());

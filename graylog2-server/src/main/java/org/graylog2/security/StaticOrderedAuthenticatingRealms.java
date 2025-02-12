@@ -16,7 +16,6 @@
  */
 package org.graylog2.security;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.Realm;
 import org.graylog2.security.realm.*;
@@ -24,12 +23,7 @@ import org.graylog2.security.realm.*;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.AbstractCollection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +31,7 @@ import java.util.stream.Collectors;
  */
 @Singleton
 public class StaticOrderedAuthenticatingRealms extends AbstractCollection<Realm> implements OrderedAuthenticatingRealms {
-    private static final ImmutableList<String> REALM_ORDER = ImmutableList.of(
+    private static final List<String> REALM_ORDER = List.of(
             SessionAuthenticator.NAME,
             AccessTokenAuthenticator.NAME,
             HTTPHeaderAuthenticationRealm.NAME,
@@ -56,7 +50,7 @@ public class StaticOrderedAuthenticatingRealms extends AbstractCollection<Realm>
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        if (orderedRealms.size() < 1) {
+        if (orderedRealms.isEmpty()) {
             throw new IllegalStateException("No realms available, this must not happen!");
         }
     }
@@ -74,6 +68,6 @@ public class StaticOrderedAuthenticatingRealms extends AbstractCollection<Realm>
 
     @Override
     public Optional<Realm> getRootAccountRealm() {
-        return orderedRealms.stream().filter(r -> r instanceof RootAccountRealm).findFirst();
+        return orderedRealms.stream().filter(RootAccountRealm.class::isInstance).findFirst();
     }
 }

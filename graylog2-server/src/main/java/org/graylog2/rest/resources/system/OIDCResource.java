@@ -113,7 +113,7 @@ public class OIDCResource extends RestResource {
                         throw new ForbiddenException("Token request error");
                     }
 
-                    final String responseContent = httpResponse.getContent();
+                    final String responseContent = httpResponse.getBody();
                     log.trace("Response from token creation {}", responseContent);
 
                     return Response.ok(responseContent, httpResponse.getEntityContentType().getType()).build();
@@ -251,7 +251,7 @@ public class OIDCResource extends RestResource {
         // Retrieve the token endpoint URI from OIDCProviderMetadata
         URI tokenEndpoint = oidcProviderMetadata.getTokenEndpointURI();
 
-        return new TokenRequest(tokenEndpoint, clientSecretBasic, codeGrant);
+        return new TokenRequest(tokenEndpoint, clientSecretBasic, codeGrant,null);
     }
 
     private void validateForm(Form form) {

@@ -16,7 +16,6 @@
  */
 package org.graylog2.shared.security;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -107,7 +106,7 @@ public class SessionCreator {
             // save subject in session, otherwise we can't get the username back in subsequent requests.
             ((DefaultSecurityManager) SecurityUtils.getSecurityManager()).getSubjectDAO().save(subject);
 
-            final Map<String, Object> auditEventContext = ImmutableMap.of(
+            final Map<String, Object> auditEventContext = Map.of(
                     AuditDetailKey.SESSION_ID, session.getId(),
                     AuditDetailKey.REMOTE_ADDRESS, host
             );
@@ -117,7 +116,7 @@ public class SessionCreator {
         } catch (AuthenticationServiceUnavailableException e) {
             log.info("Session creation failed due to authentication service being unavailable. Actor: \"{}\"",
                     authToken.getActor().urn());
-            final Map<String, Object> auditEventContext = ImmutableMap.of(
+            final Map<String, Object> auditEventContext = Map.of(
                     AuditDetailKey.REMOTE_ADDRESS, host,
                     AuditDetailKey.EXCEPTION_MESSAGE, "Authentication service unavailable: " + e.getMessage()
             );
@@ -126,7 +125,7 @@ public class SessionCreator {
         } catch (AuthenticationException e) {
             log.info("Failure Session Creator",e);
             log.info("Invalid credentials in session create request. Actor: \"{}\"", authToken.getActor().urn());
-            final Map<String, Object> auditEventContext = ImmutableMap.of(
+            final Map<String, Object> auditEventContext = Map.of(
                     AuditDetailKey.REMOTE_ADDRESS, host,
                     AuditDetailKey.EXCEPTION_MESSAGE, e.getMessage()
             );

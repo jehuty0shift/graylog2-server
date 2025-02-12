@@ -1,7 +1,5 @@
 package org.graylog.security.authservice;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import org.graylog.security.authservice.test.AuthServiceBackendTestResult;
 import org.graylog2.audit.AuditActor;
@@ -16,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class AccessTokenJwtServiceAuthenticator implements AuthServiceBackend {
     public static final String TYPE_NAME = "access_token_jwt";
@@ -59,7 +58,7 @@ public class AccessTokenJwtServiceAuthenticator implements AuthServiceBackend {
         final String username = extractUsernameFromUserInfo(userInfo);
         log.debug("retrieved username {} from provider {}", username, idProvider);
         // if no exception here, it means the user is valid, we can safely provide the user.
-        Map<String, Object> details = ImmutableMap.of(
+        Map<String, Object> details = Map.of(
                 "auth_realm", this.getClass().toString());
         if (authCredentials.mustAuditSuccess()) {
             auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
@@ -71,7 +70,7 @@ public class AccessTokenJwtServiceAuthenticator implements AuthServiceBackend {
                 .base64AuthServiceUid(com.nimbusds.jose.util.Base64.encode(userInfo.getSubject().getValue()).toString())
                 .fullName(Optional.ofNullable(userInfo.getName()).orElse(username))
                 .username(username)
-                .defaultRoles(ImmutableSet.of(roleService.getReaderRoleObjectId()))
+                .defaultRoles(Set.of(roleService.getReaderRoleObjectId()))
                 .email(Optional.ofNullable(userInfo.getEmailAddress()).orElse(username + "@observability.ovhcloud.com"))
                 .accountIsEnabled(true)
                 .build());

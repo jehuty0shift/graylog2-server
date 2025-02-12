@@ -1,11 +1,10 @@
-import React, {useEffect, useState, useRef, useCallback} from "react";
+import React, {useCallback, useEffect} from "react";
 import {useAuth} from "react-oidc-context";
 import {Button} from 'components/graylog';
 import CombinedProvider from "../../injection/CombinedProvider";
 import history from 'util/History';
 import Routes from 'routing/Routes';
 import StoreProvider from "../../injection/StoreProvider";
-import styled from 'styled-components';
 
 const {SessionActions} = CombinedProvider.get('Session');
 const SessionStore = StoreProvider.getStore('Session');
@@ -20,7 +19,12 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
     if (auth.isAuthenticated && !SessionStore.isLoggedIn()) {
 
       try {
-        await SessionActions.loginUrl('/system/oidc/login', {access_token: auth.user?.access_token, id_token: auth.user?.id_token, expires_at: auth.user?.expires_at, idProvider: idProvider });
+        await SessionActions.loginUrl('/system/oidc/login', {
+          access_token: auth.user?.access_token,
+          id_token: auth.user?.id_token,
+          expires_at: auth.user?.expires_at,
+          idProvider: idProvider
+        });
         history.push(Routes.STARTPAGE);
       } catch (error) {
         console.log(error);
@@ -57,16 +61,20 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
   if (auth.isAuthenticated) {
 
     return (
-        <div>
-          <p>Hello {auth.user?.profile.sub}, redirecting you...{" "}</p>
-          <Button onClick={() => void auth.removeUser()}>Log out</Button>
-        </div>
+      <div>
+        <p>Hello {auth.user?.profile.sub}, redirecting you...{" "}</p>
+        <Button onClick={() => auth.removeUser()}>Log out</Button>
+      </div>
     );
   }
 
-  return <Button onClick={() => auth.signinRedirect().catch(() => onErrorChange(`Error during sign-in to ${idProviderDisplayName}`))}>
-    Log in with {idProviderDisplayName}
-  </Button>;
+  return (
+      <Button
+        onClick={() => auth.signinRedirect().catch(() => onErrorChange(`Error during sign-in to ${idProviderDisplayName}`))} bsStyle="info">
+        Log in with {idProviderDisplayName}
+      </Button>
+  );
+
 
 }
 

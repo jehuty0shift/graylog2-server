@@ -1,7 +1,7 @@
 package org.graylog2.audit;
 
 public class AuditDetailKey {
-    private AuditDetailKey(){};
+    private AuditDetailKey(){}
 
     public static final String AUTH_REALM = "auth_realm";
     public static final String EXCEPTION_MESSAGE = "exception_message";

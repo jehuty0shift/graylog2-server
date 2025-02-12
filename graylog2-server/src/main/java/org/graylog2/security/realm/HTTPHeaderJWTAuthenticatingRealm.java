@@ -1,6 +1,5 @@
 package org.graylog2.security.realm;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -82,7 +81,7 @@ public class HTTPHeaderJWTAuthenticatingRealm extends AuthenticatingRealm {
                 log.debug("Successfully authenticated username <{}> for user profile <{}> with backend <{}/{}/{}>",
                         result.username(), result.userProfileId(), result.backendTitle(), result.backendType(), result.backendId());
             }
-            Map<String, Object> details = ImmutableMap.of(
+            Map<String, Object> details = Map.of(
                     "auth_realm", this.getClass().toString(),
                     "remote_address", headersToken.getRemoteAddr());
             auditEventSender.success(AuditActor.user(result.username()), AuditEventTypes.AUTHENTICATION_CHECK, details);

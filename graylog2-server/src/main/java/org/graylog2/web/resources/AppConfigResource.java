@@ -17,7 +17,6 @@
 package org.graylog2.web.resources;
 
 import com.floreysoft.jmte.Engine;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import org.graylog2.Configuration;
 import org.graylog2.configuration.HttpConfiguration;
@@ -26,6 +25,7 @@ import org.graylog2.rest.RestTools;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -35,7 +35,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
@@ -63,7 +62,7 @@ public class AppConfigResource {
         try {
             template = Resources.toString(templateUrl, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException("Unable to read AppConfig template while generating web interface configuration: ", e);
+            throw new InternalServerErrorException("Unable to read AppConfig template while generating web interface configuration: ", e);
         }
 
         final URI baseUri = RestTools.buildExternalUri(headers.getRequestHeaders(), httpConfiguration.getHttpExternalUri());
