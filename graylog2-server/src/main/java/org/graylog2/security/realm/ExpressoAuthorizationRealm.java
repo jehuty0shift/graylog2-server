@@ -57,33 +57,35 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
             log.debug("Using Expresso Realm for session {}", holder.getSessionId());
         }
 
-        final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 
         Session session = SecurityUtils.getSubject().getSession();
         if (log.isTraceEnabled()) {
             log.trace("sessionId of subject {}", session.getId());
-            log.trace("session Attributes {}",session.getAttributeKeys());
+            log.trace("session Attributes {}", session.getAttributeKeys());
         }
 
-        final String oidcProvider = (String)session.getAttribute(SessionAttributes.SESSION_OIDC_PROVIDER);
-        if (holder.getSessionId().equals(session.getId()) && !"ldp".equals(oidcProvider)) {
-            log.debug("retrieving tokens with token from access Provider {}", oidcProvider);
-            Boolean isExternal = (Boolean) session.getAttribute(SessionAttributes.SESSION_IS_EXTERNAL_USER);
-            if (isExternal == null || !isExternal) {
-                log.warn("session doesn't have any Expresso expected attributes");
-                return null;
-            }
+        final String oidcProvider = (String) session.getAttribute(SessionAttributes.SESSION_OIDC_PROVIDER);
 
-            String accessToken = (String) session.getAttribute(SessionAttributes.OIDC_ACCESS_TOKEN);
-
-            try (Timer.Context ignored = resolvePermissionTimer.time()) {
-                Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(accessToken);
-                log.debug("retrieved {} permissions from expresso", permissions.size());
-                info.setObjectPermissions(permissions);
-            }
-        } else {
-            log.debug("there is no match (something strange happened). Holder: {}, session {}", holder.getSessionId(), session.getId());
+        if (oidcProvider == null || "ldp".equals(oidcProvider) || !holder.getSessionId().equals(session.getId())) {
+            log.debug("Not a Session created through SessionAttribute Provider. Holder: {}, session {}", holder.getSessionId(), session.getId());
             return null;
+        }
+
+        final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+
+        log.debug("retrieving tokens with token from access Provider {}", oidcProvider);
+        Boolean isExternal = (Boolean) session.getAttribute(SessionAttributes.SESSION_IS_EXTERNAL_USER);
+        if (isExternal == null || !isExternal) {
+            log.debug("session doesn't have any Expresso expected attributes");
+            return null;
+        }
+
+        String accessToken = (String) session.getAttribute(SessionAttributes.OIDC_ACCESS_TOKEN);
+
+        try (Timer.Context ignored = resolvePermissionTimer.time()) {
+            Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(accessToken);
+            log.debug("retrieved {} permissions from expresso", permissions.size());
+            info.setObjectPermissions(permissions);
         }
 
         return info;
