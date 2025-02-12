@@ -79,7 +79,7 @@ public class AppConfigResource {
         model.put("oidcProvidersDisplayName", (configuration.getOidcProvidersDisplayName() != null && !configuration.getOidcProvidersDisplayName().isEmpty()) ? configuration.getOidcProvidersDisplayName() : configuration.getOidcProviders());
         model.put("oidcClientIds", configuration.getOidcClientIds());
         model.put("oidcConnectUrls", configuration.getOidcConnectUrls());
-        model.put("httpExternalUri", httpConfiguration.getHttpPublishUri());
+        model.put("httpExternalUri", httpConfiguration.getHttpExternalUri());
 
         return templateEngine.transform(template, model);
     }
