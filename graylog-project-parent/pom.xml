@@ -62,6 +62,11 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>org.openapitools</groupId>
+                <artifactId>jackson-databind-nullable</artifactId>
+                <version>${jackson-databind-nullable-version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.jersey</groupId>
                 <artifactId>jersey-bom</artifactId>
                 <version>${jersey.version}</version>
@@ -441,6 +446,11 @@
                 <version>${apache-httpclient.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${apache-httpclient5.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.github.rvesse</groupId>
                 <artifactId>airline</artifactId>
                 <version>${airline.version}</version>
@@ -562,6 +572,11 @@
                 <groupId>com.unboundid</groupId>
                 <artifactId>unboundid-ldapsdk</artifactId>
                 <version>${unboundid-ldap.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>oauth2-oidc-sdk</artifactId>
+                <version>${nimbu-oauth2.version}</version>
             </dependency>
 
             <!-- Test dependencies -->

@@ -16,7 +16,6 @@
  */
 package org.graylog2.shared.security;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -25,6 +24,7 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.graylog2.audit.AuditActor;
+import org.graylog2.audit.AuditDetailKey;
 import org.graylog2.audit.AuditEventSender;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.shared.users.UserService;
@@ -72,6 +72,8 @@ public class SessionCreator {
         final String previousSessionId = StringUtils.defaultIfBlank(currentSessionId, null);
         final Subject subject = new Subject.Builder().sessionId(previousSessionId).host(host).buildSubject();
 
+        log.debug("previousSessionId {}",previousSessionId);
+
         ThreadContext.bind(subject);
 
         try {
@@ -82,6 +84,8 @@ public class SessionCreator {
             String userId = subject.getPrincipal().toString();
             final User user = userService.loadById(userId);
 
+            log.debug("userId {}",userId);
+
             if (user != null) {
                 long timeoutInMillis = user.getSessionTimeoutMs();
                 session.setTimeout(timeoutInMillis);
@@ -90,33 +94,40 @@ public class SessionCreator {
                 // set a sane default. really we should be able to load the user from above.
                 session.setTimeout(UserImpl.DEFAULT_SESSION_TIMEOUT_MS);
             }
+
+            if (authToken instanceof SessionAttributeProvider) {
+                SessionAttributeProvider sessionAttributeProvider = (SessionAttributeProvider) authToken;
+                sessionAttributeProvider.addSessionAttributes(session);
+                log.debug("Added session attributes");
+            }
+
             session.touch();
 
             // save subject in session, otherwise we can't get the username back in subsequent requests.
             ((DefaultSecurityManager) SecurityUtils.getSecurityManager()).getSubjectDAO().save(subject);
 
-            final Map<String, Object> auditEventContext = ImmutableMap.of(
-                    "session_id", session.getId(),
-                    "remote_address", host
+            final Map<String, Object> auditEventContext = Map.of(
+                    AuditDetailKey.SESSION_ID, session.getId(),
+                    AuditDetailKey.REMOTE_ADDRESS, host
             );
-            auditEventSender.success(AuditActor.user(user.getName()), SESSION_CREATE, auditEventContext);
+            auditEventSender.success(user!=null?AuditActor.user(user.getName()):AuditActor.user("unknown"), SESSION_CREATE, auditEventContext);
 
             return Optional.of(session);
         } catch (AuthenticationServiceUnavailableException e) {
             log.info("Session creation failed due to authentication service being unavailable. Actor: \"{}\"",
                     authToken.getActor().urn());
-            final Map<String, Object> auditEventContext = ImmutableMap.of(
-                    "remote_address", host,
-                    "message", "Authentication service unavailable: " + e.getMessage()
+            final Map<String, Object> auditEventContext = Map.of(
+                    AuditDetailKey.REMOTE_ADDRESS, host,
+                    AuditDetailKey.EXCEPTION_MESSAGE, "Authentication service unavailable: " + e.getMessage()
             );
             auditEventSender.failure(authToken.getActor(), SESSION_CREATE, auditEventContext);
             throw e;
         } catch (AuthenticationException e) {
             log.info("Failure Session Creator",e);
             log.info("Invalid credentials in session create request. Actor: \"{}\"", authToken.getActor().urn());
-            final Map<String, Object> auditEventContext = ImmutableMap.of(
-                    "remote_address", host,
-                    "exception_message", e.getMessage()
+            final Map<String, Object> auditEventContext = Map.of(
+                    AuditDetailKey.REMOTE_ADDRESS, host,
+                    AuditDetailKey.EXCEPTION_MESSAGE, e.getMessage()
             );
             auditEventSender.failure(authToken.getActor(), SESSION_CREATE, auditEventContext);
             return Optional.empty();

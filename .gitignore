@@ -13,6 +13,9 @@ coverage
 build.xml
 nbactions.xml
 
+graylog2-web-interface/sslCert
+
+
 data/*
 
 .DS_Store

@@ -71,7 +71,7 @@ public class SearchDbService {
     public Search save(Search search) {
         final Search searchToSave = requirementsForSearch(search);
         if (searchToSave.id() != null) {
-            db.replaceOne(Filters.eq("_id", new ObjectId(search.id())),
+            db.replaceOne(Filters.eq("_id", new ObjectId(searchToSave.id())),
                     searchToSave,new ReplaceOptions().upsert(true));
 
             return searchToSave;

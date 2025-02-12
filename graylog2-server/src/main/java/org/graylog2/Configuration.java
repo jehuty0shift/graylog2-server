@@ -20,6 +20,7 @@ import com.github.joschi.jadconfig.Parameter;
 import com.github.joschi.jadconfig.ValidationException;
 import com.github.joschi.jadconfig.Validator;
 import com.github.joschi.jadconfig.ValidatorMethod;
+import com.github.joschi.jadconfig.converters.StringListConverter;
 import com.github.joschi.jadconfig.converters.StringSetConverter;
 import com.github.joschi.jadconfig.converters.TrimmedStringSetConverter;
 import com.github.joschi.jadconfig.util.Duration;
@@ -38,9 +39,7 @@ import org.joda.time.DateTimeZone;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Helper class to hold configuration of Graylog
@@ -237,6 +236,43 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "webui_community_link")
     private String webUICommunityLink = "https://community.ovh.com/c/platform/data-platforms";
 
+    @Parameter(value = "oidc_default_provider")
+    private String oidcDefaultProvider = "ldp";
+
+    @Parameter(value = "oidc_providers", converter = StringListConverter.class)
+    private List<String> oidcProviders = List.of();
+
+    @Parameter(value = "oidc_providers_display_name", converter = StringListConverter.class)
+    private List<String> oidcProvidersDisplayName = List.of();
+
+    @Parameter(value = "oidc_connect_urls",  converter = StringListConverter.class)
+    private List<String> oidcConnectUrls = List.of();
+
+    @Parameter(value = "oidc_callback_urls", converter = StringListConverter.class)
+    private List<String> oidcCallbackUrls = List.of();
+
+    @Parameter(value = "oidc_client_ids", converter = StringListConverter.class)
+    private List<String> oidcClientIds = List.of();
+
+    @Parameter(value = "oidc_client_secrets", converter = StringListConverter.class)
+    private List<String> oidcClientSecrets = List.of();
+
+    @Parameter(value = "oidc_default_role")
+    private String oidcDefaultRole = "Reader";
+
+    @Parameter(value = "expresso_url")
+    private String expressoURL = "https://soc-auth.eu.ovhapis.com";
+
+    @Parameter(value = "expresso_root_path")
+    private String expressoRootPath = "/1.0";
+
+    @Parameter(value = "expresso_auth_token")
+    private String expressoAuthToken = "";
+
+    @Parameter(value = "expresso_ldp_cluster_tag")
+    private String expressoFilters = "";
+
+
     public boolean isMaster() {
         return isMaster;
     }
@@ -410,10 +446,6 @@ public class Configuration extends BaseConfiguration {
         return rootLoginAllowedNoCheck;
     }
 
-    public int getLoadBalancerRequestThrottleJournalUsage() {
-        return loadBalancerThrottleThresholdPercentage;
-    }
-
     public Set<String> getDeactivatedBuiltinAuthenticationProviders() {
         return deactivatedBuiltinAuthenticationProviders;
     }
@@ -484,6 +516,58 @@ public class Configuration extends BaseConfiguration {
     public String getWebUIGuideLink() { return webUIGuideLink;}
 
     public String getWebUICommunityLink(){ return  webUICommunityLink;}
+
+    public String getOidcDefaultProvider() {
+        return oidcDefaultProvider;
+    }
+
+    public List<String> getOidcProviders() {
+        return oidcProviders;
+    }
+
+    public List<String> getOidcProvidersDisplayName() {
+        return oidcProvidersDisplayName;
+    }
+
+    public int getLoadBalancerThrottleThresholdPercentage() {
+        return loadBalancerThrottleThresholdPercentage;
+    }
+
+    public List<String> getOidcConnectUrls() {
+        return oidcConnectUrls;
+    }
+
+    public List<String> getOidcCallbackUrls() {
+        return oidcCallbackUrls;
+    }
+
+    public List<String> getOidcClientIds() {
+        return oidcClientIds;
+    }
+
+    public List<String> getOidcClientSecrets() {
+        return oidcClientSecrets;
+    }
+
+    public String getOidcDefaultRole() {
+        return oidcDefaultRole;
+    }
+
+    public String getExpressoURL() {
+        return expressoURL;
+    }
+
+    public String getExpressoRootPath() {
+        return expressoRootPath;
+    }
+
+    public String getExpressoAuthToken() {
+        return expressoAuthToken;
+    }
+
+    public String getExpressoFilters() {
+        return expressoFilters;
+    }
 
     @ValidatorMethod
     @SuppressWarnings("unused")

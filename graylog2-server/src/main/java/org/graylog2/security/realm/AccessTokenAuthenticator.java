@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.HashMap;
 import java.util.Map;
 
 public class AccessTokenAuthenticator extends AuthenticatingRealm {
@@ -72,7 +71,6 @@ public class AccessTokenAuthenticator extends AuthenticatingRealm {
             auditEventSender.failure(AuditActor.user("unknown"), AuditEventTypes.AUTHENTICATION_CHECK, details);
             return null;
         }
-        // TODO should be using IDs
         final User user = userService.load(accessToken.getUserName());
         if (user == null) {
             return null;
@@ -97,6 +95,6 @@ public class AccessTokenAuthenticator extends AuthenticatingRealm {
             LOG.warn("Unable to update access token's last access date.", e);
         }
         ShiroSecurityContext.requestSessionCreation(false);
-        return new SimpleAccount(user.getId(), null, "access token realm");
+        return new SimpleAccount(user.getId(), null, NAME);
     }
 }

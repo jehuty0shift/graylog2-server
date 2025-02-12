@@ -19,6 +19,7 @@ package org.graylog2.audit;
 import java.util.Map;
 
 public interface AuditEventSender {
+
     void success(AuditActor actor, AuditEventType type);
 
     void success(AuditActor actor, AuditEventType type, Map<String, Object> context);

@@ -27,6 +27,7 @@ public class AuthorizationOnlyRealmModule extends Graylog2Module {
     protected void configure() {
         final MapBinder<String, AuthorizingRealm> authz = authorizationOnlyRealmBinder();
 
+        add(authz, ExpressoAuthorizationRealm.NAME, ExpressoAuthorizationRealm.class);
         add(authz, MongoDbAuthorizationRealm.NAME, MongoDbAuthorizationRealm.class);
     }
 

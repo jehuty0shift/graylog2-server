@@ -117,8 +117,8 @@ const webpackConfig = {
           {
             loader: 'style-loader',
             options: {
-              insert: 'head',
-            },
+              insert: require.resolve("./insert-function"),
+            }
           },
             {loader: 'css-loader'},
           {
@@ -207,6 +207,9 @@ if (TARGET === 'start') {
 	    runtimeChunk : 'single', 
 	    moduleIds: 'named',
     },
+    cache: {
+        type: 'memory',
+    },
     plugins: [
       new webpack.DefinePlugin({
         DEVELOPMENT: true,
@@ -266,6 +269,12 @@ if (TARGET.startsWith('build')) {
         },
       })],
 //     moduleIds: 'deterministic',
+    },
+    cache: {
+        type: 'filesystem',
+        buildDependencies: {
+            config: [__filename],
+        },   
     },
     plugins: [
       new webpack.DefinePlugin({

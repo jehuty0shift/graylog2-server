@@ -33,6 +33,7 @@ import org.apache.shiro.session.mgt.SimpleSession;
 import org.apache.shiro.util.LifecycleUtils;
 import org.apache.shiro.util.ThreadContext;
 import org.graylog2.audit.AuditActor;
+import org.graylog2.audit.AuditDetailKey;
 import org.graylog2.audit.AuditEventSender;
 import org.graylog2.plugin.database.users.User;
 import org.graylog2.shared.users.UserService;
@@ -194,7 +195,7 @@ public class SessionCreatorTest {
                 AuthenticationServiceUnavailableException.class);
         assertThat(SecurityUtils.getSubject().isAuthenticated()).isFalse();
         verify(auditEventSender).failure(eq(AuditActor.user("username")), anyString(),
-                argThat(map -> StringUtils.containsIgnoreCase((String) map.get("message"), "unavailable")));
+                argThat(map -> StringUtils.containsIgnoreCase((String) map.get(AuditDetailKey.EXCEPTION_MESSAGE), "unavailable")));
     }
 
     /**

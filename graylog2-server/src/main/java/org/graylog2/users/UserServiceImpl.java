@@ -17,12 +17,7 @@
 package org.graylog2.users;
 
 import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.eventbus.EventBus;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
@@ -58,16 +53,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -110,8 +96,9 @@ public class UserServiceImpl extends PersistedServiceImpl implements UserService
         // ensure that the users' roles array is indexed
         MongoCollection<BasicDBObject> collection = collection(UserImpl.class);
         List<Document> list = collection.listIndexes().into(new ArrayList<>());
-        if (list.size() < 2) {
+        if (list.size() < 3) {
             collection.createIndex(Sorts.ascending(UserImpl.ROLES), new IndexOptions().background(true));
+            collection.createIndex(Sorts.ascending(UserImpl.USERNAME), new IndexOptions().unique(true));
         }
     }
 
@@ -129,6 +116,14 @@ public class UserServiceImpl extends PersistedServiceImpl implements UserService
         }
         final Object userId = userObject.get("_id");
         return userFactory.create((ObjectId) userId, userObject.toMap());
+    }
+
+    @Override
+    public boolean userExists(String id) {
+        if (!configuration.isRootUserDisabled() && id.equals(UserImpl.LocalAdminUser.LOCAL_ADMIN_ID)) {
+            return true;
+        }
+        return count(UserImpl.class, BasicDBObjectBuilder.start("_id", new ObjectId(id)).get()) == 1;
     }
 
     @Override

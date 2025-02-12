@@ -6,4 +6,10 @@ window.appConfig = {
   badgeText: '${badgeText}',
   webUIGuideLink: '${webUIGuideLink}',
   webUICommunityLink: '${webUICommunityLink}',
+  oidcDefaultProvider: '${oidcDefaultProvider}',
+  oidcProviders: [${foreach oidcProviders item ,}'${item}'${end}],
+  oidcProvidersDisplayName: [${foreach oidcProvidersDisplayName item ,}'${item}'${end}],
+  oidcClientIds: [${foreach oidcClientIds item ,}'${item}'${end}],
+  oidcConnectUrls: [${foreach oidcConnectUrls item ,}'${item}'${end}],
+  httpExternalUri: '${httpExternalUri}'
 };

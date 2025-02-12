@@ -35,6 +35,8 @@ public interface UserService extends PersistedService {
     @Nullable
     User loadById(String id);
 
+    boolean userExists(String id);
+
     List<User> loadByIds(Collection<String> ids);
 
     /**

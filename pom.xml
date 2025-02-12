@@ -94,6 +94,7 @@
         <antlr.version>4.13.2</antlr.version>
         <apache-directory-version>2.1.7</apache-directory-version>
         <apache-httpclient.version>4.5.14</apache-httpclient.version>
+        <apache-httpclient5.version>5.4.1</apache-httpclient5.version>
         <auto-value.version>1.11.0</auto-value.version>
         <auto-value-javabean.version>2.5.2</auto-value-javabean.version>
         <bouncycastle.version>1.80</bouncycastle.version>
@@ -116,6 +117,7 @@
         <hibernate-validator.version>6.2.5.Final</hibernate-validator.version>
         <hk2.version>2.6.1</hk2.version> <!-- The HK2 version should match the version being used by Jersey -->
         <jackson.version>2.18.2</jackson.version>
+        <jackson-databind-nullable-version>0.2.6</jackson-databind-nullable-version>
         <jadconfig.version>0.15.0</jadconfig.version>
         <java-semver.version>0.10.2</java-semver.version>
         <javapoet.version>1.13.0</javapoet.version>
@@ -128,6 +130,7 @@
         <jcip-annotations.version>1.0</jcip-annotations.version>
         <jdot.version>1.0</jdot.version>
         <jersey.version>2.46</jersey.version>
+        <jjwt.version>0.12.6</jjwt.version>
         <jmte.version>5.0.0</jmte.version>
         <joda-time.version>2.13.1</joda-time.version>
         <jool.version>0.9.15</jool.version>
@@ -140,7 +143,8 @@
         <natty.version>0.13</natty.version>
         <netty.version>4.1.117.Final</netty.version>
         <netty-tcnative-boringssl-static.version>2.0.69.Final</netty-tcnative-boringssl-static.version>
-        <okhttp.version>3.14.9</okhttp.version>
+        <nimbu-oauth2.version>11.22</nimbu-oauth2.version>
+        <okhttp.version>4.12.0</okhttp.version>
         <opencsv.version>2.3</opencsv.version>
         <os-platform-finder.version>1.2.3</os-platform-finder.version>
         <pkts.version>3.0.10</pkts.version>
@@ -295,6 +299,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>2.22.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
