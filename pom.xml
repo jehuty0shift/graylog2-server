@@ -94,7 +94,7 @@
         <antlr.version>4.13.2</antlr.version>
         <apache-directory-version>2.1.7</apache-directory-version>
         <apache-httpclient.version>4.5.14</apache-httpclient.version>
-        <apache-httpclient5.version>5.4.1</apache-httpclient5.version>
+        <apache-httpclient5.version>5.4.2</apache-httpclient5.version>
         <auto-value.version>1.11.0</auto-value.version>
         <auto-value-javabean.version>2.5.2</auto-value-javabean.version>
         <bouncycastle.version>1.80</bouncycastle.version>
@@ -141,9 +141,9 @@
         <mongodb-driver.version>5.3.1</mongodb-driver.version> <!-- to keep for plugins tests -->
         <mongojack.version>5.0.2</mongojack.version>
         <natty.version>0.13</natty.version>
-        <netty.version>4.1.117.Final</netty.version>
-        <netty-tcnative-boringssl-static.version>2.0.69.Final</netty-tcnative-boringssl-static.version>
-        <nimbu-oauth2.version>11.22</nimbu-oauth2.version>
+        <netty.version>4.1.118.Final</netty.version>
+        <netty-tcnative-boringssl-static.version>2.0.70.Final</netty-tcnative-boringssl-static.version>
+        <nimbu-oauth2.version>11.22.2</nimbu-oauth2.version>
         <okhttp.version>4.12.0</okhttp.version>
         <opencsv.version>2.3</opencsv.version>
         <os-platform-finder.version>1.2.3</os-platform-finder.version>
@@ -168,7 +168,7 @@
         <validation-api.version>2.0.1.Final</validation-api.version>
         <zkclient.version>0.11</zkclient.version>
         <zookeeper.version>3.9.3</zookeeper.version>
-        <zstd.version>1.5.6-9</zstd.version>
+        <zstd.version>1.5.6-10</zstd.version>
 
         <!-- Test dependencies -->
         <apacheds-server.version>2.0.0.AM27</apacheds-server.version>
