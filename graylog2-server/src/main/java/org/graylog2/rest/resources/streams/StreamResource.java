@@ -23,15 +23,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.bson.types.ObjectId;
-import org.graylog.plugins.views.search.rest.PermittedStreams;
 import org.graylog.security.UserContext;
 import org.graylog2.alarmcallbacks.AlarmCallbackConfiguration;
 import org.graylog2.alarmcallbacks.AlarmCallbackConfigurationService;
@@ -69,13 +64,7 @@ import org.graylog2.search.SearchQueryField;
 import org.graylog2.search.SearchQueryParser;
 import org.graylog2.shared.rest.resources.RestResource;
 import org.graylog2.shared.security.RestPermissions;
-import org.graylog2.streams.PaginatedStreamService;
-import org.graylog2.streams.StreamDTO;
-import org.graylog2.streams.StreamImpl;
-import org.graylog2.streams.StreamRouterEngine;
-import org.graylog2.streams.StreamRuleImpl;
-import org.graylog2.streams.StreamRuleService;
-import org.graylog2.streams.StreamService;
+import org.graylog2.streams.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.ISODateTimeFormat;
@@ -86,30 +75,12 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
@@ -211,7 +182,7 @@ public class StreamResource extends RestResource {
         final Predicate<StreamDTO> permissionFilter = streamDTO -> isPermitted(RestPermissions.STREAMS_READ, streamDTO.id());
         final PaginatedList<StreamDTO> result = paginatedStreamService
                 .findPaginated(searchQuery, permissionFilter, page, perPage, sort, order);
-        final List<String> streamIds = result.stream().map(streamDTO -> streamDTO.id()).collect(Collectors.toList());
+        final List<String> streamIds = result.stream().map(StreamDTO::id).collect(Collectors.toList());
         final Map<String, List<StreamRule>> streamRuleMap = streamRuleService.loadForStreamIds(streamIds);
         final List<StreamDTO> streams = result.stream().map(streamDTO -> {
             List<StreamRule> rules = streamRuleMap.getOrDefault(streamDTO.id(), Collections.emptyList());
@@ -223,12 +194,16 @@ public class StreamResource extends RestResource {
         return StreamPageListResponse.create(query, streamDTOS.pagination(), total, sort, order, streams);
     }
 
+    /**
+     * @deprecated
+     */
     @GET
     @Timed
     @ApiOperation(value = "Get a list of all streams")
-    @Deprecated
+    @Deprecated(since="4.0")
     @Produces(MediaType.APPLICATION_JSON)
     public StreamListResponse get() {
+
         final List<String> allStreamsIds = streamService.loadAllIds().stream().filter(sId -> isPermitted(RestPermissions.STREAMS_READ, sId)).collect(Collectors.toList());
         final Set<Stream> allStreams = streamService.loadByIds(allStreamsIds);
         final List<Stream> streams = new ArrayList<>(allStreams.size());
@@ -247,7 +222,7 @@ public class StreamResource extends RestResource {
     @Timed
     @ApiOperation(value = "Get a list of all enabled streams")
     @Produces(MediaType.APPLICATION_JSON)
-    public StreamListResponse getEnabled() throws NotFoundException {
+    public StreamListResponse getEnabled() {
         final List<Stream> enabledStreams = streamService.loadAllEnabled();
         final List<Stream> streams = new ArrayList<>(enabledStreams.size());
         for (Stream stream : enabledStreams) {
@@ -528,7 +503,7 @@ public class StreamResource extends RestResource {
         final List<String> usersAlertReceivers = stream.getAlertReceivers().get("users");
         final Collection<AlertConditionSummary> alertConditions = streamService.getAlertConditions(stream)
                 .stream()
-                .map((alertCondition) -> AlertConditionSummary.createWithoutGrace(
+                .map(alertCondition -> AlertConditionSummary.createWithoutGrace(
                         alertCondition.getId(),
                         alertCondition.getType(),
                         alertCondition.getCreatorUserId(),
@@ -560,7 +535,7 @@ public class StreamResource extends RestResource {
 
     private Collection<OutputSummary> outputsToSummaries(Collection<Output> outputs) {
         return outputs.stream()
-                .map((output) -> OutputSummary.create(output.getId(), output.getTitle(), output.getType(),
+                .map(output -> OutputSummary.create(output.getId(), output.getTitle(), output.getType(),
                         output.getCreatorUserId(), new DateTime(output.getCreatedAt()), output.getConfiguration(), output.getContentPack()))
                 .collect(Collectors.toSet());
     }
