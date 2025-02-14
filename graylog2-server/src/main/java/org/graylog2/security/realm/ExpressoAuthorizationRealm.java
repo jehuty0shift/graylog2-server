@@ -19,13 +19,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 public class ExpressoAuthorizationRealm extends AuthorizingRealm {
 
 
     private final ExpressoPermissionResolver expressoPermissionResolver;
-    private final Timer resolvePermissionTimer;
+    private final Timer isPermittedTimer;
 
     private static final Logger log = LoggerFactory.getLogger(ExpressoAuthorizationRealm.class);
 
@@ -36,7 +38,7 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
                                       CaffeineShiroCacheManager cacheManager,
                                       MetricRegistry metricRegistry) {
         this.expressoPermissionResolver = expressoPermissionResolver;
-        this.resolvePermissionTimer = metricRegistry.timer(MetricRegistry.name(ExpressoPermissionResolver.class, "retrieve-permissions"));
+        this.isPermittedTimer = metricRegistry.timer(MetricRegistry.name(ExpressoPermissionResolver.class, "isPermitted"));
         setCachingEnabled(true);
         setCacheManager(cacheManager);
     }
@@ -82,13 +84,45 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
 
         String accessToken = (String) session.getAttribute(SessionAttributes.OIDC_ACCESS_TOKEN);
 
-        try (Timer.Context ignored = resolvePermissionTimer.time()) {
-            Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(accessToken);
-            log.debug("retrieved {} permissions from expresso", permissions.size());
-            info.setObjectPermissions(permissions);
-        }
+
+        Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(accessToken);
+        log.debug("retrieved {} permissions from expresso", permissions.size());
+        info.setObjectPermissions(permissions);
+
 
         return info;
+    }
+
+
+    //visibility changed from private to protected per SHIRO-332
+    @Override
+    protected Collection<Permission> getPermissions(AuthorizationInfo info) {
+        if (info != null && !info.getObjectPermissions().isEmpty()) {
+            return Collections.unmodifiableCollection(info.getObjectPermissions());
+        } else {
+            return Collections.emptySet();
+        }
+    }
+
+
+    //visibility changed from private to protected per SHIRO-332
+    @Override
+    protected boolean isPermitted(Permission permission, AuthorizationInfo info) {
+        try (Timer.Context ignored = isPermittedTimer.time()) {
+            Collection<Permission> perms = getPermissions(info);
+            if (perms != null && !perms.isEmpty()) {
+                if (perms.size() > 1000) {
+                    return perms.stream().parallel().anyMatch(p -> p.implies(permission));
+                } else {
+                    for (Permission perm : perms) {
+                        if (perm.implies(permission)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
     }
 
     @Override
