@@ -16,10 +16,10 @@
  */
 package org.graylog2.database;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.client.result.UpdateResult;
@@ -126,7 +126,7 @@ public abstract class PaginatedDbService<DTO> {
      * @return the paginated list
      */
     protected PaginatedList<DTO> findPaginatedWithQueryAndSort(Bson query, Bson sort, int page, int perPage) {
-        final int total = (int)db.countDocuments(query);
+        final int total = (int) db.countDocuments(query);
         FindIterable<DTO> cursor = db.find(query)
                 .sort(sort)
                 .limit(perPage)
@@ -134,10 +134,6 @@ public abstract class PaginatedDbService<DTO> {
         final long grandTotal = db.countDocuments();
         List<DTO> elements = cursor.into(new ArrayList<>());
         return new PaginatedList<>(Collections.unmodifiableList(elements), total, page, perPage, grandTotal);
-    }
-
-    protected ImmutableList<DTO> asImmutableList(Iterator<? extends DTO> cursor) {
-        return ImmutableList.copyOf(cursor);
     }
 
     /**
@@ -164,23 +160,28 @@ public abstract class PaginatedDbService<DTO> {
                                                                      Bson sort,
                                                                      int page,
                                                                      int perPage) {
-        // Calculate the total amount of items matching the query/filter, but before pagination
-        final long total;
-        try (final Stream<DTO> cursor = streamQueryWithSort(query, sort)) {
-            total = cursor.filter(filter).count();
-        }
 
-        // Then create another filtered stream and only collect the entries according to page and perPage
-        try (final Stream<DTO> resultStream = streamQueryWithSort(query, sort)) {
-            Stream<DTO> filteredResultStream = resultStream.filter(filter);
-            if (perPage > 0) {
-                filteredResultStream = filteredResultStream.skip(perPage * Math.max(0, page - 1)).limit(perPage);
+        final long toSkip = (long) perPage * Math.max(0, page - 1);
+        long total = 0;
+
+        List<DTO> resultList = new ArrayList<>();
+        try (MongoCursor<DTO> cursor = db.find(query).sort(sort).cursor()) {
+            while (cursor.hasNext()) {
+                DTO dto = cursor.next();
+                if (!filter.test(dto)) {
+                    continue;
+                }
+                if (total >= toSkip && resultList.size() < perPage) {
+                    resultList.add(dto);
+                }
+                total++;
             }
-
-            final long grandTotal = db.countDocuments();
-
-            return new PaginatedList<>(filteredResultStream.collect(Collectors.toList()), Math.toIntExact(total), page, perPage, grandTotal);
         }
+
+        final long grandTotal = db.countDocuments();
+
+        return new PaginatedList<>(resultList, Math.toIntExact(total), page, perPage, grandTotal);
+
     }
 
     /**

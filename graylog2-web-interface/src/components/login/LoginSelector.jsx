@@ -87,6 +87,7 @@ const LoginSelector = ({onErrorChange}) => {
             onSigninCallback: (_user) => {
               window.history.replaceState({}, document.title, window.location.pathname);
             },
+            scope: "openid",
           }
         } else {
           return {

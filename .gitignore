@@ -13,7 +13,7 @@ coverage
 build.xml
 nbactions.xml
 
-graylog2-web-interface/sslCert
+/graylog2-web-interface/sslCert/
 
 
 data/*

@@ -60,7 +60,6 @@ const LoginPage = () => {
         onErrorChange: setLastError,
       });
     }
-    console.log("components " + loginComponent.toString());
     return <LoginSelector onErrorChange={setLastError} />;
 
   };

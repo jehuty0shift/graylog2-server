@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from "react";
+import React, {useCallback, useEffect, useRef} from "react";
 import {useAuth} from "react-oidc-context";
 import {Button} from 'components/graylog';
 import CombinedProvider from "../../injection/CombinedProvider";
@@ -13,8 +13,9 @@ const SessionStore = StoreProvider.getStore('Session');
 function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
   const auth = useAuth();
 
-  const loginUser = useCallback(async () => {
+  const {isAuthenticated} = auth;
 
+  const loginUser = useCallback(async () => {
     onErrorChange();
     if (auth.isAuthenticated && !SessionStore.isLoggedIn()) {
 
@@ -25,13 +26,14 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
           expires_at: auth.user?.expires_at,
           idProvider: idProvider
         });
+        await auth.removeUser();
         history.push(Routes.STARTPAGE);
       } catch (error) {
         console.log(error);
         onErrorChange("Unexpected Error during Login");
       }
     }
-  }, [auth, onErrorChange]);
+  }, [auth]);
 
 
   useEffect(() => {
@@ -40,7 +42,8 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
         onErrorChange("Unexpected Error during Login");
       });
     }
-  }, [auth, loginUser]);
+
+  }, [isAuthenticated]);
 
   switch (auth.activeNavigator) {
     case "signinSilent":
@@ -62,17 +65,18 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
 
     return (
       <div>
-        <p>Hello {auth.user?.profile.sub}, redirecting you...{" "}</p>
+        <p>Hello {auth.user?.profile.sub}, Wait for redirection or click on the button to log out.{" "}</p>
         <Button onClick={() => auth.removeUser()}>Log out</Button>
       </div>
     );
   }
 
   return (
-      <Button
-        onClick={() => auth.signinRedirect().catch(() => onErrorChange(`Error during sign-in to ${idProviderDisplayName}`))} bsStyle="info">
-        Log in with {idProviderDisplayName}
-      </Button>
+    <Button
+      onClick={() => auth.signinRedirect().catch(() => onErrorChange(`Error during sign-in to ${idProviderDisplayName}`))}
+      bsStyle="info">
+      Log in with {idProviderDisplayName}
+    </Button>
   );
 
 

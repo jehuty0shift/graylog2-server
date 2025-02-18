@@ -162,9 +162,13 @@ function queuePromiseIfNotLoggedin(promise) {
     return () => new BluebirdPromise((resolve, reject) => {
       const SessionActions = ActionsProvider.getActions('Session');
 
+
       SessionActions.login.completed.listen(() => {
         promise().then(resolve, reject);
       });
+
+
+
     });
   }
 
