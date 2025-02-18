@@ -179,7 +179,7 @@ export const ViewStore: ViewStoreType = singletonStore(
 
       ViewActions.selectQuery.promise(promise);
 
-      return promise;c
+      return promise;
     },
     state(newState: ViewState) {
       this.dirty = true;
