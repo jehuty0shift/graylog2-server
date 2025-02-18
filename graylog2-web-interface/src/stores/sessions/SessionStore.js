@@ -26,7 +26,6 @@ const SessionStore = Reflux.createStore({
     const builder = new Builder('POST', qualifyUrl(url)).json(tokens_body);
     const promise = builder.build()
       .then((sessionInfo) => {
-        console.log(sessionInfo);
         let sessionId =  sessionInfo.session_id;
         let username = sessionInfo.username;
 

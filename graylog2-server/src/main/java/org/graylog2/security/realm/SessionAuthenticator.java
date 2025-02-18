@@ -83,7 +83,7 @@ public class SessionAuthenticator extends AuthenticatingRealm {
 
         SimplePrincipalCollection principals = new SimplePrincipalCollection();
         principals.add(userId,NAME);
-        principals.add(holder, SessionIdHolder.SESSION_REALM_KEY);
+        principals.add(holder.getSessionId(), SessionIdHolder.SESSION_REALM_KEY);
 
         final Subject boundSubject = new Subject.Builder().principals(new SimplePrincipalCollection(principals)).sessionId(sessionIdToken.getSessionId()).buildSubject();
 

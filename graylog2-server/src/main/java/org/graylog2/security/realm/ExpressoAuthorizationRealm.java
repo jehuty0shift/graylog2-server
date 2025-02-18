@@ -9,25 +9,26 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.graylog2.security.CaffeineShiroCacheManager;
 import org.graylog2.security.ExpressoPermissionResolver;
+import org.graylog2.shared.security.RestPermissions;
 import org.graylog2.shared.security.SessionAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 public class ExpressoAuthorizationRealm extends AuthorizingRealm {
 
 
     private final ExpressoPermissionResolver expressoPermissionResolver;
     private final Timer isPermittedTimer;
+
 
     private static final Logger log = LoggerFactory.getLogger(ExpressoAuthorizationRealm.class);
 
@@ -49,11 +50,14 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
             return null;
         }
 
-        SessionIdHolder holder = principalCollection.oneByType(SessionIdHolder.class);
-        if (holder == null) {
+        Optional<String> sessionFromPrincipal = principalCollection.fromRealm(SessionIdHolder.SESSION_REALM_KEY).stream().findFirst();
+
+        if (sessionFromPrincipal.isEmpty()) {
             log.trace("Holder is null, returning for principals {}", principalCollection.asList());
             return null;
         }
+
+        SessionIdHolder holder = new SessionIdHolder(sessionFromPrincipal.get());
 
         if (log.isDebugEnabled()) {
             log.debug("Using Expresso Realm for session {}", holder.getSessionId());
@@ -109,20 +113,27 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
     @Override
     protected boolean isPermitted(Permission permission, AuthorizationInfo info) {
         try (Timer.Context ignored = isPermittedTimer.time()) {
-            Collection<Permission> perms = getPermissions(info);
-            if (perms != null && !perms.isEmpty()) {
-                if (perms.size() > 1000) {
-                    return perms.stream().parallel().anyMatch(p -> p.implies(permission));
-                } else {
-                    for (Permission perm : perms) {
-                        if (perm.implies(permission)) {
-                            return true;
-                        }
-                    }
+            if (permission instanceof WildcardPermission) {
+                // Expresso checks only dashboard, decorators and streams
+                WildcardPermission wildcardPerm = (WildcardPermission) permission;
+                if (!mustHandlePermission(wildcardPerm)) {
+                    return false;
+                }
+
+                Collection<Permission> perms = getPermissions(info);
+                if (perms != null && !perms.isEmpty()) {
+                    return perms.contains(wildcardPerm);
                 }
             }
             return false;
         }
+    }
+
+    private boolean mustHandlePermission(WildcardPermission wildcardPerm) {
+        final String permString = wildcardPerm.toString();
+        return permString.startsWith(RestPermissions.STREAMS_READ) ||
+                permString.startsWith(RestPermissions.DECORATORS_READ) ||
+                permString.startsWith(RestPermissions.DASHBOARDS_READ);
     }
 
     @Override

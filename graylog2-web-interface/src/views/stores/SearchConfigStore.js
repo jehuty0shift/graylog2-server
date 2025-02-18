@@ -20,6 +20,7 @@ export const SearchConfigStore = singletonStore(
 
     init() {
       this.refresh();
+      this.searchesClusterConfig = {};
     },
 
     getInitialState() {

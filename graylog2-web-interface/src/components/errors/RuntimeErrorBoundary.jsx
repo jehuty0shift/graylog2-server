@@ -14,6 +14,10 @@ class RuntimeErrorBoundary extends React.Component<Props> {
     children: PropTypes.node,
   };
 
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI
+  }
+
   static defaultProps = {
     children: null,
   };
