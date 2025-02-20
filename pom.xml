@@ -143,7 +143,7 @@
         <natty.version>0.13</natty.version>
         <netty.version>4.1.118.Final</netty.version>
         <netty-tcnative-boringssl-static.version>2.0.70.Final</netty-tcnative-boringssl-static.version>
-        <nimbu-oauth2.version>11.22.2</nimbu-oauth2.version>
+        <nimbu-oauth2.version>11.23</nimbu-oauth2.version>
         <okhttp.version>4.12.0</okhttp.version>
         <opencsv.version>2.3</opencsv.version>
         <os-platform-finder.version>1.2.3</os-platform-finder.version>
@@ -152,7 +152,7 @@
         <reflections.version>0.9.10</reflections.version>
         <retrofit.version>2.11.0</retrofit.version>
         <scala.version>2.13.10</scala.version>
-        <snakeyaml.version>2.3</snakeyaml.version>
+        <snakeyaml.version>2.4</snakeyaml.version>
         <snappy-java.version>1.1.10.7</snappy-java.version>
         <semver4j.version>2.2.0-graylog.1</semver4j.version>
         <shiro.version>1.13.0</shiro.version>
@@ -176,7 +176,7 @@
         <assertj-joda-time.version>2.2.0</assertj-joda-time.version>
         <assertj-json.version>1.2.0</assertj-json.version>
         <awaitility.version>3.1.6</awaitility.version>
-        <equalsverifier.version>3.19</equalsverifier.version>
+        <equalsverifier.version>3.19.1</equalsverifier.version>
         <jukito.version>1.5</jukito.version>
         <junit.version>4.13.2</junit.version>
         <junit-jupiter.version>5.11.4</junit-jupiter.version>
@@ -184,7 +184,7 @@
         <nosqlunit.version>1.0.0</nosqlunit.version>
         <restassured.version>4.3.1</restassured.version>
         <system-rules.version>1.19.0</system-rules.version>
-        <testcontainers.version>1.20.4</testcontainers.version>
+        <testcontainers.version>1.20.5</testcontainers.version>
 
         <!-- Nodejs dependencies -->
         <nodejs.version>v18.20.5</nodejs.version>
