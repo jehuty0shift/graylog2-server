@@ -18,7 +18,7 @@
 
     <properties>
         <opensearch-client.version>2.21.0</opensearch-client.version>
-        <opensearch-rest-client.version>2.18.0</opensearch-rest-client.version>
+        <opensearch.version>2.19.0</opensearch.version>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
@@ -42,12 +42,12 @@
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-rest-high-level-client</artifactId>
-            <version>${opensearch-rest-client.version}</version>
+            <version>${opensearch.version}</version>
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>opensearch-rest-client-sniffer</artifactId>
-            <version>${opensearch-rest-client.version}</version>
+            <version>${opensearch.version}</version>
         </dependency>
 
         <dependency>
