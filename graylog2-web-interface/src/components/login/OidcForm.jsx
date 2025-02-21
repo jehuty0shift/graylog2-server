@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from "react";
+import React, {useCallback, useEffect} from "react";
 import {useAuth} from "react-oidc-context";
 import {Button} from 'components/graylog';
 import CombinedProvider from "../../injection/CombinedProvider";
@@ -11,11 +11,20 @@ const SessionStore = StoreProvider.getStore('Session');
 
 
 function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
+
+  const AUTO_LOGIN_QUERY_PARAM = "auto_login";
   const auth = useAuth();
 
   const {isAuthenticated} = auth;
+  const queryParams = new URLSearchParams(window.location.search);
+  const targetRedirect = { navigateTo: window.location};
+
+  const onHandleClick = () => {
+    auth.signinRedirect({ state: targetRedirect }).catch(() => onErrorChange(`Error during sign-in to ${idProviderDisplayName}`));
+  };
 
   const loginUser = useCallback(async () => {
+
     onErrorChange();
     if (auth.isAuthenticated && !SessionStore.isLoggedIn()) {
 
@@ -27,7 +36,7 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
           idProvider: idProvider
         });
         await auth.removeUser();
-        history.push(Routes.STARTPAGE);
+        history.push(auth.user?.state.navigateTo);
       } catch (error) {
         console.log(error);
         onErrorChange("Unexpected Error during Login");
@@ -35,14 +44,23 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
     }
   }, [auth]);
 
+  const extractId = (urn) => {
+    return urn.split(':').pop();
+  };
 
   useEffect(() => {
+    auth.settings.redirectTarget
     if (auth.isAuthenticated) {
       loginUser().catch(() => {
         onErrorChange("Unexpected Error during Login");
       });
     }
 
+    if (queryParams.has(AUTO_LOGIN_QUERY_PARAM)) {
+      if (queryParams.get(AUTO_LOGIN_QUERY_PARAM) === "true") {
+        onHandleClick();
+      }
+    }
   }, [isAuthenticated]);
 
   switch (auth.activeNavigator) {
@@ -63,21 +81,17 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
 
   if (auth.isAuthenticated) {
 
-    return (
-      <div>
-        <p>Hello {auth.user?.profile.sub}, Wait for redirection or click on the button to log out.{" "}</p>
-        <Button onClick={() => auth.removeUser()}>Log out</Button>
-      </div>
-    );
+    return (<div>
+      <p>Hello {extractId(auth.user?.profile.sub)}, Wait for redirection or click on the button to log out.{" "}</p>
+      <Button onClick={() => auth.removeUser()}>Log out</Button>
+    </div>);
   }
 
-  return (
-    <Button
-      onClick={() => auth.signinRedirect().catch(() => onErrorChange(`Error during sign-in to ${idProviderDisplayName}`))}
-      bsStyle="info">
-      Log in with {idProviderDisplayName}
-    </Button>
-  );
+  return (<Button
+    onClick={onHandleClick}
+    bsStyle="info">
+    Log in with {idProviderDisplayName}
+  </Button>);
 
 
 }

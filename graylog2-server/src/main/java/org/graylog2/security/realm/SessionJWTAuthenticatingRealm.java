@@ -14,6 +14,7 @@ import org.graylog2.audit.AuditEventSender;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.security.encryption.EncryptedValue;
 import org.graylog2.security.oidc.OidcProviderHandler;
+import org.graylog2.security.oidc.OidcUtils;
 import org.graylog2.shared.security.ActorAwareJwtToken;
 import org.graylog2.shared.security.ShiroSecurityContext;
 import org.slf4j.Logger;
@@ -113,9 +114,9 @@ public class SessionJWTAuthenticatingRealm extends AuthenticatingRealm {
         try {
             final String username = jwt.getJWTClaimsSet() == null ? null : jwt.getJWTClaimsSet().getStringClaim("preferred_username");
             if (username == null) {
-                return jwt.getJWTClaimsSet().getSubject();
+                return OidcUtils.extractUsernameIfURN(jwt.getJWTClaimsSet().getSubject());
             } else {
-                return username;
+                return OidcUtils.extractUsernameIfURN(username);
             }
         } catch (ParseException ex) {
             return UNKNOWN_USER;

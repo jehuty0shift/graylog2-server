@@ -9,7 +9,7 @@ window.appConfig = {
   oidcDefaultProvider : "ovh_eu",
   oidcProviders: ["keycloak","ovh_eu"],
   oidcProvidersDisplayName: ["Keycloak","OVHCloud EU IAM"],
-  oidcClientIds: ["graylog","1664d6f1cd3c5caf"],
+  oidcClientIds: ["graylog","fa1b4cdc14a7e296"],
   oidcConnectUrls: [" http://kube-1.dev.logs.ovh.com:30980/realms/myrealm/","https://www.ovh.com/auth/"],
   httpExternalUri: 'https://gw2sdev-docker.ovh.net:22441',
 
