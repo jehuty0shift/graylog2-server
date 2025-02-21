@@ -12,6 +12,7 @@ import org.graylog2.audit.AuditDetailKey;
 import org.graylog2.audit.AuditEventSender;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.security.oidc.OidcProviderHandler;
+import org.graylog2.security.oidc.OidcUtils;
 import org.graylog2.security.realm.HTTPHeaderJWTAuthenticatingRealm;
 import org.graylog2.users.RoleService;
 import org.slf4j.Logger;
@@ -114,9 +115,9 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
 
     private String extractUsernameFromClaims(IDTokenClaimsSet userClaims) {
         if (userClaims.getStringClaim(PREFERRED_USERNAME_CLAIM) != null) {
-            return userClaims.getStringClaim(PREFERRED_USERNAME_CLAIM);
+            return OidcUtils.extractUsernameIfURN(userClaims.getStringClaim(PREFERRED_USERNAME_CLAIM));
         } else {
-            return userClaims.getSubject().getValue();
+            return OidcUtils.extractUsernameIfURN(userClaims.getSubject().getValue());
         }
     }
 
@@ -127,9 +128,9 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
         try {
             final String username = jwt.getJWTClaimsSet() == null ? null : jwt.getJWTClaimsSet().getStringClaim(PREFERRED_USERNAME_CLAIM);
             if (username == null) {
-                return jwt.getJWTClaimsSet().getSubject();
+                return OidcUtils.extractUsernameIfURN(jwt.getJWTClaimsSet().getSubject());
             } else {
-                return username;
+                return OidcUtils.extractUsernameIfURN(username);
             }
         } catch (ParseException ex) {
             return UNKNOWN_USER;

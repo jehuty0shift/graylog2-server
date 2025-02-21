@@ -248,9 +248,6 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "oidc_connect_urls",  converter = StringListConverter.class)
     private List<String> oidcConnectUrls = List.of();
 
-    @Parameter(value = "oidc_callback_urls", converter = StringListConverter.class)
-    private List<String> oidcCallbackUrls = List.of();
-
     @Parameter(value = "oidc_client_ids", converter = StringListConverter.class)
     private List<String> oidcClientIds = List.of();
 
@@ -260,14 +257,14 @@ public class Configuration extends BaseConfiguration {
     @Parameter(value = "oidc_default_role")
     private String oidcDefaultRole = "Reader";
 
-    @Parameter(value = "expresso_url")
-    private String expressoURL = "https://soc-auth.eu.ovhapis.com";
+    @Parameter(value = "expresso_urls", converter = StringListConverter.class)
+    private List<String> expressoURL = List.of("https://soc-auth.eu.ovhapis.com");
 
-    @Parameter(value = "expresso_root_path")
+    @Parameter(value = "expresso_root_path", converter = StringListConverter.class)
     private String expressoRootPath = "/1.0";
 
-    @Parameter(value = "expresso_auth_token")
-    private String expressoAuthToken = "";
+    @Parameter(value = "expresso_auth_tokens", converter = StringListConverter.class)
+    private List<String> expressoAuthToken = List.of("");
 
     @Parameter(value = "expresso_ldp_cluster_tag")
     private String expressoFilters = "";
@@ -537,10 +534,6 @@ public class Configuration extends BaseConfiguration {
         return oidcConnectUrls;
     }
 
-    public List<String> getOidcCallbackUrls() {
-        return oidcCallbackUrls;
-    }
-
     public List<String> getOidcClientIds() {
         return oidcClientIds;
     }
@@ -553,7 +546,7 @@ public class Configuration extends BaseConfiguration {
         return oidcDefaultRole;
     }
 
-    public String getExpressoURL() {
+    public List<String> getExpressoURL() {
         return expressoURL;
     }
 
@@ -561,7 +554,7 @@ public class Configuration extends BaseConfiguration {
         return expressoRootPath;
     }
 
-    public String getExpressoAuthToken() {
+    public List<String> getExpressoAuthToken() {
         return expressoAuthToken;
     }
 

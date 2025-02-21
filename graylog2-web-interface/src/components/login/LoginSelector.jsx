@@ -13,7 +13,12 @@ import Routes from "../../routing/Routes";
 const LoginSelector = ({onErrorChange}) => {
 
   const LDP_BUILT_INT = "ldp";
+  const ID_PROVIDER_PARAM = "idProvider";
   const idProviderExtractor = /\/oidc\/login\/(.*)\/redirect_uri.*/;
+  const PARAMETER_TEST = "test=toto";
+
+  const queryParams = new URLSearchParams(window.location.search);
+
 
   const extractIdProvider = () => {
     if (window.location.pathname.startsWith('/oidc/login')) {
@@ -22,6 +27,14 @@ const LoginSelector = ({onErrorChange}) => {
         return arr[1];
       }
     }
+
+    if (queryParams.has(ID_PROVIDER_PARAM)) {
+      const urlIdProvider = queryParams.get(ID_PROVIDER_PARAM);
+      if (AppConfig.oidcProviders()[urlIdProvider] !== undefined || urlIdProvider === LDP_BUILT_INT) {
+        return urlIdProvider;
+      }
+    }
+
     return AppConfig.oidcDefaultProvider();
   };
 
@@ -71,8 +84,8 @@ const LoginSelector = ({onErrorChange}) => {
           return {
             authority: oidcProvider.oidcConnectUrl,
             extraHeaders: {
-              "X-Requested-By" : "XMLHttpRequest",
-              "X-Requested-With" : "XMLHttpRequest"
+              "X-Requested-By": "XMLHttpRequest",
+              "X-Requested-With": "XMLHttpRequest"
             },
             metadata: {
               issuer: oidcProvider.oidcConnectUrl,
@@ -105,7 +118,8 @@ const LoginSelector = ({onErrorChange}) => {
 
       return (
         <AuthProvider {...oidcConfig} key={idProvider}>
-          <OidcForm idProvider={currentIdProvider} idProviderDisplayName={oidcProvider.oidcDisplayName} onErrorChange={onErrorChange}/>
+          <OidcForm idProvider={currentIdProvider} idProviderDisplayName={oidcProvider.oidcDisplayName}
+                    onErrorChange={onErrorChange}/>
         </AuthProvider>
       );
     }

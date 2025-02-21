@@ -46,8 +46,22 @@ public class OidcProviderHandler {
                                @Named("oidc_client_secrets") final List<String> clientSecrets,
                                @Named("oidc_connect_urls") final List<String> oidcURLs) {
         this.providersInfo = new HashMap<>();
-        if (oidcProviders.size() != clientIds.size() || clientIds.size() != oidcURLs.size() || clientSecrets.size() != clientIds.size()) {
-            log.error("MISCONFIGURATION IN OIDC PROVIDERS:  SIZE OF OIDC clients and OIDC Issuer urls differ");
+        if (oidcProviders == null || oidcProviders.isEmpty()) {
+            return;
+        }
+
+        if (clientIds == null || oidcProviders.size() != clientIds.size()) {
+            log.error("MISCONFIGURATION IN OIDC PROVIDERS:  SIZE OF OIDC providers and OIDC clientIds differ, {} vs {}", oidcProviders, clientIds);
+            return;
+        }
+
+        if (clientSecrets == null || oidcProviders.size() != clientSecrets.size()) {
+            log.error("MISCONFIGURATION IN OIDC PROVIDERS:  SIZE OF OIDC providers and OIDC clientSecrets differ, {} vs {}", oidcProviders, clientSecrets);
+            return;
+        }
+
+        if (oidcURLs == null || oidcProviders.size() != oidcURLs.size()) {
+            log.error("MISCONFIGURATION IN OIDC PROVIDERS:  SIZE OF OIDC providers and OIDC URLs differ, {} vs {}", oidcProviders, oidcURLs);
             return;
         }
 

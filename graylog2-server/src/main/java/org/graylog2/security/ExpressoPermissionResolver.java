@@ -18,10 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Singleton
 public class ExpressoPermissionResolver {
@@ -40,7 +37,7 @@ public class ExpressoPermissionResolver {
 
     private static final String LDP_CLUSTER_TAG_KEY = "ovh:ldp:cluster:name";
 
-    private final AuthApi authApi;
+    private final Map<String, AuthApi> authApis;
     private final String ldpCluster;
     private final List<String> graylogIamActions;
     private final Timer expressoApiTimer;
@@ -49,45 +46,67 @@ public class ExpressoPermissionResolver {
 
 
     @Inject
-    public ExpressoPermissionResolver(@Named("expresso_url") String expressoUrl,
+    public ExpressoPermissionResolver(@Named("oidc_providers") List<String> oidcProviders,
+                                      @Named("expresso_urls") List<String> expressoUrls,
                                       @Named("expresso_root_path") String rootPath,
-                                      @Named("expresso_auth_token") String authToken,
+                                      @Named("expresso_auth_tokens") List<String> authTokens,
                                       @Named("expresso_ldp_cluster_tag") String ldpCluster,
                                       MetricRegistry metricRegistry) {
 
 
-        log.info("Expresso URL is: {}", expressoUrl);
+        log.info("Expresso URLs are: {}", expressoUrls);
         this.ldpCluster = ldpCluster;
         this.graylogIamActions = List.of(STREAM_READ_ACTIONS, DASHBOARD_READ_ACTIONS, DASHBOARD_UPDATE_ACTIONS);
-        this.expressoApiTimer = metricRegistry.timer(MetricRegistry.name(ExpressoPermissionResolver.class,"get-permissions"));
-        this.enabled = expressoUrl != null &&
-                !expressoUrl.isBlank() &&
-                authToken != null &&
-                !authToken.isBlank() &&
+        this.expressoApiTimer = metricRegistry.timer(MetricRegistry.name(ExpressoPermissionResolver.class, "get-permissions"));
+        this.enabled = notEmptyList(oidcProviders) &&
+                notEmptyList(expressoUrls) &&
+                notEmptyList(authTokens) &&
+                areSameSize(oidcProviders,"oidc_providers",expressoUrls,"expresso_urls") &&
+                areSameSize(oidcProviders, "oidc_providers",authTokens, "expresso_auth_tokens") &&
                 ldpCluster != null &&
                 !ldpCluster.isBlank();
         log.info("Expresso Permission Resolver is: {}", enabled ? "enabled" : "disabled");
 
         if (!enabled) {
-            authApi = null;
+            authApis = Map.of();
             return;
         }
 
-        ApiClient apiClient = getApiClient(expressoUrl, rootPath, authToken);
+        authApis = new HashMap<>();
 
-        this.authApi = new AuthApi(apiClient);
-
+        for (int i = 0; i < oidcProviders.size(); i++) {
+            final String oidcProvider = oidcProviders.get(i);
+            ApiClient apiClient = getApiClient(expressoUrls.get(i), rootPath, authTokens.get(i));
+            authApis.put(oidcProvider, new AuthApi(apiClient));
+        }
     }
 
+    private boolean notEmptyList(List<String> listToCheck) {
+        return listToCheck != null && !listToCheck.isEmpty() && listToCheck.get(0) != null && !listToCheck.get(0).isBlank();
+    }
+
+    private boolean areSameSize(List<String> first, String firstName, List<String> second, String secondName) {
+        if(first == null || second == null || first.size() != second.size()) {
+            log.error("list {} and list {} are not the same size, {} vs {}",firstName,secondName,first,second);
+            return false;
+        }
+        return true;
+
+    }
 
     public boolean isEnabled() {
         return enabled;
     }
 
-    public Set<Permission> resolvePermissionsForPrincipal(String accessToken) {
+    public Set<Permission> resolvePermissionsForPrincipal(final String oidcProvider, String accessToken) {
         if (!enabled) {
             return Set.of();
         }
+        AuthApi authApi = authApis.get(oidcProvider);
+        if (authApi == null) {
+            return Set.of();
+        }
+
         ResourceListRequest resListRequest = new ResourceListRequest();
         resListRequest.actions(graylogIamActions);
         resListRequest.setToken(accessToken);

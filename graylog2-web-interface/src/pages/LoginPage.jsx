@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { PluginStore } from 'graylog-web-plugin/plugin';
-import { createGlobalStyle } from 'styled-components';
+import React, {useEffect, useState} from 'react';
+import {PluginStore} from 'graylog-web-plugin/plugin';
+import {createGlobalStyle} from 'styled-components';
 
-import { DocumentTitle, Icon } from 'components/common';
-import { Alert } from 'components/graylog';
-import LoginForm from 'components/login/LoginForm';
+import {DocumentTitle, Icon} from 'components/common';
+import {Alert} from 'components/graylog';
 import LoginBox from 'components/login/LoginBox';
 import authStyles from 'theme/styles/authStyles';
 import CombinedProvider from 'injection/CombinedProvider';

@@ -89,7 +89,7 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
         String accessToken = (String) session.getAttribute(SessionAttributes.OIDC_ACCESS_TOKEN);
 
 
-        Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(accessToken);
+        Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(oidcProvider, accessToken);
         log.debug("retrieved {} permissions from expresso", permissions.size());
         info.setObjectPermissions(permissions);
 
