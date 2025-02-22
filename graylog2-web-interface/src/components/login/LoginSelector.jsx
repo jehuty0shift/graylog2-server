@@ -15,7 +15,6 @@ const LoginSelector = ({onErrorChange}) => {
   const LDP_BUILT_INT = "ldp";
   const ID_PROVIDER_PARAM = "idProvider";
   const idProviderExtractor = /\/oidc\/login\/(.*)\/redirect_uri.*/;
-  const PARAMETER_TEST = "test=toto";
 
   const queryParams = new URLSearchParams(window.location.search);
 
