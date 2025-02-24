@@ -49,7 +49,6 @@ function OidcForm({idProvider, idProviderDisplayName, onErrorChange}) {
   };
 
   useEffect(() => {
-    auth.settings.redirectTarget
     if (auth.isAuthenticated) {
       loginUser().catch(() => {
         onErrorChange("Unexpected Error during Login");
