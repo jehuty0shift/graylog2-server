@@ -86,10 +86,10 @@ public class GeoIpResolverEngineTest {
     public void extractGeoLocationInformation() {
         final GeoIpResolverEngine resolver = new GeoIpResolverEngine(config, metricRegistry);
 
-        assertTrue("Should extract geo location information from public addresses", resolver.extractGeoLocationInformation("1.2.3.4").isPresent());
-        assertFalse("Should not extract geo location information from private addresses", resolver.extractGeoLocationInformation("192.168.0.1").isPresent());
-        assertFalse("Should not extract geo location information numeric fields", resolver.extractGeoLocationInformation(42).isPresent());
-        assertTrue("Should extract geo location information IP address fields", resolver.extractGeoLocationInformation(InetAddresses.forString("1.2.3.4")).isPresent());
+        assertNotNull("Should extract geo location information from public addresses", resolver.extractGeoLocationLookupResult("1.2.3.4"));
+        assertNull("Should not extract geo location information from private addresses", resolver.extractGeoLocationLookupResult("192.168.0.1"));
+        assertNull("Should not extract geo location information numeric fields", resolver.extractGeoLocationLookupResult(42));
+        assertNotNull("Should extract geo location information IP address fields", resolver.extractGeoLocationLookupResult(InetAddresses.forString("1.2.3.4")));
     }
 
     @Test
