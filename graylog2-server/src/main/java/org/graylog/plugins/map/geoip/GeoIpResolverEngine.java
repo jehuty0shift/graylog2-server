@@ -18,16 +18,10 @@ package org.graylog.plugins.map.geoip;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.InetAddresses;
 import com.maxmind.db.CHMCache;
 import com.maxmind.db.Reader;
-import com.maxmind.geoip2.DatabaseReader;
-import com.maxmind.geoip2.model.CityResponse;
-import com.maxmind.geoip2.record.City;
-import com.maxmind.geoip2.record.Country;
-import com.maxmind.geoip2.record.Location;
 import org.graylog.plugins.map.config.GeoIpResolverConfig;
 import org.graylog2.plugin.Message;
 import org.slf4j.Logger;
@@ -41,7 +35,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -62,7 +55,9 @@ public class GeoIpResolverEngine {
                 this.databaseReader = new Reader(database, Reader.FileMode.MEMORY_MAPPED, new CHMCache(4096 * 2));
                 this.enabled = config.enabled();
             } else {
-                LOG.warn("GeoIP database file does not exist: {}", config.dbPath());
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("GeoIP database file does not exist: {}", config.dbPath());
+                }
                 this.enabled = false;
             }
         } catch (IOException e) {
@@ -76,36 +71,40 @@ public class GeoIpResolverEngine {
             return false;
         }
 
-        List<Map.Entry<String, Object>> geoFields = new ArrayList<>(3);
+        List<Map.Entry<String, Object>> geoFields = new ArrayList<>();
         for (Map.Entry<String, Object> field : message.getFieldsEntries()) { //avoid copy and ConcurrentModificationException
             final String key = field.getKey();
             if ((key.endsWith("_ip") || key.endsWith("address") || key.endsWith("Address")) && !key.startsWith(Message.INTERNAL_FIELD_PREFIX)) { //using _ip fieldName convention and use address for some friends
                 final LookupResult geoLocationInformation = extractGeoLocationLookupResult(field.getValue());
-                if (geoLocationInformation != null) {
-                    // We will store the coordinates as a "lat,long" string
-                    org.graylog.plugins.map.geoip.Location location = geoLocationInformation.getLocation();
-                            geoFields.add(Map.entry(key + "_geolocation", location.getLatitude() + "," + location.getLongitude()));
-                    org.graylog.plugins.map.geoip.Country country = geoLocationInformation.getCountry();
-                    if(country != null ) {
-                        geoFields.add(Map.entry(key + "_country_code", country.getIsoCode()));
-                    } else {
-                        geoFields.add(Map.entry(key + "_country_code", "N/A"));
-                    }
-                    org.graylog.plugins.map.geoip.City city = geoLocationInformation.getCity();
-                    if (city != null) {
-                        geoFields.add(Map.entry(key + "_city_name", city.getCityName()));
-                    } else {
-                        geoFields.add(Map.entry(key + "_city_name", "N/A"));
-                    }
+                if (geoLocationInformation != null && geoLocationInformation.getLocation() != null) {
+                    addGeoInformationToGeoFields(key, geoLocationInformation, geoFields);
                 }
             }
         }
 
-        for (Map.Entry<String, Object> geoField: geoFields) {
-            message.addField(geoField.getKey(),geoField.getValue());
+        for (Map.Entry<String, Object> geoField : geoFields) {
+            message.addField(geoField.getKey(), geoField.getValue());
         }
 
         return false;
+    }
+
+    private void addGeoInformationToGeoFields(final String key, LookupResult lookupResult, List<Map.Entry<String, Object>> geoFields) {
+        // We will store the coordinates as a "lat,long" string
+        org.graylog.plugins.map.geoip.Location location = lookupResult.getLocation();
+        geoFields.add(Map.entry(key + "_geolocation", location.getLatitude() + "," + location.getLongitude()));
+        org.graylog.plugins.map.geoip.Country country = lookupResult.getCountry();
+        if (country != null) {
+            geoFields.add(Map.entry(key + "_country_code", country.getIsoCode()));
+        } else {
+            geoFields.add(Map.entry(key + "_country_code", "N/A"));
+        }
+        org.graylog.plugins.map.geoip.City city = lookupResult.getCity();
+        if (city != null && city.getCityName() != null) {
+            geoFields.add(Map.entry(key + "_city_name", city.getCityName().getName()));
+        } else {
+            geoFields.add(Map.entry(key + "_city_name", "N/A"));
+        }
     }
 
     LookupResult extractGeoLocationLookupResult(Object fieldValue) {
