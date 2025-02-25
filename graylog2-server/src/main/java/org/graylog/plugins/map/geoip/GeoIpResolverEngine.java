@@ -18,16 +18,10 @@ package org.graylog.plugins.map.geoip;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.InetAddresses;
 import com.maxmind.db.CHMCache;
 import com.maxmind.db.Reader;
-import com.maxmind.geoip2.DatabaseReader;
-import com.maxmind.geoip2.model.CityResponse;
-import com.maxmind.geoip2.record.City;
-import com.maxmind.geoip2.record.Country;
-import com.maxmind.geoip2.record.Location;
 import org.graylog.plugins.map.config.GeoIpResolverConfig;
 import org.graylog2.plugin.Message;
 import org.slf4j.Logger;
@@ -41,7 +35,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -92,8 +85,8 @@ public class GeoIpResolverEngine {
                         geoFields.add(Map.entry(key + "_country_code", "N/A"));
                     }
                     org.graylog.plugins.map.geoip.City city = geoLocationInformation.getCity();
-                    if (city != null) {
-                        geoFields.add(Map.entry(key + "_city_name", city.getCityName()));
+                    if (city != null && city.getCityName() != null) {
+                        geoFields.add(Map.entry(key + "_city_name", city.getCityName().getName()));
                     } else {
                         geoFields.add(Map.entry(key + "_city_name", "N/A"));
                     }
