@@ -117,6 +117,10 @@ public class GeoIpResolverEngine {
             return null;
         }
 
+        if (ipAddress == null) {
+            return null;
+        }
+
         try (Timer.Context ignored = resolveTime.time()) {
             return databaseReader.get(ipAddress, LookupResult.class);
         } catch (IOException e) {
