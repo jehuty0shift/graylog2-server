@@ -1,4 +1,4 @@
-package org.graylog.security.authservice;
+package org.graylog.security.authservice.backend;
 
 import com.mongodb.DuplicateKeyException;
 import com.nimbusds.jose.JOSEException;
@@ -6,6 +6,7 @@ import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.openid.connect.sdk.claims.IDTokenClaimsSet;
+import org.graylog.security.authservice.*;
 import org.graylog.security.authservice.test.AuthServiceBackendTestResult;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditDetailKey;
@@ -25,22 +26,22 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
+public class IdJwtAuthServiceBackend implements AuthServiceBackend {
 
     public static final String TYPE_NAME = "id_token_jwt";
     public static final String BACKEND_ID = "000000000000000000000002";
 
-    private static final Logger log = LoggerFactory.getLogger(IdTokenJwtServiceAuthenticator.class);
+    private static final Logger log = LoggerFactory.getLogger(IdJwtAuthServiceBackend.class);
     private static final String PREFERRED_USERNAME_CLAIM = "preferred_username";
 
     private final AuditEventSender auditEventSender;
     private final RoleService roleService;
     private final OidcProviderHandler providerHandler;
-    private static final String UNKNOWN_USER = "unknown";
+    private static final String UNKNOWN_USER_OR_PROVIDER = "unknown";
 
 
     @Inject
-    public IdTokenJwtServiceAuthenticator(final AuditEventSender auditEventSender, final RoleService roleService, final OidcProviderHandler providerHandler) {
+    public IdJwtAuthServiceBackend(final AuditEventSender auditEventSender, final RoleService roleService, final OidcProviderHandler providerHandler) {
         this.auditEventSender = auditEventSender;
         this.roleService = roleService;
         this.providerHandler = providerHandler;
@@ -48,6 +49,10 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
 
     @Override
     public Optional<UserDetails> authenticateAndProvision(AuthServiceCredentials authCredentials, ProvisionerService provisionerService) {
+
+        if (!TYPE_NAME.equals(authCredentials.username())) {
+            return Optional.empty();
+        }
 
         if (authCredentials.password().value() == null || authCredentials.password().value().isEmpty()) {
             log.warn("auth Credentials are empty");
@@ -68,6 +73,7 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
             log.debug("Claims valid for subject {}", userClaims.getSubject());
 
             final String username = extractUsernameFromClaims(userClaims);
+            final String idProvider = providerHandler.retrieveProviderInfoByIssuer(jwt.getJWTClaimsSet().getIssuer()).map(e -> e.getOidcProvider()).orElse(UNKNOWN_USER_OR_PROVIDER);
 
             // if no exception here, it means the user is valid, we can safely provide the user.
             Map<String, Object> details = Map.of(
@@ -84,6 +90,7 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
                     .username(username)
                     .defaultRoles(Set.of(roleService.getReaderRoleObjectId()))
                     .email(Optional.ofNullable(userClaims.getStringClaim("email")).orElse(username + "@observability.ovhcloud.com"))
+                    .extraAttributes(Map.of(OidcUtils.OIDC_PROVIDER_ATTRIBUTE, idProvider))
                     .accountIsEnabled(true)
                     .build());
 
@@ -91,14 +98,14 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
 
         } catch (ParseException ex) {
             Map<String, Object> details = Map.of(AuditDetailKey.AUTH_REALM, HTTPHeaderJWTAuthenticatingRealm.class.toString(), AuditDetailKey.REASON, "incorrect token");
-            auditEventSender.failure(AuditActor.user(UNKNOWN_USER), AuditEventTypes.AUTHENTICATION_CHECK, details);
-            log.error("token {} is incorrect", jwtToken);
+            auditEventSender.failure(AuditActor.user(UNKNOWN_USER_OR_PROVIDER), AuditEventTypes.AUTHENTICATION_CHECK, details);
+            log.error("token {} is incorrect", jwtToken, ex);
             return Optional.empty();
         } catch (BadJOSEException ex) {
             Map<String, Object> details = Map.of(AuditDetailKey.AUTH_REALM, HTTPHeaderJWTAuthenticatingRealm.class.toString(), AuditDetailKey.REASON, "invalid claims");
             final String username = extractUserFromJwt(jwt);
             auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
-            log.error("JWT Claim of {} is incorrect", username);
+            log.error("JWT Claim of {} is incorrect", username, ex);
             return Optional.empty();
         } catch (JOSEException ex) {
             Map<String, Object> details = Map.of(AuditDetailKey.AUTH_REALM, HTTPHeaderJWTAuthenticatingRealm.class.toString(), AuditDetailKey.REASON, "processing error");
@@ -123,7 +130,7 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
 
     private String extractUserFromJwt(final JWT jwt) {
         if (jwt == null) {
-            return UNKNOWN_USER;
+            return UNKNOWN_USER_OR_PROVIDER;
         }
         try {
             final String username = jwt.getJWTClaimsSet() == null ? null : jwt.getJWTClaimsSet().getStringClaim(PREFERRED_USERNAME_CLAIM);
@@ -133,7 +140,7 @@ public class IdTokenJwtServiceAuthenticator implements AuthServiceBackend {
                 return OidcUtils.extractUsernameIfURN(username);
             }
         } catch (ParseException ex) {
-            return UNKNOWN_USER;
+            return UNKNOWN_USER_OR_PROVIDER;
         }
     }
 

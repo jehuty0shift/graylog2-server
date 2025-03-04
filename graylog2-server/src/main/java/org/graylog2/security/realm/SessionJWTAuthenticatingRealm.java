@@ -8,6 +8,8 @@ import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.graylog.security.authservice.*;
+import org.graylog.security.authservice.backend.AccessJwtAuthServiceBackend;
+import org.graylog.security.authservice.backend.IdJwtAuthServiceBackend;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditDetailKey;
 import org.graylog2.audit.AuditEventSender;
@@ -32,16 +34,16 @@ public class SessionJWTAuthenticatingRealm extends AuthenticatingRealm {
     private static final Logger log = LoggerFactory.getLogger(SessionJWTAuthenticatingRealm.class);
 
     private final AuditEventSender auditEventSender;
-    private final IdTokenJwtServiceAuthenticator idTokenJwtServiceAuthenticator;
-    private final AccessTokenJwtServiceAuthenticator accessTokenJwtServiceAuthenticator;
+    private final IdJwtAuthServiceBackend idJwtAuthServiceBackend;
+    private final AccessJwtAuthServiceBackend accessJwtAuthServiceBackend;
     private final AuthServiceAuthenticator authServiceAuthenticator;
 
     @Inject
-    public SessionJWTAuthenticatingRealm(final AuthServiceAuthenticator authServiceAuthenticator, final AuditEventSender auditEventSender, final IdTokenJwtServiceAuthenticator idTokenJwtServiceAuthenticator, final AccessTokenJwtServiceAuthenticator accessTokenJwtServiceAuthenticator, final OidcProviderHandler oidcProviderHandler) {
+    public SessionJWTAuthenticatingRealm(final AuthServiceAuthenticator authServiceAuthenticator, final AuditEventSender auditEventSender, final IdJwtAuthServiceBackend idJwtAuthServiceBackend, final AccessJwtAuthServiceBackend accessJwtAuthServiceBackend, final OidcProviderHandler oidcProviderHandler) {
         this.auditEventSender = auditEventSender;
         this.authServiceAuthenticator = authServiceAuthenticator;
-        this.idTokenJwtServiceAuthenticator = idTokenJwtServiceAuthenticator;
-        this.accessTokenJwtServiceAuthenticator = accessTokenJwtServiceAuthenticator;
+        this.idJwtAuthServiceBackend = idJwtAuthServiceBackend;
+        this.accessJwtAuthServiceBackend = accessJwtAuthServiceBackend;
 
         setAuthenticationTokenClass(ActorAwareJwtToken.class);
         setCachingEnabled(false);
@@ -65,13 +67,13 @@ public class SessionJWTAuthenticatingRealm extends AuthenticatingRealm {
             if (idTokenJwt.getJWTClaimsSet().getExpirationTime() == null || idTokenJwt.getJWTClaimsSet().getExpirationTime().before(new Date())) {
                 log.debug("idToken is expired: Expiration time is before now (exp: {})",idTokenJwt.getJWTClaimsSet().getExpirationTime());
                 final String idProvider = jwtToken.getIdProvider();
-                AuthServiceCredentials authServiceCredentials = AuthServiceCredentials.create(AccessTokenJwtServiceAuthenticator.TYPE_NAME + "_"+idProvider, EncryptedValue.createUnEncrypted(jwtToken.getAccessTokenJwt().serialize()));
-                result = authServiceAuthenticator.authenticate(authServiceCredentials, accessTokenJwtServiceAuthenticator);
+                AuthServiceCredentials authServiceCredentials = AuthServiceCredentials.create(AccessJwtAuthServiceBackend.TYPE_NAME + "_"+idProvider, EncryptedValue.createUnEncrypted(jwtToken.getAccessTokenJwt().serialize()));
+                result = authServiceAuthenticator.authenticate(authServiceCredentials, accessJwtAuthServiceBackend);
             } else {
                 log.debug("idToken is not expired");
                 //we re-serialize the deserialized token but in case of session creation this is acceptable.
-                AuthServiceCredentials authServiceCredentials = AuthServiceCredentials.create(IdTokenJwtServiceAuthenticator.TYPE_NAME, EncryptedValue.createUnEncrypted(idTokenJwt.serialize()));
-                result = authServiceAuthenticator.authenticate(authServiceCredentials, idTokenJwtServiceAuthenticator);
+                AuthServiceCredentials authServiceCredentials = AuthServiceCredentials.create(IdJwtAuthServiceBackend.TYPE_NAME, EncryptedValue.createUnEncrypted(idTokenJwt.serialize()));
+                result = authServiceAuthenticator.authenticate(authServiceCredentials, idJwtAuthServiceBackend);
             }
 
             if (result == null || !result.isSuccess()) {

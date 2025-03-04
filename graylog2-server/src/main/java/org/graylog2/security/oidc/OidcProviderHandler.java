@@ -27,10 +27,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Singleton
 public class OidcProviderHandler {
@@ -109,18 +106,22 @@ public class OidcProviderHandler {
         return providersInfo.values().stream().filter(pI -> pI.getClientId().equals(clientId)).findFirst();
     }
 
+    public Optional<OidcProviderInfo> retrieveProviderInfoByIssuer(final String issuer) {
+        return Optional.ofNullable(providersInfo.get(issuer));
+    }
+
 
     public Optional<OidcProviderInfo> retrieveProviderInfoByProviderName(final String providerName) {
         return providersInfo.values().stream().filter(pI -> pI.getOidcProvider().equals(providerName)).findFirst();
     }
 
-    public Optional<UserInfo> retrieveUserInfo(final String accessTokenString) {
+    public Optional<UserInfoWithProvider> retrieveUserInfo(final String accessTokenString) {
 
-        return providersInfo.keySet().stream().map(k ->
-                        retrieveUserInfo(k, accessTokenString)
-                ).filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst();
+        return providersInfo.values().stream().map(oidcProviderInfo -> {
+                            Optional<UserInfo> uI = retrieveUserInfo(oidcProviderInfo.getOidcProvider(), accessTokenString);
+                            return uI.map(userInfo -> new UserInfoWithProvider(userInfo, oidcProviderInfo.getOidcProvider())).orElse(null);
+                        }
+                ).filter(Objects::nonNull).findFirst();
     }
 
 
@@ -140,7 +141,7 @@ public class OidcProviderHandler {
 
             if (!userInfoResponse.indicatesSuccess()) {
                 ErrorObject errorObject = userInfoResponse.toErrorResponse().getErrorObject();
-                log.error("UserInfo retrieval failed {} {}", errorObject.getCode(), errorObject.getDescription());
+                log.debug("UserInfo retrieval failed for idProvider {} {} {}",idProvider, errorObject.getCode(), errorObject.getDescription());
                 return Optional.empty();
             }
 
@@ -154,6 +155,26 @@ public class OidcProviderHandler {
             return Optional.empty();
         }
 
+    }
+
+    public static class UserInfoWithProvider {
+
+        private final UserInfo userInfo;
+        private final String idProvider;
+
+        public UserInfoWithProvider(UserInfo userInfo, String idProvider) {
+            this.userInfo = userInfo;
+            this.idProvider = idProvider;
+        }
+
+
+        public UserInfo getUserInfo() {
+            return userInfo;
+        }
+
+        public String getIdProvider() {
+            return idProvider;
+        }
     }
 
 }

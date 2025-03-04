@@ -20,6 +20,8 @@ import com.google.auto.value.AutoValue;
 
 import javax.annotation.Nullable;
 
+import java.util.Map;
+
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 @AutoValue
@@ -35,6 +37,8 @@ public abstract class AuthServiceResult {
 
     public abstract String backendTitle();
 
+    public abstract Map<String, String> extraAttributes();
+
     public boolean isSuccess() {
         return !isNullOrEmpty(userProfileId());
     }
@@ -49,6 +53,7 @@ public abstract class AuthServiceResult {
                 .backendId(backend.backendId())
                 .backendType(backend.backendType())
                 .backendTitle(backend.backendTitle())
+                .extraAttributes(Map.of())
                 .build();
     }
 
@@ -64,6 +69,9 @@ public abstract class AuthServiceResult {
 
         public abstract Builder backendTitle(String backendTitle);
 
+        public abstract Builder extraAttributes(Map<String, String> attributes);
+
         public abstract AuthServiceResult build();
+
     }
 }

@@ -106,7 +106,7 @@ public class MongoDBAuthServiceBackend implements AuthServiceBackend {
 
         Map<String, Object> details = ImmutableMap.of(
                 "auth_realm", this.getClass().toString());
-        if(authCredentials.mustAuditSuccess()) {
+        if (authCredentials.mustAuditSuccess()) {
             auditEventSender.success(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
         }
         LOG.debug("Successfully validated password for user <{}>", username);
@@ -119,6 +119,7 @@ public class MongoDBAuthServiceBackend implements AuthServiceBackend {
                 .fullName(user.getFullName())
                 // No need to set default roles because MongoDB users will not be provisioned by the provisioner
                 .defaultRoles(Collections.emptySet())
+                .extraAttributes(Collections.emptyMap())
                 .base64AuthServiceUid(Base64.encode(user.getId()))
                 .build());
 
