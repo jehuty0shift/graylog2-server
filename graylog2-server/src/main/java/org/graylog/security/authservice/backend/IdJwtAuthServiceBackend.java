@@ -37,7 +37,7 @@ public class IdJwtAuthServiceBackend implements AuthServiceBackend {
     private final AuditEventSender auditEventSender;
     private final RoleService roleService;
     private final OidcProviderHandler providerHandler;
-    private static final String UNKNOWN_USER = "unknown";
+    private static final String UNKNOWN_USER_OR_PROVIDER = "unknown";
 
 
     @Inject
@@ -73,7 +73,7 @@ public class IdJwtAuthServiceBackend implements AuthServiceBackend {
             log.debug("Claims valid for subject {}", userClaims.getSubject());
 
             final String username = extractUsernameFromClaims(userClaims);
-            final String idProvider = providerHandler.retrieveProviderInfoByIssuer(jwt.getJWTClaimsSet().getIssuer()).map(e -> e.getOidcProvider()).orElse("unknown");
+            final String idProvider = providerHandler.retrieveProviderInfoByIssuer(jwt.getJWTClaimsSet().getIssuer()).map(e -> e.getOidcProvider()).orElse(UNKNOWN_USER_OR_PROVIDER);
 
             // if no exception here, it means the user is valid, we can safely provide the user.
             Map<String, Object> details = Map.of(
@@ -98,7 +98,7 @@ public class IdJwtAuthServiceBackend implements AuthServiceBackend {
 
         } catch (ParseException ex) {
             Map<String, Object> details = Map.of(AuditDetailKey.AUTH_REALM, HTTPHeaderJWTAuthenticatingRealm.class.toString(), AuditDetailKey.REASON, "incorrect token");
-            auditEventSender.failure(AuditActor.user(UNKNOWN_USER), AuditEventTypes.AUTHENTICATION_CHECK, details);
+            auditEventSender.failure(AuditActor.user(UNKNOWN_USER_OR_PROVIDER), AuditEventTypes.AUTHENTICATION_CHECK, details);
             log.error("token {} is incorrect", jwtToken, ex);
             return Optional.empty();
         } catch (BadJOSEException ex) {
@@ -130,7 +130,7 @@ public class IdJwtAuthServiceBackend implements AuthServiceBackend {
 
     private String extractUserFromJwt(final JWT jwt) {
         if (jwt == null) {
-            return UNKNOWN_USER;
+            return UNKNOWN_USER_OR_PROVIDER;
         }
         try {
             final String username = jwt.getJWTClaimsSet() == null ? null : jwt.getJWTClaimsSet().getStringClaim(PREFERRED_USERNAME_CLAIM);
@@ -140,7 +140,7 @@ public class IdJwtAuthServiceBackend implements AuthServiceBackend {
                 return OidcUtils.extractUsernameIfURN(username);
             }
         } catch (ParseException ex) {
-            return UNKNOWN_USER;
+            return UNKNOWN_USER_OR_PROVIDER;
         }
     }
 

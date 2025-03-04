@@ -67,7 +67,7 @@ public class AuthServiceAuthenticator {
         if (userDetails.isPresent()) {
             return AuthServiceResult.builder()
                     .username(userDetails.get().username())
-                    .userProfileId(userDetails.get().databaseId().get())
+                    .userProfileId(userDetails.get().databaseId().orElseThrow())
                     .backendType(backend.backendType())
                     .backendId(backend.backendId())
                     .backendTitle(backend.backendTitle())

@@ -67,14 +67,14 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
     }
 
     private Optional<TokenWithProvider> extractAccessTokenFromPrincipalCollection(PrincipalCollection principalCollection) {
-        Optional<String> sessionFromPrincipal = (Optional<String>) principalCollection.fromRealm(PrincipalRealmNames.SESSION_REALM_KEY).stream().findFirst();
+        Optional<String> sessionFromPrincipal = principalCollection.fromRealm(PrincipalRealmNames.SESSION_REALM_KEY).stream().findFirst();
 
         if (sessionFromPrincipal.isPresent()) {
             log.trace("Using Principal From Session for {}", sessionFromPrincipal.get());
             return extractAccessTokenWithProviderFromSessionId(sessionFromPrincipal.get());
         }
 
-        Collection<Object> jwtPrincipalCollection = (Collection<Object>) principalCollection.fromRealm(PrincipalRealmNames.ACCESS_JWT_REALM_KEY);
+        Collection<Object> jwtPrincipalCollection = principalCollection.fromRealm(PrincipalRealmNames.ACCESS_JWT_REALM_KEY);
 
         if (jwtPrincipalCollection != null && !jwtPrincipalCollection.isEmpty()) {
             return extractAccessTokenWithProviderFromAccessJwtRealm(principalCollection);
