@@ -71,6 +71,7 @@ public class AuthServiceAuthenticator {
                     .backendType(backend.backendType())
                     .backendId(backend.backendId())
                     .backendTitle(backend.backendTitle())
+                    .extraAttributes(userDetails.get().extraAttributes())
                     .build();
         }
 

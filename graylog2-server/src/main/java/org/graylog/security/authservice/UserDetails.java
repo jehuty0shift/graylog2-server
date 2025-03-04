@@ -19,6 +19,7 @@ package org.graylog.security.authservice;
 import com.google.auto.value.AutoValue;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,6 +46,8 @@ public abstract class UserDetails {
 
     public abstract Set<String> defaultRoles();
 
+    public abstract Map<String, String> extraAttributes();
+
     public UserDetails withDatabaseId(String id) {
         checkArgument(!isNullOrEmpty(id), "id cannot be null or empty");
 
@@ -70,6 +73,8 @@ public abstract class UserDetails {
         public abstract Builder authServiceId(String authServiceId);
 
         public abstract Builder base64AuthServiceUid(String base64AuthServiceUid);
+
+        public abstract Builder extraAttributes(Map<String, String> extraAttributes);
 
         public abstract Builder username(String username);
 

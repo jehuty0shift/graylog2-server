@@ -6,21 +6,19 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authc.credential.AllowAllCredentialsMatcher;
 import org.apache.shiro.realm.AuthenticatingRealm;
-import org.graylog.security.authservice.AuthServiceAuthenticator;
-import org.graylog.security.authservice.AuthServiceCredentials;
-import org.graylog.security.authservice.AuthServiceResult;
-import org.graylog.security.authservice.IdTokenJwtServiceAuthenticator;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.graylog.security.authservice.*;
+import org.graylog.security.authservice.backend.AccessJwtAuthServiceBackend;
+import org.graylog.security.authservice.backend.IdJwtAuthServiceBackend;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditDetailKey;
 import org.graylog2.audit.AuditEventSender;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.security.encryption.EncryptedValue;
-import org.graylog2.security.oidc.OidcProviderHandler;
 import org.graylog2.shared.security.HttpHeadersToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.Locale;
@@ -34,14 +32,15 @@ public class HTTPHeaderJWTAuthenticatingRealm extends AuthenticatingRealm {
     private static final String BEARER = "Bearer ";
     private final AuditEventSender auditEventSender;
     private final AuthServiceAuthenticator authServiceAuthenticator;
-    private final IdTokenJwtServiceAuthenticator jwtServiceAuthBackend;
-
+    private final IdJwtAuthServiceBackend idJwtServiceAuthenticator;
+    private final AccessJwtAuthServiceBackend accessJwtServiceAuthenticator;
 
     @Inject
-    public HTTPHeaderJWTAuthenticatingRealm(final AuthServiceAuthenticator authServiceAuthenticator, final OidcProviderHandler keyLocator, final AuditEventSender auditEventSender, final IdTokenJwtServiceAuthenticator jwtServiceAuthBackend) {
+    public HTTPHeaderJWTAuthenticatingRealm(final AuthServiceAuthenticator authServiceAuthenticator, final AuditEventSender auditEventSender, final IdJwtAuthServiceBackend idJwtServiceAuthenticator, final AccessJwtAuthServiceBackend accessJwtServiceAuthenticator) {
         this.auditEventSender = auditEventSender;
         this.authServiceAuthenticator = authServiceAuthenticator;
-        this.jwtServiceAuthBackend = jwtServiceAuthBackend;
+        this.idJwtServiceAuthenticator = idJwtServiceAuthenticator;
+        this.accessJwtServiceAuthenticator = accessJwtServiceAuthenticator;
 
         setAuthenticationTokenClass(HttpHeadersToken.class);
         setCachingEnabled(false);
@@ -57,36 +56,39 @@ public class HTTPHeaderJWTAuthenticatingRealm extends AuthenticatingRealm {
 
         MultivaluedMap<String, String> headers = headersToken.getHeaders();
 
-        Optional<String> bearerHeader = headerValue(headers, "Authorization");
+        Optional<String> bearerHeader = Optional.ofNullable(headers.getFirst("Authorization".toLowerCase(Locale.US)));
         log.trace("Authorization header {}", bearerHeader);
         if (bearerHeader.isEmpty()) {
             return null;
         }
-        final String jwtToken = bearerHeader.map(s -> s.substring(s.indexOf(BEARER))).orElseThrow();
+        final String jwtToken = bearerHeader.filter(s -> s.startsWith(BEARER)).map(s -> s.substring(BEARER.length())).orElseThrow(() -> new AuthenticationException("Invalid credentials"));
 
         try {
 
-            AuthServiceCredentials authServiceCredentials = AuthServiceCredentials.create("jwt", EncryptedValue.createUnEncrypted(jwtToken));
-
-            //explicitly choose the backend associated with JWT
-            AuthServiceResult result = authServiceAuthenticator.authenticate(authServiceCredentials, jwtServiceAuthBackend);
-            if (!result.isSuccess()) {
-                Map<String, Object> details = Map.of(AuditDetailKey.AUTH_REALM, SessionJWTAuthenticatingRealm.class.toString(), AuditDetailKey.REASON, "authentication_failed");
-                final String username = result.username();
-                auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
-                return null;
+            //explicitly choose the backends associated with JWTs
+            // AccessToken handling
+            AuthServiceCredentials accessTokenCredentials = AuthServiceCredentials.create(AccessJwtAuthServiceBackend.TYPE_NAME + "_", EncryptedValue.createUnEncrypted(jwtToken));
+            AuthServiceResult result = authServiceAuthenticator.authenticate(accessTokenCredentials, accessJwtServiceAuthenticator);
+            if (result.isSuccess()) {
+                return handleResultSuccess(result, headersToken, auditEventSender, jwtToken, result.extraAttributes());
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("Successfully authenticated username <{}> for user profile <{}> with backend <{}/{}/{}>",
-                        result.username(), result.userProfileId(), result.backendTitle(), result.backendType(), result.backendId());
-            }
-            Map<String, Object> details = Map.of(
-                    "auth_realm", this.getClass().toString(),
-                    "remote_address", headersToken.getRemoteAddr());
-            auditEventSender.success(AuditActor.user(result.username()), AuditEventTypes.AUTHENTICATION_CHECK, details);
+            log.debug("accessJWT failed {}", result);
 
-            return toAuthenticationInfo(result);
+            //Id Token handling
+            AuthServiceCredentials idTokenCredentials = AuthServiceCredentials.create(IdJwtAuthServiceBackend.TYPE_NAME, EncryptedValue.createUnEncrypted(jwtToken));
+            result = authServiceAuthenticator.authenticate(idTokenCredentials, idJwtServiceAuthenticator);
+
+            if (result.isSuccess()) {
+                return handleResultSuccess(result, headersToken, auditEventSender, jwtToken, result.extraAttributes());
+            }
+
+            log.debug("idJWT failed {}", result);
+
+            Map<String, Object> details = Map.of(AuditDetailKey.AUTH_REALM, SessionJWTAuthenticatingRealm.class.toString(), AuditDetailKey.REASON, "authentication_failed");
+            final String username = result.username();
+            auditEventSender.failure(AuditActor.user(username), AuditEventTypes.AUTHENTICATION_CHECK, details);
+            return null;
 
         } catch (Exception ex) {
             log.error("Did not succeed to authenticate user");
@@ -94,16 +96,21 @@ public class HTTPHeaderJWTAuthenticatingRealm extends AuthenticatingRealm {
         }
     }
 
-    private Optional<String> headerValue(MultivaluedMap<String, String> headers, @Nullable String headerName) {
-        if (headerName == null) {
-            return Optional.empty();
+    private AuthenticationInfo handleResultSuccess(AuthServiceResult result, HttpHeadersToken headersToken, AuditEventSender auditEventSender, final String jwtToken, final Map<String, String> extraAttributes) {
+        Map<String, Object> details = Map.of(
+                "auth_realm", this.getClass().toString(),
+                "remote_address", headersToken.getRemoteAddr());
+        auditEventSender.success(AuditActor.user(result.username()), AuditEventTypes.AUTHENTICATION_CHECK, details);
+        SimplePrincipalCollection principals = new SimplePrincipalCollection();
+        principals.add(result.userProfileId(),NAME);
+        principals.add(jwtToken,PrincipalRealmNames.ACCESS_JWT_REALM_KEY);
+        if (extraAttributes != null) {
+            principals.add(Map.copyOf(extraAttributes),PrincipalRealmNames.EXTRA_ATTRIBUTES);
         }
-        return Optional.ofNullable(headers.getFirst(headerName.toLowerCase(Locale.US)));
+
+        return new SimpleAccount(principals, null, NAME + "/" + result.backendType());
     }
 
 
-    private AuthenticationInfo toAuthenticationInfo(AuthServiceResult result) {
-        return new SimpleAccount(result.userProfileId(), null, NAME + "/" + result.backendType());
-    }
 
 }

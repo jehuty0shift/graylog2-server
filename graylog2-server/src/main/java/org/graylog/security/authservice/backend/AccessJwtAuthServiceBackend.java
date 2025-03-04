@@ -1,11 +1,13 @@
-package org.graylog.security.authservice;
+package org.graylog.security.authservice.backend;
 
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import org.graylog.security.authservice.*;
 import org.graylog.security.authservice.test.AuthServiceBackendTestResult;
 import org.graylog2.audit.AuditActor;
 import org.graylog2.audit.AuditEventSender;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.security.oidc.OidcProviderHandler;
+import org.graylog2.security.oidc.OidcUtils;
 import org.graylog2.users.RoleService;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -16,18 +18,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class AccessTokenJwtServiceAuthenticator implements AuthServiceBackend {
+public class AccessJwtAuthServiceBackend implements AuthServiceBackend {
     public static final String TYPE_NAME = "access_token_jwt";
     public static final String BACKEND_ID = "000000000000000000000003";
 
-    private static Logger log = LoggerFactory.getLogger(AccessTokenJwtServiceAuthenticator.class);
+    private static Logger log = LoggerFactory.getLogger(AccessJwtAuthServiceBackend.class);
 
     private final AuditEventSender auditEventSender;
     private final RoleService roleService;
     private final OidcProviderHandler providerHandler;
 
     @Inject
-    public AccessTokenJwtServiceAuthenticator(AuditEventSender auditEventSender, RoleService roleService, OidcProviderHandler providerHandler) {
+    public AccessJwtAuthServiceBackend(AuditEventSender auditEventSender, RoleService roleService, OidcProviderHandler providerHandler) {
         this.auditEventSender = auditEventSender;
         this.roleService = roleService;
         this.providerHandler = providerHandler;
@@ -43,18 +45,31 @@ public class AccessTokenJwtServiceAuthenticator implements AuthServiceBackend {
         log.debug("Using AccessToken Authenticator");
 
         final String accessToken = authCredentials.password().value();
-        final String idProvider = authCredentials.username().substring(TYPE_NAME.length() + 1);
+        String idProvider = authCredentials.username().substring(TYPE_NAME.length() + 1);
 
-        log.debug("idProvider is: {}",idProvider);
+        log.debug("idProvider is: {}", idProvider);
 
-        final Optional<UserInfo> userInfoOpt = idProvider.isBlank() ? providerHandler.retrieveUserInfo(accessToken) : providerHandler.retrieveUserInfo(idProvider, accessToken);
-
-        if (userInfoOpt.isEmpty()) {
-            log.debug("couldn't retrieve any UserInfo");
-            return Optional.empty();
+        final UserInfo userInfo;
+        if (idProvider.isBlank()) {
+            Optional<OidcProviderHandler.UserInfoWithProvider> userInfoWithProvider = providerHandler.retrieveUserInfo(accessToken);
+            if (userInfoWithProvider.isEmpty()) {
+                log.debug("couldn't retrieve any UserInfo");
+                return Optional.empty();
+            } else {
+                idProvider = userInfoWithProvider.get().getIdProvider();
+                userInfo = userInfoWithProvider.get().getUserInfo();
+            }
+        } else {
+            final Optional<UserInfo> userInfoOpt = providerHandler.retrieveUserInfo(idProvider, accessToken);
+            if (userInfoOpt.isEmpty()) {
+                log.debug("couldn't retrieve any UserInfo from provider {}", idProvider);
+                return Optional.empty();
+            } else {
+                userInfo = userInfoOpt.get();
+            }
         }
 
-        UserInfo userInfo = userInfoOpt.get();
+
         final String username = extractUsernameFromUserInfo(userInfo);
         log.debug("retrieved username {} from provider {}", username, idProvider);
         // if no exception here, it means the user is valid, we can safely provide the user.
@@ -71,6 +86,7 @@ public class AccessTokenJwtServiceAuthenticator implements AuthServiceBackend {
                 .fullName(Optional.ofNullable(userInfo.getName()).orElse(username))
                 .username(username)
                 .defaultRoles(Set.of(roleService.getReaderRoleObjectId()))
+                .extraAttributes(Map.of(OidcUtils.OIDC_PROVIDER_ATTRIBUTE, idProvider))
                 .email(Optional.ofNullable(userInfo.getEmailAddress()).orElse(username + "@observability.ovhcloud.com"))
                 .accountIsEnabled(true)
                 .build());
@@ -80,9 +96,9 @@ public class AccessTokenJwtServiceAuthenticator implements AuthServiceBackend {
 
     private String extractUsernameFromUserInfo(final UserInfo userInfo) {
         if (userInfo.getPreferredUsername() != null) {
-            return userInfo.getPreferredUsername();
+            return OidcUtils.extractUsernameIfURN(userInfo.getPreferredUsername());
         } else {
-            return userInfo.getSubject().getValue();
+            return OidcUtils.extractUsernameIfURN(userInfo.getSubject().getValue());
         }
     }
 

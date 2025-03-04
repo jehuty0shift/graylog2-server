@@ -2,6 +2,8 @@ package org.graylog2.security.oidc;
 
 public class OidcUtils {
 
+    public static final String OIDC_PROVIDER_ATTRIBUTE = "oidc_provider";
+
     public static final String extractUsernameIfURN(final String urn) {
             if(!urn.contains(":")) {
                 return urn;

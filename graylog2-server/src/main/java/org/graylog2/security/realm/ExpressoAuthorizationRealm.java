@@ -15,6 +15,7 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.graylog2.security.CaffeineShiroCacheManager;
 import org.graylog2.security.ExpressoPermissionResolver;
+import org.graylog2.security.oidc.OidcUtils;
 import org.graylog2.shared.security.RestPermissions;
 import org.graylog2.shared.security.SessionAttributes;
 import org.slf4j.Logger;
@@ -50,20 +51,55 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
             return null;
         }
 
-        Optional<String> sessionFromPrincipal = principalCollection.fromRealm(SessionIdHolder.SESSION_REALM_KEY).stream().findFirst();
-
-        if (sessionFromPrincipal.isEmpty()) {
-            log.trace("Holder is null, returning for principals {}", principalCollection.asList());
+        Optional<TokenWithProvider> accessToken = extractAccessTokenFromPrincipalCollection(principalCollection);
+        if (accessToken.isEmpty()) {
             return null;
         }
 
-        SessionIdHolder holder = new SessionIdHolder(sessionFromPrincipal.get());
+        final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 
-        if (log.isDebugEnabled()) {
-            log.debug("Using Expresso Realm for session {}", holder.getSessionId());
+        Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(accessToken.get().idProvider(), accessToken.get().token());
+        log.debug("retrieved {} permissions from expresso", permissions.size());
+        info.setObjectPermissions(permissions);
+
+
+        return info;
+    }
+
+    private Optional<TokenWithProvider> extractAccessTokenFromPrincipalCollection(PrincipalCollection principalCollection) {
+        Optional<String> sessionFromPrincipal = (Optional<String>) principalCollection.fromRealm(PrincipalRealmNames.SESSION_REALM_KEY).stream().findFirst();
+
+        if (sessionFromPrincipal.isPresent()) {
+            log.trace("Using Principal From Session for {}", sessionFromPrincipal.get());
+            return extractAccessTokenWithProviderFromSessionId(sessionFromPrincipal.get());
         }
 
+        Collection<Object> jwtPrincipalCollection = (Collection<Object>) principalCollection.fromRealm(PrincipalRealmNames.ACCESS_JWT_REALM_KEY);
 
+        if (jwtPrincipalCollection != null && !jwtPrincipalCollection.isEmpty()) {
+            return extractAccessTokenWithProviderFromAccessJwtRealm(principalCollection);
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<TokenWithProvider> extractAccessTokenWithProviderFromAccessJwtRealm(final PrincipalCollection principalCollection) {
+        String accessToken = (String) principalCollection.fromRealm(PrincipalRealmNames.ACCESS_JWT_REALM_KEY).iterator().next();
+        if (accessToken == null) {
+            return Optional.empty();
+        }
+
+        Map<String, String> extraAttributes = (Map<String, String>) principalCollection.fromRealm(PrincipalRealmNames.EXTRA_ATTRIBUTES).iterator().next();
+        if (extraAttributes == null || extraAttributes.containsKey(OidcUtils.OIDC_PROVIDER_ATTRIBUTE)) {
+            return Optional.empty();
+        }
+        log.trace("Using Principal From Token for {} and extra attributes: {}", accessToken, extraAttributes);
+        return Optional.of(new TokenWithProvider(extraAttributes.get(OidcUtils.OIDC_PROVIDER_ATTRIBUTE), accessToken));
+
+    }
+
+
+    private Optional<TokenWithProvider> extractAccessTokenWithProviderFromSessionId(String principalSessionId) {
         Session session = SecurityUtils.getSubject().getSession();
         if (log.isTraceEnabled()) {
             log.trace("sessionId of subject {}", session.getId());
@@ -72,29 +108,23 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
 
         final String oidcProvider = (String) session.getAttribute(SessionAttributes.SESSION_OIDC_PROVIDER);
 
-        if (oidcProvider == null || "ldp".equals(oidcProvider) || !holder.getSessionId().equals(session.getId())) {
-            log.debug("Not a Session created through SessionAttribute Provider. Holder: {}, session {}", holder.getSessionId(), session.getId());
-            return null;
+        if (oidcProvider == null || "ldp".equals(oidcProvider) || !principalSessionId.equals(session.getId())) {
+            log.debug("Not a Session created through SessionAttribute Provider. Holder: {}, session {}", principalSessionId, session.getId());
+            return Optional.empty();
         }
-
-        final SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
 
         log.debug("retrieving tokens with token from access Provider {}", oidcProvider);
         Boolean isExternal = (Boolean) session.getAttribute(SessionAttributes.SESSION_IS_EXTERNAL_USER);
         if (isExternal == null || !isExternal) {
             log.debug("session doesn't have any Expresso expected attributes");
-            return null;
+            return Optional.empty();
         }
 
-        String accessToken = (String) session.getAttribute(SessionAttributes.OIDC_ACCESS_TOKEN);
+        if (session.getAttribute(SessionAttributes.OIDC_ACCESS_TOKEN) == null) {
+            return Optional.empty();
+        }
 
-
-        Set<Permission> permissions = expressoPermissionResolver.resolvePermissionsForPrincipal(oidcProvider, accessToken);
-        log.debug("retrieved {} permissions from expresso", permissions.size());
-        info.setObjectPermissions(permissions);
-
-
-        return info;
+        return Optional.of(new TokenWithProvider(oidcProvider, (String) session.getAttribute(SessionAttributes.OIDC_ACCESS_TOKEN)));
     }
 
 
@@ -139,5 +169,24 @@ public class ExpressoAuthorizationRealm extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         return null;
+    }
+
+    public static class TokenWithProvider {
+
+        private String idProvider;
+        private String token;
+
+        public TokenWithProvider(String idProvider, String token) {
+            this.idProvider = idProvider;
+            this.token = token;
+        }
+
+        public String token() {
+            return token;
+        }
+
+        public String idProvider() {
+            return idProvider;
+        }
     }
 }
