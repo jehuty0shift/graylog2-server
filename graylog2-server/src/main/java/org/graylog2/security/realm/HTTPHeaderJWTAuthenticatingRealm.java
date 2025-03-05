@@ -16,6 +16,7 @@ import org.graylog2.audit.AuditEventSender;
 import org.graylog2.audit.AuditEventTypes;
 import org.graylog2.security.encryption.EncryptedValue;
 import org.graylog2.shared.security.HttpHeadersToken;
+import org.graylog2.shared.security.ShiroSecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,11 @@ public class HTTPHeaderJWTAuthenticatingRealm extends AuthenticatingRealm {
         if (bearerHeader.isEmpty()) {
             return null;
         }
-        final String jwtToken = bearerHeader.filter(s -> s.startsWith(BEARER)).map(s -> s.substring(BEARER.length())).orElseThrow(() -> new AuthenticationException("Invalid credentials"));
+        final String jwtToken = bearerHeader.filter(s -> s.startsWith(BEARER)).map(s -> s.substring(BEARER.length())).orElse(null);
+
+        if (jwtToken == null) {
+            return null;
+        }
 
         try {
 
@@ -108,6 +113,7 @@ public class HTTPHeaderJWTAuthenticatingRealm extends AuthenticatingRealm {
             principals.add(Map.copyOf(extraAttributes),PrincipalRealmNames.EXTRA_ATTRIBUTES);
         }
 
+        ShiroSecurityContext.requestSessionCreation(false);
         return new SimpleAccount(principals, null, NAME + "/" + result.backendType());
     }
 
