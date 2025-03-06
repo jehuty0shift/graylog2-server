@@ -17,7 +17,7 @@
     <description>Graylog Storage Module for OpenSearch 2</description>
 
     <properties>
-        <opensearch-client.version>2.21.0</opensearch-client.version>
+        <opensearch-client.version>2.22.0</opensearch-client.version>
         <opensearch.version>2.19.0</opensearch.version>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
