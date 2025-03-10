@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public class Configuration implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(Configuration.class);
     private static final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new BlackbirdModule())
             .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
             .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
     public static final Configuration EMPTY_CONFIGURATION = new Configuration(null);

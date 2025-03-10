@@ -83,7 +83,7 @@ public class Message implements Messages, Indexable {
      *     <li>Using ULIDs results in shorter IDs (26 characters for ULID vs 36 for UUID) and thus reduced storage usage</li>
      *     <li>They are guaranteed to be lexicographically sortable (UUIDs are only lexicographically sortable when time-based ones are used)</li>
      * </ul>
-     *
+     * <p>
      * See: https://github.com/Graylog2/graylog2-server/issues/5994
      */
     public static final String FIELD_GL2_MESSAGE_ID = "gl2_message_id";
@@ -238,7 +238,7 @@ public class Message implements Messages, Indexable {
     private ArrayList<Recording> recordings;
 
     public Message(final String message, final String source, final Instant timestamp) {
-        fields = Maps.newHashMap();
+        fields = new HashMap<>(32);
         fields.put(FIELD_ID, ConcurrentUUID.generateRandomUuid().toString());
         addRequiredField(FIELD_MESSAGE, message);
         addRequiredField(FIELD_SOURCE, source);
@@ -251,7 +251,7 @@ public class Message implements Messages, Indexable {
 
     private Message(String id, Map<String, Object> newFields) {
         Preconditions.checkArgument(id != null, "message id cannot be null");
-        this.fields = Maps.newHashMap();
+        this.fields = new HashMap<>(32);
         fields.put(FIELD_ID, id);
         addFields(newFields);
     }
@@ -477,7 +477,7 @@ public class Message implements Messages, Indexable {
             if (isRequiredField || !str.isEmpty()) {
                 fields.put(trimmedKey, str);
             }
-        } else if (value instanceof  DateTime) {
+        } else if (value instanceof DateTime) {
             DateTime dt = (DateTime) value;
             fields.put(trimmedKey, Instant.ofEpochMilli(dt.getMillis()));
         } else if (value != null) {
@@ -492,7 +492,8 @@ public class Message implements Messages, Indexable {
                 return false;
             }
         }
-        return true;    }
+        return true;
+    }
 
     private static boolean isAllowedCharacter(char c) {
         return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == '-' || c == '@';
@@ -582,6 +583,7 @@ public class Message implements Messages, Indexable {
 
     /**
      * Get the streams this message is currently routed to.
+     *
      * @return an immutable copy of the current set of assigned streams, empty if no streams have been assigned
      */
     public Set<Stream> getStreams() {
@@ -600,6 +602,7 @@ public class Message implements Messages, Indexable {
 
     /**
      * Assign all of the streams to this message.
+     *
      * @param newStreams an iterable of Stream objects
      */
     public void addStreams(Iterable<Stream> newStreams) {
@@ -610,6 +613,7 @@ public class Message implements Messages, Indexable {
 
     /**
      * Remove the stream assignment from this message.
+     *
      * @param stream the stream assignment to remove this message from
      * @return <tt>true</tt> if this message was assigned to the stream
      */
@@ -642,10 +646,10 @@ public class Message implements Messages, Indexable {
             streamField = getFieldAs(Collection.class, FIELD_STREAMS);
         } catch (ClassCastException e) {
             LOG.trace("Couldn't cast {} to List", FIELD_STREAMS, e);
-            streamField = Collections.emptySet();
+            streamField = null;
         }
 
-        final Set<String> streamIds = streamField == null ? new HashSet<>(streams.size()) : new HashSet<>(streamField);
+        final Set<String> streamIds = streamField == null ? new HashSet<>() : new HashSet<>(streamField);
         for (Stream stream : streams) {
             streamIds.add(stream.getId());
         }
