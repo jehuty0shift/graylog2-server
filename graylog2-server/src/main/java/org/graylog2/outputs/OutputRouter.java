@@ -1,16 +1,16 @@
 /**
  * This file is part of Graylog.
- *
+ * <p>
  * Graylog is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Graylog is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Graylog.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,8 +36,7 @@ public class OutputRouter {
         this.outputRegistry = outputRegistry;
     }
 
-    protected Set<MessageOutput> getMessageOutputsForStream(Stream stream) {
-        Set<MessageOutput> result = new HashSet<>();
+    protected Set<MessageOutput> getMessageOutputsForStream(Set<MessageOutput> result, Stream stream) {
         for (Output output : stream.getOutputs()) {
             final MessageOutput messageOutput = outputRegistry.getOutputForIdAndStream(output.getId(), stream);
             if (messageOutput != null) {
@@ -46,6 +45,10 @@ public class OutputRouter {
         }
 
         return result;
+    }
+
+    protected Set<MessageOutput> getMessageOutputsForStream(Stream stream) {
+        return getMessageOutputsForStream(new HashSet<>(), stream);
     }
 
     public Set<MessageOutput> getOutputsForMessage(final Message msg) {
@@ -59,7 +62,7 @@ public class OutputRouter {
         final Set<MessageOutput> result = new HashSet<>();
 
         for (Stream stream : msg.getStreams()) {
-            result.addAll(getMessageOutputsForStream(stream));
+            getMessageOutputsForStream(result, stream);
         }
 
         return result;
