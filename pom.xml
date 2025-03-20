@@ -111,7 +111,7 @@
         <grok.version>0.1.9-graylog-3</grok.version>
         <grpc.version>1.29.0</grpc.version>
         <guava-retrying.version>2.0.0</guava-retrying.version>
-        <guava.version>33.4.0-jre</guava.version>
+        <guava.version>33.4.5-jre</guava.version>
         <guice.version>5.1.0</guice.version>
         <HdrHistogram.version>2.2.2</HdrHistogram.version>
         <hibernate-validator.version>6.2.5.Final</hibernate-validator.version>
@@ -157,7 +157,7 @@
         <semver4j.version>2.2.0-graylog.1</semver4j.version>
         <shiro.version>1.13.0</shiro.version>
         <sigar.version>1.6.4</sigar.version>
-        <siv-mode.version>1.6.0</siv-mode.version>
+        <siv-mode.version>1.6.1</siv-mode.version>
         <slf4j.version>1.7.36</slf4j.version>
         <streamex.version>0.8.3</streamex.version>
         <swagger.version>1.5.13</swagger.version>
@@ -168,7 +168,7 @@
         <validation-api.version>2.0.1.Final</validation-api.version>
         <zkclient.version>0.11</zkclient.version>
         <zookeeper.version>3.9.3</zookeeper.version>
-        <zstd.version>1.5.7-1</zstd.version>
+        <zstd.version>1.5.7-2</zstd.version>
 
         <!-- Test dependencies -->
         <apacheds-server.version>2.0.0.AM27</apacheds-server.version>
@@ -176,11 +176,11 @@
         <assertj-joda-time.version>2.2.0</assertj-joda-time.version>
         <assertj-json.version>1.2.0</assertj-json.version>
         <awaitility.version>3.1.6</awaitility.version>
-        <equalsverifier.version>3.19.1</equalsverifier.version>
+        <equalsverifier.version>3.19.2</equalsverifier.version>
         <jukito.version>1.5</jukito.version>
         <junit.version>4.13.2</junit.version>
-        <junit-jupiter.version>5.12.0</junit-jupiter.version>
-        <mockito.version>5.16.0</mockito.version>
+        <junit-jupiter.version>5.12.1</junit-jupiter.version>
+        <mockito.version>5.16.1</mockito.version>
         <nosqlunit.version>1.0.0</nosqlunit.version>
         <restassured.version>4.3.1</restassured.version>
         <system-rules.version>1.19.0</system-rules.version>
