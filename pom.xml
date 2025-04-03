@@ -100,7 +100,7 @@
         <bouncycastle.version>1.80</bouncycastle.version>
         <caffeine.version>3.2.0</caffeine.version>
         <cef-parser.version>0.0.1.10</cef-parser.version>
-        <checker-qual.version>3.49.1</checker-qual.version>
+        <checker-qual.version>3.49.2</checker-qual.version>
         <commons-codec.version>1.18.0</commons-codec.version>
         <commons-email.version>1.6.0</commons-email.version>
         <commons-validator.version>1.9.0</commons-validator.version>
@@ -133,7 +133,7 @@
         <jersey.version>2.46</jersey.version>
         <jjwt.version>0.12.6</jjwt.version>
         <jmte.version>5.0.0</jmte.version>
-        <joda-time.version>2.13.1</joda-time.version>
+        <joda-time.version>2.14.0</joda-time.version>
         <jool.version>0.9.15</jool.version>
         <json-path.version>2.9.0</json-path.version>
         <kafka.version>2.7.2</kafka.version>
