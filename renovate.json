@@ -167,6 +167,12 @@
   ],
   "packageRules": [
     {
+      // intentionally pinning netty 4.1 version in this convention
+      "matchPackagePatterns": ["io.netty:netty-bom"],
+      "matchUpdateTypes": ["major","minor"],
+      "enabled": false
+    },
+    {
       "matchPaths": ["*"],
       "matchUpdateTypes": ["major", "provided"],
       "enabled": false
