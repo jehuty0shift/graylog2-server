@@ -94,30 +94,30 @@
         <antlr.version>4.13.2</antlr.version>
         <apache-directory-version>2.1.7</apache-directory-version>
         <apache-httpclient.version>4.5.14</apache-httpclient.version>
-        <apache-httpclient5.version>5.4.3</apache-httpclient5.version>
+        <apache-httpclient5.version>5.4.4</apache-httpclient5.version>
         <auto-value.version>1.11.0</auto-value.version>
         <auto-value-javabean.version>2.5.2</auto-value-javabean.version>
         <bouncycastle.version>1.80</bouncycastle.version>
         <caffeine.version>3.2.0</caffeine.version>
         <cef-parser.version>0.0.1.10</cef-parser.version>
-        <checker-qual.version>3.49.2</checker-qual.version>
+        <checker-qual.version>3.49.3</checker-qual.version>
         <commons-codec.version>1.18.0</commons-codec.version>
         <commons-email.version>1.6.0</commons-email.version>
         <commons-validator.version>1.9.0</commons-validator.version>
-        <commons-io.version>2.18.0</commons-io.version>
+        <commons-io.version>2.19.0</commons-io.version>
         <disruptor.version>3.4.4</disruptor.version>
         <freemarker.version>2.3.34</freemarker.version>
         <gelfclient.version>1.5.1</gelfclient.version>
-        <geoip2.version>4.2.1</geoip2.version>
+        <geoip2.version>4.3.0</geoip2.version>
         <grok.version>0.1.9-graylog-3</grok.version>
-        <grpc.version>1.29.0</grpc.version>
+        <grpc.version>1.72.0</grpc.version>
         <guava-retrying.version>2.0.0</guava-retrying.version>
-        <guava.version>33.4.6-jre</guava.version>
+        <guava.version>33.4.8-jre</guava.version>
         <guice.version>5.1.0</guice.version>
         <HdrHistogram.version>2.2.2</HdrHistogram.version>
-        <hibernate-validator.version>6.2.5.Final</hibernate-validator.version>
+        <hibernate-validator.version>6.2.5.Final</hibernate-validator.version> <!-- major block by javax to jakarta -->
         <hk2.version>2.6.1</hk2.version> <!-- The HK2 version should match the version being used by Jersey -->
-        <jackson.version>2.18.3</jackson.version>
+        <jackson.version>2.18.4</jackson.version>
         <jackson-databind-nullable-version>0.2.6</jackson-databind-nullable-version>
         <jadconfig.version>0.15.0</jadconfig.version>
         <java-semver.version>0.10.2</java-semver.version>
@@ -130,7 +130,7 @@
         <jbcrypt.version>0.4</jbcrypt.version>
         <jcip-annotations.version>1.0</jcip-annotations.version>
         <jdot.version>1.0</jdot.version>
-        <jersey.version>2.46</jersey.version>
+        <jersey.version>2.46</jersey.version> <!-- major block by javax to jakarta -->
         <jjwt.version>0.12.6</jjwt.version>
         <jmte.version>5.0.0</jmte.version>
         <joda-time.version>2.14.0</joda-time.version>
@@ -139,19 +139,19 @@
         <kafka.version>2.7.2</kafka.version>
         <log4j.version>2.24.3</log4j.version>
         <metrics.version>4.1.36</metrics.version>
-        <mongodb-driver.version>5.4.0</mongodb-driver.version> <!-- to keep for plugins tests -->
+        <mongodb-driver.version>5.5.0</mongodb-driver.version> <!-- to keep for plugins tests -->
         <mongojack.version>5.0.2</mongojack.version>
         <natty.version>0.13</natty.version>
-        <netty.version>4.1.119.Final</netty.version>
-        <netty-tcnative-boringssl-static.version>2.0.70.Final</netty-tcnative-boringssl-static.version>
-        <nimbu-oauth2.version>11.23.1</nimbu-oauth2.version>
+        <netty.version>4.1.121.Final</netty.version>
+        <netty-tcnative-boringssl-static.version>2.0.71.Final</netty-tcnative-boringssl-static.version>
+        <nimbu-oauth2.version>11.24</nimbu-oauth2.version>
         <okhttp.version>4.12.0</okhttp.version>
         <opencsv.version>2.3</opencsv.version>
         <os-platform-finder.version>1.2.3</os-platform-finder.version>
-        <pkts.version>3.0.10</pkts.version>
-        <protobuf.version>3.25.5</protobuf.version>
+        <pkts.version>3.0.18</pkts.version>
+        <protobuf.version>3.25.7</protobuf.version>
         <reflections.version>0.9.10</reflections.version>
-        <retrofit.version>2.11.0</retrofit.version>
+        <retrofit.version>3.0.0</retrofit.version>
         <scala.version>2.13.10</scala.version>
         <snakeyaml.version>2.4</snakeyaml.version>
         <snappy-java.version>1.1.10.7</snappy-java.version>
@@ -166,10 +166,10 @@
         <ulid.version>8.3.0</ulid.version>
         <unboundid-ldap.version>7.0.2</unboundid-ldap.version>
         <uuid.version>3.2.1</uuid.version>
-        <validation-api.version>2.0.1.Final</validation-api.version>
+        <validation-api.version>2.0.1.Final</validation-api.version> <!-- major block by javax to jakarta -->
         <zkclient.version>0.11</zkclient.version>
         <zookeeper.version>3.9.3</zookeeper.version>
-        <zstd.version>1.5.7-2</zstd.version>
+        <zstd.version>1.5.7-3</zstd.version>
 
         <!-- Test dependencies -->
         <apacheds-server.version>2.0.0.AM27</apacheds-server.version>
@@ -177,18 +177,18 @@
         <assertj-joda-time.version>2.2.0</assertj-joda-time.version>
         <assertj-json.version>1.2.0</assertj-json.version>
         <awaitility.version>3.1.6</awaitility.version>
-        <equalsverifier.version>3.19.2</equalsverifier.version>
+        <equalsverifier.version>3.19.4</equalsverifier.version>
         <jukito.version>1.5</jukito.version>
         <junit.version>4.13.2</junit.version>
-        <junit-jupiter.version>5.12.1</junit-jupiter.version>
-        <mockito.version>5.16.1</mockito.version>
+        <junit-jupiter.version>5.12.2</junit-jupiter.version>
+        <mockito.version>5.17.0</mockito.version>
         <nosqlunit.version>1.0.0</nosqlunit.version>
         <restassured.version>4.3.1</restassured.version>
         <system-rules.version>1.19.0</system-rules.version>
-        <testcontainers.version>1.20.6</testcontainers.version>
+        <testcontainers.version>1.21.0</testcontainers.version>
 
         <!-- Nodejs dependencies -->
-        <nodejs.version>v18.20.5</nodejs.version>
+        <nodejs.version>v18.20.8</nodejs.version>
         <yarn.version>v1.22.22</yarn.version>
 
         <!-- Plugin versions -->
