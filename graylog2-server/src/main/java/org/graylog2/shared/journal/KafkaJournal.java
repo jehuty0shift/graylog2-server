@@ -34,7 +34,10 @@ import kafka.log.*;
 import kafka.server.*;
 import kafka.utils.KafkaScheduler;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.record.*;
+import org.apache.kafka.common.record.AbstractRecords;
+import org.apache.kafka.common.record.CompressionType;
+import org.apache.kafka.common.record.MemoryRecords;
+import org.apache.kafka.common.record.SimpleRecord;
 import org.apache.kafka.common.utils.Time;
 import org.graylog2.plugin.GlobalMetricNames;
 import org.graylog2.plugin.ServerStatus;
@@ -77,6 +80,7 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaJournal.class);
     private static final int NUM_IO_THREADS = 1;
 
+    public static final int MAX_RETRIES = 20000;
     public static final long DEFAULT_COMMITTED_OFFSET = Long.MIN_VALUE;
     public static final int NOTIFY_ON_UTILIZATION_PERCENTAGE = 95;
     private final ServerStatus serverStatus;
@@ -494,14 +498,11 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
             return -1L;
         }
 
-        //final ByteBufferMessageSet messageSet = new ByteBufferMessageSet(JavaConversions.asScalaBuffer(messages).toSeq())
-
         if (LOG.isDebugEnabled()) {
             LOG.debug("Trying to write MemoryRecords with size of {} bytes to journal", AbstractRecords.estimateSizeInBytes((byte) 2, CompressionType.NONE, messages));
         }
 
         MemoryRecords mRecs = MemoryRecords.withRecords(CompressionType.NONE, messages.toArray(new SimpleRecord[messages.size()]));
-        int leaderEpoch = mRecs.batches().iterator().next().partitionLeaderEpoch();
 
         final LogAppendInfo appendInfo = kafkaLog.appendAsLeader(mRecs, 0, new AppendOrigin.Client$(), ApiVersion.latestVersion());
         long lastWriteOffset = appendInfo.lastOffset();
@@ -527,9 +528,44 @@ public class KafkaJournal extends AbstractIdleService implements Journal {
         return write(Collections.singletonList(journalEntry));
     }
 
+
+    private long recordsToSkip(int currentAttempt) {
+        if (currentAttempt < 1000) {
+            return 1L;
+        }
+        if (currentAttempt < 5000) {
+            return 100L;
+        }
+
+        return 1000L * currentAttempt / 1000L;
+    }
+
     @Override
     public List<JournalReadEntry> read(long requestedMaximumCount) {
-        return read(nextReadOffset, requestedMaximumCount);
+        long totalMessageSkipped = 0L;
+        for (int i = 0; i < MAX_RETRIES; i++) {
+            try {
+                List<JournalReadEntry> entries = read(nextReadOffset, requestedMaximumCount);
+                if (totalMessageSkipped > 0) {
+                    LOG.warn("We have skipped {} Journal entries in total", totalMessageSkipped);
+                }
+                return entries;
+            } catch (Exception ex) {
+                LOG.error("Couldn't read {} messages from offset {}, because of {}", requestedMaximumCount, nextReadOffset, ex);
+                long toSkip = recordsToSkip(i);
+                long newNextReadOffset = nextReadOffset + toSkip;
+                if (newNextReadOffset < kafkaLog.logEndOffset()) {
+                    nextReadOffset = newNextReadOffset;
+                    LOG.warn("We will skip {} messages and will retry the read. {} retries remaining", toSkip, MAX_RETRIES - i);
+                    totalMessageSkipped += toSkip;
+                } else {
+                    nextReadOffset = kafkaLog.logEndOffset() + 1;
+                    LOG.error("we arrived at the end of the Journal and skipped {} messages", totalMessageSkipped);
+                    return List.of();
+                }
+            }
+        }
+        throw new IllegalStateException("We have exhausted the retries");
     }
 
     public List<JournalReadEntry> read(long readOffset, long requestedMaximumCount) {
