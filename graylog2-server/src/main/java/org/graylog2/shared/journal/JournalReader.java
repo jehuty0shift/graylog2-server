@@ -136,7 +136,13 @@ public class JournalReader extends AbstractExecutionThreadService {
             // approximate count to read from the journal to backfill the processing chain
             final long remainingCapacity = processBuffer.getRemainingCapacity();
             requestedReadCount.update(remainingCapacity);
-            final List<Journal.JournalReadEntry> encodedRawMessages = journal.read(remainingCapacity);
+            List<Journal.JournalReadEntry> encodedRawMessages;
+            try {
+                encodedRawMessages = journal.read(remainingCapacity);
+            } catch (Exception ex) {
+                log.error("couldn't read the journal, we will wait for new messages and try again !", ex);
+                encodedRawMessages = List.of();
+            }
             if (encodedRawMessages.isEmpty()) {
                 log.debug("No messages to read from Journal, waiting until the writer adds more messages.");
                 // block until something is written to the journal again
@@ -145,6 +151,7 @@ public class JournalReader extends AbstractExecutionThreadService {
                     journalFilled.acquire();
                 } catch (InterruptedException ignored) {
                     // this can happen when we are blocked but the system wants to shut down. We don't have to do anything in that case.
+                    log.trace("Thread interrupted");
                     continue;
                 }
                 log.debug("Messages have been written to Journal, continuing to read.");
@@ -155,7 +162,7 @@ public class JournalReader extends AbstractExecutionThreadService {
                 log.debug("Processing {} messages from journal.", encodedRawMessages.size());
                 for (final Journal.JournalReadEntry encodedRawMessage : encodedRawMessages) {
                     final RawMessage rawMessage = RawMessage.decode(encodedRawMessage.getPayload(),
-                                                                    encodedRawMessage.getOffset());
+                            encodedRawMessage.getOffset());
                     if (rawMessage == null) {
                         // never insert null objects into the ringbuffer, as that is useless
                         log.error("Found null raw message!");
