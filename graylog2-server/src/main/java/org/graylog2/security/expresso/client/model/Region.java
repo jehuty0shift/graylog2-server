@@ -7,5 +7,12 @@ public enum Region {
     EU,
 
     @JsonProperty("CA")
-    CA;
+    CA,
+
+    @JsonProperty("LABEU")
+    LABEU,
+
+    @JsonProperty("US")
+    US
+
 }
