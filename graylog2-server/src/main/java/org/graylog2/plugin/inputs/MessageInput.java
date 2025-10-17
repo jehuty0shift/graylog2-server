@@ -36,6 +36,7 @@ import org.graylog2.plugin.configuration.ConfigurationRequest;
 import org.graylog2.plugin.inputs.codecs.Codec;
 import org.graylog2.plugin.inputs.transports.Transport;
 import org.graylog2.plugin.journal.RawMessage;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,7 @@ public abstract class MessageInput implements Stoppable {
     private final Configuration codecConfig;
     private final Counter globalIncomingMessages;
     private final Counter emptyMessages;
+    private final CodecInfoRegistry codecInfoRegistry;
 
     protected String title;
     protected String creatorUserId;
@@ -97,7 +99,12 @@ public abstract class MessageInput implements Stoppable {
     public MessageInput(MetricRegistry metricRegistry,
                         Configuration configuration,
                         Transport transport,
-                        LocalMetricRegistry localRegistry, Codec codec, Config config, Descriptor descriptor, ServerStatus serverStatus) {
+                        LocalMetricRegistry localRegistry,
+                        Codec codec,
+                        Config config,
+                        Descriptor descriptor,
+                        ServerStatus serverStatus,
+                        CodecInfoRegistry codecInfoRegistry) {
         this.configuration = configuration;
         if (metricRegistry == localRegistry) {
             LOG.error("########### Do not add the global metric registry twice, the localRegistry parameter is " +
@@ -111,6 +118,7 @@ public abstract class MessageInput implements Stoppable {
         this.codec = codec;
         this.descriptor = descriptor;
         this.serverStatus = serverStatus;
+        this.codecInfoRegistry = codecInfoRegistry;
         this.requestedConfiguration = config.combinedRequestedConfiguration();
         this.codecConfig = config.codecConfig.getRequestedConfiguration().filter(codec.getConfiguration());
         rawSize = localRegistry.meter("rawSize");
@@ -337,6 +345,8 @@ public abstract class MessageInput implements Stoppable {
         // add the common message metadata for this input/codec
         rawMessage.setCodecName(codec.getName());
         rawMessage.setCodecConfig(codecConfig);
+        final CodecInfoRegistry.Registration registration = codecInfoRegistry.register(codec.getName(), codecConfig);
+        rawMessage.setCodecReference(registration.id(), registration.isNew() ? codecConfig : null);
         rawMessage.addSourceNode(getId(), serverStatus.getNodeId());
 
         inputBuffer.insert(rawMessage);

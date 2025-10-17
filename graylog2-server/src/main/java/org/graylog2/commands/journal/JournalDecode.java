@@ -19,6 +19,7 @@ package org.graylog2.commands.journal;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
+import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
@@ -31,6 +32,7 @@ import org.graylog2.plugin.inputs.codecs.Codec;
 import org.graylog2.plugin.journal.RawMessage;
 import org.graylog2.shared.bindings.ObjectMapperModule;
 import org.graylog2.shared.journal.Journal;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 import org.slf4j.helpers.MessageFormatter;
 
 import java.util.List;
@@ -84,16 +86,33 @@ public class JournalDecode extends AbstractJournalCommand {
         final Map<String, Codec.Factory<? extends Codec>> codecFactory =
                 injector.getInstance(Key.get(new TypeLiteral<Map<String, Codec.Factory<? extends Codec>>>() {
                 }));
+        final CodecInfoRegistry codecInfoRegistry;
+        try {
+            codecInfoRegistry = injector.getInstance(CodecInfoRegistry.class);
+        } catch (ConfigurationException e) {
+            System.err.println("Codec registry is unavailable - inline codec configurations only will be used.");
+            codecInfoRegistry = null;
+        }
 
         final Long readOffset = range.lowerEndpoint();
         final long count = range.upperEndpoint() - range.lowerEndpoint() + 1;
         final List<Journal.JournalReadEntry> entries = journal.read(readOffset,
                 count);
         for (final Journal.JournalReadEntry entry : entries) {
-            final RawMessage raw = RawMessage.decode(entry.getPayload(), entry.getOffset());
+            final RawMessage raw = RawMessage.decode(entry.getPayload(), entry.getOffset(), codecInfoRegistry);
             if (raw == null) {
                 System.err.println(MessageFormatter.format("Journal entry at offset {} failed to decode",
                         entry.getOffset()));
+                continue;
+            }
+
+            if (codecInfoRegistry != null && raw.getCodecConfig() == null && raw.hasCodecInfoId()) {
+                codecInfoRegistry.get(raw.getCodecInfoId()).ifPresent(info -> raw.setCodecConfig(info.configuration()));
+            }
+
+            if (raw.getCodecConfig() == null) {
+                System.err.println(MessageFormatter.format("No codec configuration available for codec {} (id {})",
+                        new Object[]{raw.getCodecName(), raw.hasCodecInfoId() ? raw.getCodecInfoId() : null}));
                 continue;
             }
 

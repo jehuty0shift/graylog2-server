@@ -43,6 +43,7 @@ import org.graylog2.plugin.LocalMetricRegistry;
 import org.graylog2.plugin.ServerStatus;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.inputs.MessageInput;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 
 public class RawTCPInput extends MessageInput {
 
@@ -52,12 +53,17 @@ public class RawTCPInput extends MessageInput {
     public RawTCPInput(@Assisted final Configuration configuration,
                        final TcpTransport.Factory tcpTransportFactory,
                        final RawCodec.Factory rawCodecFactory,
-                       final MetricRegistry metricRegistry, LocalMetricRegistry localRegistry, Config config, Descriptor descriptor, ServerStatus serverStatus) {
+                       final MetricRegistry metricRegistry,
+                       LocalMetricRegistry localRegistry,
+                       Config config,
+                       Descriptor descriptor,
+                       ServerStatus serverStatus,
+                       CodecInfoRegistry codecInfoRegistry) {
         super(metricRegistry,
                 configuration,
                 tcpTransportFactory.create(configuration),
                 localRegistry, rawCodecFactory.create(configuration),
-                config, descriptor, serverStatus);
+                config, descriptor, serverStatus, codecInfoRegistry);
     }
 
     public interface Factory extends MessageInput.Factory<RawTCPInput> {

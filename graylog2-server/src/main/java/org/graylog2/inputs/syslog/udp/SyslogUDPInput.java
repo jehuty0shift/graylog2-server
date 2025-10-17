@@ -43,6 +43,7 @@ import org.graylog2.plugin.LocalMetricRegistry;
 import org.graylog2.plugin.ServerStatus;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.inputs.MessageInput;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 
 public class SyslogUDPInput extends MessageInput {
 
@@ -53,12 +54,16 @@ public class SyslogUDPInput extends MessageInput {
                           @Assisted final Configuration configuration,
                           final UdpTransport.Factory udpTransportFactory,
                           final SyslogCodec.Factory syslogCodecFactory,
-                          LocalMetricRegistry localRegistry, Config config, Descriptor descriptor, ServerStatus serverStatus) {
+                          LocalMetricRegistry localRegistry,
+                          Config config,
+                          Descriptor descriptor,
+                          ServerStatus serverStatus,
+                          CodecInfoRegistry codecInfoRegistry) {
         super(metricRegistry,
                 configuration,
                 udpTransportFactory.create(configuration),
                 localRegistry, syslogCodecFactory.create(configuration),
-                config, descriptor, serverStatus);
+                config, descriptor, serverStatus, codecInfoRegistry);
     }
 
     public interface Factory extends MessageInput.Factory<SyslogUDPInput> {

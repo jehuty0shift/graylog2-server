@@ -26,6 +26,7 @@ import org.graylog2.plugin.LocalMetricRegistry;
 import org.graylog2.plugin.ServerStatus;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.inputs.MessageInput;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 
 public class GELFUDPInput extends MessageInput {
 
@@ -35,9 +36,14 @@ public class GELFUDPInput extends MessageInput {
     public GELFUDPInput(MetricRegistry metricRegistry,
                         @Assisted Configuration configuration,
                         UdpTransport.Factory udpFactory,
-                        GelfCodec.Factory gelfCodecFactory, LocalMetricRegistry localRegistry, Config config, Descriptor descriptor, ServerStatus serverStatus) {
+                        GelfCodec.Factory gelfCodecFactory,
+                        LocalMetricRegistry localRegistry,
+                        Config config,
+                        Descriptor descriptor,
+                        ServerStatus serverStatus,
+                        CodecInfoRegistry codecInfoRegistry) {
         super(metricRegistry, configuration, udpFactory.create(configuration), localRegistry, gelfCodecFactory.create(configuration),
-              config, descriptor, serverStatus);
+              config, descriptor, serverStatus, codecInfoRegistry);
     }
 
     public interface Factory extends MessageInput.Factory<GELFUDPInput> {

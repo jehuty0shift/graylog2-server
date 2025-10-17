@@ -25,6 +25,7 @@ import org.graylog2.plugin.ResolvableInetSocketAddress;
 import org.graylog2.plugin.Tools;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.system.NodeId;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -68,6 +69,8 @@ public class RawMessage implements Serializable {
     private final UUID id;
     private final long journalOffset;
     private Configuration codecConfig;
+    private Long codecInfoId;
+    private boolean includeCodecConfigInJournal = true;
 
     public RawMessage(@Nonnull byte[] payload) {
         this(payload, (ResolvableInetSocketAddress)null);
@@ -110,6 +113,8 @@ public class RawMessage implements Serializable {
         }
 
         msgBuilder.setPayload(ByteString.copyFrom(payload));
+        codecInfoId = null;
+        includeCodecConfigInJournal = true;
     }
 
     public void addSourceNode(String sourceInputId, NodeId nodeId) {
@@ -124,17 +129,32 @@ public class RawMessage implements Serializable {
         this.journalOffset = journalOffset;
         id = new UUID(journalMessage.getUuidTime(), journalMessage.getUuidClockseq());
         msgBuilder = JournalMessage.newBuilder(journalMessage);
-        codecConfig = Configuration.deserializeFromJson(journalMessage.getCodec().getConfig());
+        codecInfoId = journalMessage.hasCodecInfoId() ? journalMessage.getCodecInfoId() : null;
+        includeCodecConfigInJournal = journalMessage.getCodec().hasConfig();
+        codecConfig = journalMessage.getCodec().hasConfig()
+                ? Configuration.deserializeFromJson(journalMessage.getCodec().getConfig())
+                : null;
     }
 
     @Nullable
     public static RawMessage decode(final byte[] buffer, final long journalOffset) {
+        return decode(buffer, journalOffset, null);
+    }
+
+    @Nullable
+    public static RawMessage decode(final byte[] buffer,
+                                    final long journalOffset,
+                                    @Nullable final CodecInfoRegistry codecInfoRegistry) {
         try {
             final JournalMessage journalMessage = JournalMessage.parseFrom(buffer);
 
             // TODO validate message based on field contents and version number
 
-            return new RawMessage(journalMessage, journalOffset);
+            final RawMessage rawMessage = new RawMessage(journalMessage, journalOffset);
+            if (codecInfoRegistry != null && rawMessage.codecConfig == null && rawMessage.hasCodecInfoId()) {
+                codecInfoRegistry.get(rawMessage.getCodecInfoId()).ifPresent(info -> rawMessage.setCodecConfig(info.configuration()));
+            }
+            return rawMessage;
         } catch (IOException e) {
             log.error("Cannot read raw message from journal, ignoring this message.", e);
             return null;
@@ -143,12 +163,22 @@ public class RawMessage implements Serializable {
 
     public byte[] encode() {
         try {
+            if (codecInfoId != null) {
+                msgBuilder.setCodecInfoId(codecInfoId);
+            }
+
             final JournalMessages.CodecInfo codec = msgBuilder.getCodec();
             final JournalMessages.CodecInfo.Builder builder = JournalMessages.CodecInfo.newBuilder(codec);
 
-            final String codecConfigJson = codecConfig.serializeToJson();
-            if (codecConfigJson != null) {
-                builder.setConfig(codecConfigJson);
+            if (includeCodecConfigInJournal && codecConfig != null) {
+                final String codecConfigJson = codecConfig.serializeToJson();
+                if (codecConfigJson != null) {
+                    builder.setConfig(codecConfigJson);
+                } else {
+                    builder.clearConfig();
+                }
+            } else {
+                builder.clearConfig();
             }
             msgBuilder.setCodec(builder.build());
 
@@ -234,6 +264,28 @@ public class RawMessage implements Serializable {
 
     public void setCodecConfig(Configuration codecConfig) {
         this.codecConfig = codecConfig;
+    }
+
+    public boolean hasCodecInfoId() {
+        return codecInfoId != null;
+    }
+
+    public long getCodecInfoId() {
+        if (codecInfoId == null) {
+            throw new IllegalStateException("Codec info id has not been set");
+        }
+        return codecInfoId;
+    }
+
+    public void setCodecReference(long codecInfoId, @Nullable Configuration inlineConfiguration) {
+        this.codecInfoId = codecInfoId;
+        msgBuilder.setCodecInfoId(codecInfoId);
+        if (inlineConfiguration != null) {
+            this.codecConfig = inlineConfiguration;
+            includeCodecConfigInJournal = true;
+        } else {
+            includeCodecConfigInJournal = false;
+        }
     }
 
     public List<SourceNode> getSourceNodes() {

@@ -33,7 +33,9 @@ import org.graylog2.plugin.buffers.MessageEvent;
 import org.graylog2.plugin.inputs.codecs.Codec;
 import org.graylog2.plugin.inputs.codecs.MultiMessageCodec;
 import org.graylog2.plugin.journal.RawMessage;
+import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.shared.journal.Journal;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 import org.graylog2.shared.utilities.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,7 @@ public class DecodingProcessor implements EventHandler<MessageEvent> {
     private final ServerStatus serverStatus;
     private final MetricRegistry metricRegistry;
     private final Journal journal;
+    private final CodecInfoRegistry codecInfoRegistry;
     private final Timer parseTime;
 
     @AssistedInject
@@ -67,12 +70,14 @@ public class DecodingProcessor implements EventHandler<MessageEvent> {
                              final ServerStatus serverStatus,
                              final MetricRegistry metricRegistry,
                              final Journal journal,
+                             final CodecInfoRegistry codecInfoRegistry,
                              @Assisted("decodeTime") Timer decodeTime,
                              @Assisted("parseTime") Timer parseTime) {
         this.codecFactory = codecFactory;
         this.serverStatus = serverStatus;
         this.metricRegistry = metricRegistry;
         this.journal = journal;
+        this.codecInfoRegistry = codecInfoRegistry;
 
         // these metrics are global to all processors, thus they are passed in directly to avoid relying on the class name
         this.parseTime = parseTime;
@@ -115,7 +120,19 @@ public class DecodingProcessor implements EventHandler<MessageEvent> {
             return;
         }
 
-        final Codec codec = factory.create(raw.getCodecConfig());
+        Configuration codecConfiguration = raw.getCodecConfig();
+        if (codecConfiguration == null && raw.hasCodecInfoId()) {
+            codecInfoRegistry.get(raw.getCodecInfoId()).ifPresent(info -> raw.setCodecConfig(info.configuration()));
+            codecConfiguration = raw.getCodecConfig();
+        }
+
+        if (codecConfiguration == null) {
+            LOG.warn("Couldn't resolve codec configuration for codec {} (id {}) - skipping message {}.",
+                    raw.getCodecName(), raw.hasCodecInfoId() ? raw.getCodecInfoId() : null, raw.getId());
+            return;
+        }
+
+        final Codec codec = factory.create(codecConfiguration);
 
         // for backwards compatibility: the last source node should contain the input we use.
         // this means that extractors etc defined on the prior inputs are silently ignored.

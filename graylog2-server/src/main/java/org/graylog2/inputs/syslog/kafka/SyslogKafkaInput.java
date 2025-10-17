@@ -27,6 +27,7 @@ import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.inputs.MessageInput;
 import org.graylog2.plugin.inputs.annotations.ConfigClass;
 import org.graylog2.plugin.inputs.annotations.FactoryClass;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 
 import javax.inject.Inject;
 
@@ -40,14 +41,16 @@ public class SyslogKafkaInput extends MessageInput {
                             SyslogCodec.Factory codec,
                             LocalMetricRegistry localRegistry,
                             Config config,
-                            Descriptor descriptor, ServerStatus serverStatus) {
+                            Descriptor descriptor,
+                            ServerStatus serverStatus,
+                            CodecInfoRegistry codecInfoRegistry) {
         this(metricRegistry,
                 configuration,
                 transport.create(configuration),
                 codec.create(configuration),
                 localRegistry,
                 config,
-                descriptor, serverStatus);
+                descriptor, serverStatus, codecInfoRegistry);
     }
 
     protected SyslogKafkaInput(MetricRegistry metricRegistry,
@@ -56,8 +59,11 @@ public class SyslogKafkaInput extends MessageInput {
                                SyslogCodec codec,
                                LocalMetricRegistry localRegistry,
                                MessageInput.Config config,
-                               MessageInput.Descriptor descriptor, ServerStatus serverStatus) {
-        super(metricRegistry, configuration, kafkaTransport, localRegistry, codec, config, descriptor, serverStatus);
+                               MessageInput.Descriptor descriptor,
+                               ServerStatus serverStatus,
+                               CodecInfoRegistry codecInfoRegistry) {
+        super(metricRegistry, configuration, kafkaTransport, localRegistry, codec, config, descriptor, serverStatus,
+                codecInfoRegistry);
     }
 
     @FactoryClass

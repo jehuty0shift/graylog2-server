@@ -25,6 +25,9 @@ message JournalMessage {
     optional RemoteAddress remote = 7;
 
     optional bytes payload = 8;
+
+    // optional reference to a codec configuration stored in the codec registry
+    optional fixed64 codec_info_id = 9;
 }
 
 message RemoteAddress {
