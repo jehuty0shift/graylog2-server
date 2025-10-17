@@ -26,6 +26,7 @@ import org.graylog2.plugin.LocalMetricRegistry;
 import org.graylog2.plugin.ServerStatus;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.inputs.MessageInput;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 
 public class GELFTCPInput extends MessageInput {
 
@@ -38,9 +39,11 @@ public class GELFTCPInput extends MessageInput {
                         GelfCodec.Factory gelfCodecFactory,
                         LocalMetricRegistry localRegistry,
                         Config config,
-                        Descriptor descriptor, ServerStatus serverStatus) {
+                        Descriptor descriptor,
+                        ServerStatus serverStatus,
+                        CodecInfoRegistry codecInfoRegistry) {
         super(metricRegistry, configuration, tcpFactory.create(overrideDelimiter(configuration)), localRegistry, gelfCodecFactory.create(configuration),
-              config, descriptor, serverStatus);
+              config, descriptor, serverStatus, codecInfoRegistry);
     }
 
     // Make sure that delimiter is null-byte for GELF. This is needed to support setups where the GELF TCP input

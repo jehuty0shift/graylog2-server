@@ -28,6 +28,7 @@ import org.graylog2.plugin.journal.RawMessage;
 import org.graylog2.plugin.lifecycles.Lifecycle;
 import org.graylog2.shared.buffers.ProcessBuffer;
 import org.graylog2.shared.metrics.HdrHistogram;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,7 @@ public class JournalReader extends AbstractExecutionThreadService {
     private final Semaphore journalFilled;
     private final MetricRegistry metricRegistry;
     private final EventBus eventBus;
+    private final CodecInfoRegistry codecInfoRegistry;
     private final Meter readMessages;
     private volatile boolean shouldBeReading;
     private Histogram requestedReadCount;
@@ -57,12 +59,14 @@ public class JournalReader extends AbstractExecutionThreadService {
                          ProcessBuffer processBuffer,
                          @Named("JournalSignal") Semaphore journalFilled,
                          MetricRegistry metricRegistry,
-                         EventBus eventBus) {
+                         EventBus eventBus,
+                         CodecInfoRegistry codecInfoRegistry) {
         this.journal = journal;
         this.processBuffer = processBuffer;
         this.journalFilled = journalFilled;
         this.metricRegistry = metricRegistry;
         this.eventBus = eventBus;
+        this.codecInfoRegistry = codecInfoRegistry;
         shouldBeReading = false;
         readBlocked = metricRegistry.counter(name(this.getClass(), "readBlocked"));
         readMessages = metricRegistry.meter(name(this.getClass(), "readMessages"));
@@ -155,7 +159,8 @@ public class JournalReader extends AbstractExecutionThreadService {
                 log.debug("Processing {} messages from journal.", encodedRawMessages.size());
                 for (final Journal.JournalReadEntry encodedRawMessage : encodedRawMessages) {
                     final RawMessage rawMessage = RawMessage.decode(encodedRawMessage.getPayload(),
-                                                                    encodedRawMessage.getOffset());
+                                                                    encodedRawMessage.getOffset(),
+                                                                    codecInfoRegistry);
                     if (rawMessage == null) {
                         // never insert null objects into the ringbuffer, as that is useless
                         log.error("Found null raw message!");

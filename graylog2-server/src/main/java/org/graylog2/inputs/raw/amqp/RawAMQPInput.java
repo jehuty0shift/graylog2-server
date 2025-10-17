@@ -26,6 +26,7 @@ import org.graylog2.plugin.LocalMetricRegistry;
 import org.graylog2.plugin.ServerStatus;
 import org.graylog2.plugin.configuration.Configuration;
 import org.graylog2.plugin.inputs.MessageInput;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 
 import javax.inject.Inject;
 
@@ -41,9 +42,10 @@ public class RawAMQPInput extends MessageInput {
                         final LocalMetricRegistry localRegistry,
                         final Config config,
                         final Descriptor descriptor,
-                        final ServerStatus serverStatus) {
+                        final ServerStatus serverStatus,
+                        final CodecInfoRegistry codecInfoRegistry) {
         super(metricRegistry, configuration, amqpFactory.create(configuration), localRegistry,
-                codecFactory.create(configuration), config, descriptor, serverStatus);
+                codecFactory.create(configuration), config, descriptor, serverStatus, codecInfoRegistry);
     }
 
     public interface Factory extends MessageInput.Factory<RawAMQPInput> {

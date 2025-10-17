@@ -72,6 +72,7 @@ import org.graylog2.security.realm.AuthenticatingRealmModule;
 import org.graylog2.security.realm.LdapUserAuthenticator;
 import org.graylog2.shared.buffers.processors.ProcessBufferProcessor;
 import org.graylog2.shared.inputs.PersistedInputs;
+import org.graylog2.shared.journal.CodecInfoRegistry;
 import org.graylog2.shared.journal.JournalReaderModule;
 import org.graylog2.shared.journal.KafkaJournalModule;
 import org.graylog2.shared.journal.NoopJournalModule;
@@ -163,6 +164,7 @@ public class ServerBindings extends Graylog2Module {
         bind(BundleExporterProvider.class).in(Scopes.SINGLETON);
         bind(ClusterStatsModule.class).asEagerSingleton();
         bind(ClusterConfigService.class).to(ClusterConfigServiceImpl.class).asEagerSingleton();
+        bind(CodecInfoRegistry.class).in(Scopes.SINGLETON);
         bind(GrokPatternRegistry.class).in(Scopes.SINGLETON);
 
         bind(String[].class).annotatedWith(named("RestControllerPackages")).toInstance(new String[]{
