@@ -23,8 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
-import kafka.log.LogSegment;
-import kafka.utils.FileLock;
+import org.apache.kafka.storage.internals.log.LogSegment;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.record.AbstractRecords;
 import org.apache.kafka.common.record.DefaultRecord;
@@ -43,6 +42,9 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -341,7 +343,7 @@ public class KafkaJournalTest {
             int i = 0;
             for (final LogSegment segment : journal.getSegments()) {
                 //assertTrue(i < 2);
-                segment.lastModified_$eq(i == 0 ? lastModifiedTs[i] : lastModifiedTs[1]);
+                segment.log().file().setLastModified(i == 0 ? lastModifiedTs[i] : lastModifiedTs[1]);
                 i++;
             }
 
@@ -416,8 +418,9 @@ public class KafkaJournalTest {
         // Grab the lock before starting the KafkaJournal.
         final File file = new File(journalDirectory, ".lock");
         assumeTrue(file.createNewFile());
-        final FileLock fileLock = new FileLock(file);
-        assumeTrue(fileLock.tryLock());
+        final FileChannel channel = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        final FileLock fileLock = channel.tryLock();
+        assumeTrue(fileLock != null);
 
         try {
             new KafkaJournal(journalDirectory.toPath(),
@@ -436,6 +439,11 @@ public class KafkaJournalTest {
             assertThat(e)
                     .isExactlyInstanceOf(KafkaException.class)
                     .hasMessageStartingWith("Failed to acquire lock on file .lock in");
+        } finally {
+            if (fileLock != null && fileLock.isValid()) {
+                fileLock.release();
+            }
+            channel.close();
         }
     }
 
